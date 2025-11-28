@@ -26,6 +26,8 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [preferences, setPreferences] = useState({ answers: {}, mood: '🔥 핫한 네트워킹' })
   const [adminProfiles, setAdminProfiles] = useState([])
+  const [interestsInput, setInterestsInput] = useState('')
+  const [strengthsInput, setStrengthsInput] = useState('')
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -102,6 +104,8 @@ function App() {
       const incoming = data.profile || {}
       const baseName = session?.nickname || ''
       setProfile({ ...emptyProfile, name: incoming.name || baseName, ...incoming })
+      setInterestsInput((incoming.interests || []).join(', '))
+      setStrengthsInput((incoming.strengths || []).join(', '))
       setStatus('')
     } catch (err) {
       setStatus(err.message)
@@ -115,7 +119,10 @@ function App() {
   }
 
   const updateListField = (field, value) => {
-    setProfile((prev) => ({ ...prev, [field]: value.split(',').map((v) => v.trim()).filter(Boolean) }))
+    const parts = value.split(',').map((v) => v.trim()).filter(Boolean)
+    setProfile((prev) => ({ ...prev, [field]: parts }))
+    if (field === 'interests') setInterestsInput(value)
+    if (field === 'strengths') setStrengthsInput(value)
   }
 
   const saveProfile = async () => {
@@ -272,7 +279,7 @@ function App() {
               <div>
                 <label>관심사 (쉼표로 구분)</label>
                 <input
-                  value={profile.interests.join(', ')}
+                  value={interestsInput}
                   onChange={(e) => updateListField('interests', e.target.value)}
                   placeholder="AI, 음악, 러닝, 와인"
                   disabled={!isLoggedIn}
@@ -281,7 +288,7 @@ function App() {
               <div>
                 <label>강점/전문분야 (쉼표로 구분)</label>
                 <input
-                  value={profile.strengths.join(', ')}
+                  value={strengthsInput}
                   onChange={(e) => updateListField('strengths', e.target.value)}
                   placeholder="프로덕트 전략, 데이터 분석"
                   disabled={!isLoggedIn}
