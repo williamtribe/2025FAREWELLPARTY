@@ -171,7 +171,7 @@ function App() {
     try {
       Kakao.Share.sendDefault({
         objectType: 'text',
-        text: '2025 송년회 초대장: 카카오 로그인 후 자기소개를 남기고 친구들과 만나요.',
+        text: '너, 초대된거야. (12.20 서울 잠실 6시부터 저녁식사)',
         link: { webUrl: SHARE_URL, mobileWebUrl: SHARE_URL },
         buttonTitle: '페이지 열기',
       })
