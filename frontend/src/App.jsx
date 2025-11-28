@@ -171,7 +171,7 @@ function App() {
     try {
       Kakao.Share.sendDefault({
         objectType: 'text',
-        text: '너, 초대된거야. (12.20 서울 잠실 6시부터 저녁식사)',
+        text: '너, 초대된거야: 12월 20일 오후 6시 잠실 석촌역에서 스테이크와 함께.',
         link: { webUrl: SHARE_URL, mobileWebUrl: SHARE_URL },
         buttonTitle: '페이지 열기',
       })
@@ -206,15 +206,12 @@ function App() {
           <p className="eyebrow">2025 FAREWELL PARTY</p>
           <h1>2025.12.20 송년회</h1>
           <p className="lede">
-            카카오 로그인 후 자기소개/취향을 남기면 송년회에서 비슷한 사람과 바로 연결됩니다.
-            모바일에서는 아래 떠 있는 버튼으로 바로 시작하세요.
+            카톡으로 로그인 ㄱㄱ
+            -김영진-
           </p>
           <div className="cta-row">
             <button className="primary" onClick={handleKakaoLogin}>
               {isLoggedIn ? '다른 계정으로 로그인' : 'Kakao로 시작하기'}
-            </button>
-            <button className="secondary share-btn" onClick={shareToKakao}>
-              카카오톡으로 공유
             </button>
             {isLoggedIn && <span className="muted">환영합니다, {session?.nickname || '친구'}님</span>}
           </div>
@@ -224,9 +221,6 @@ function App() {
 
       <button className="floating-cta" onClick={handleKakaoLogin}>
         {isLoggedIn ? '다른 계정으로 로그인' : '카카오로 로그인'}
-      </button>
-      <button className="floating-cta share" onClick={shareToKakao}>
-        카카오톡으로 공유
       </button>
 
       <section className="panel">
