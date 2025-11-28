@@ -163,14 +163,10 @@ function App() {
       <div className="header">
         <div>
           <p className="eyebrow">2025 FAREWELL PARTY</p>
-          <h1>2025.12.20 송년회 ㅇ</h1>
-          <p className="lede multiline">
-            1. 카카오 로그인으로 합류<br />
-            2. 자기소개/취향/전문분야를 기록<br />
-            3. SUPER GOAT DB TECHNOLOGY로 <br />
-            4. 당신이라는 사람의 결이 그려집니다.<br />
-            5. 1부는 끼리끼리 사이언스 할거고,<br />
-            6. 2부는 다른 사람끼리 놀거임 ㅇ
+          <h1>2025.12.20 송년회</h1>
+          <p className="lede">
+            카톡으로 로그인 ㄱㄱ
+            -김영진-
           </p>
           <div className="cta-row">
             <button className="primary" onClick={handleKakaoLogin}>
@@ -180,14 +176,11 @@ function App() {
           </div>
           {status && <div className="status">{status}</div>}
         </div>
-        <div className="badge-stack">
-          <div className="pill">Kakao OAuth</div>
-          <div className="pill">Supabase</div>
-          <div className="pill">OpenAI 3072d</div>
-          <div className="pill">Pinecone</div>
-          <div className="pill">Tinder-style Survey</div>
-        </div>
       </div>
+
+      <button className="floating-cta" onClick={handleKakaoLogin}>
+        {isLoggedIn ? '다른 계정으로 로그인' : '카카오로 로그인'}
+      </button>
 
       <section className="panel">
         <div className="panel-head">
