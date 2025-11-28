@@ -213,6 +213,9 @@ function App() {
             <button className="primary" onClick={handleKakaoLogin}>
               {isLoggedIn ? '다른 계정으로 로그인' : 'Kakao로 시작하기'}
             </button>
+            <button className="secondary share-btn" onClick={shareToKakao}>
+              카카오톡으로 공유
+            </button>
             {isLoggedIn && <span className="muted">환영합니다, {session?.nickname || '친구'}님</span>}
           </div>
           {status && <div className="status">{status}</div>}
@@ -221,6 +224,9 @@ function App() {
 
       <button className="floating-cta" onClick={handleKakaoLogin}>
         {isLoggedIn ? '다른 계정으로 로그인' : '카카오로 로그인'}
+      </button>
+      <button className="floating-cta share" onClick={shareToKakao}>
+        카카오톡으로 공유
       </button>
 
       <section className="panel">
