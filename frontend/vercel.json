@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/auth/kakao/callback", "destination": "/" },
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
