@@ -1,0 +1,25 @@
+{
+    "mcpServers": {
+      "supabase": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          // enable RO to prevent gemini changing stuff in supabase
+          // "--read-only",
+          "--project-ref=bzqaoqvzfmexopjpywkj"
+        ],
+        "env": {
+          "SUPABASE_ACCESS_TOKEN": "sbp_582211c5d38d1f76159131969510fe12ca49cef9"
+        }
+      }
+    },
+    "security": {
+      "auth": {
+        "selectedType": "oauth-personal"
+      }
+    },
+    "general": {
+      "previewFeatures": true
+    }
+  }
