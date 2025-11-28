@@ -54,6 +54,12 @@ class PreferencePayload(BaseModel):
     mood: Optional[str] = None
 
 
+class KakaoMessagePayload(BaseModel):
+    access_token: str
+    receiver_uuids: List[str]
+    text: Optional[str] = None
+
+
 async def optional_user(
     authorization: Annotated[Optional[str], Header(alias="Authorization")] = None,
 ) -> SessionUser | None:
@@ -189,3 +195,29 @@ async def admin_profiles(user: SessionUser = Depends(get_current_user)):
         )
     result = supabase_service.client.table("member_profiles").select("*").execute()
     return {"profiles": result.data}
+
+
+@app.get("/kakao/friends")
+async def kakao_friends(access_token: str, user: SessionUser = Depends(get_current_user)):
+    try:
+        friends = await kakao_client.fetch_friends(access_token)
+        return {"friends": friends}
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"kakao_friends_error: {exc}") from exc
+
+
+@app.post("/kakao/message")
+async def kakao_message(payload: KakaoMessagePayload, user: SessionUser = Depends(get_current_user)):
+    if not payload.receiver_uuids:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="receiver_uuids_required")
+    text = payload.text or f"{user.nickname or '친구'}가 송년회 초대장을 보냈습니다. 페이지를 확인해 주세요."
+    try:
+        result = await kakao_client.send_friend_message(
+            access_token=payload.access_token,
+            receiver_uuids=payload.receiver_uuids,
+            text=text,
+            link_url=settings.base_url,
+        )
+        return {"sent": True, "result": result}
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"kakao_message_error: {exc}") from exc

@@ -3,6 +3,8 @@ import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 const CALLBACK_PROCESSED_KEY = 'kakao-callback-processed'
+const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY || import.meta.env.VITE_KAKAO_JS_KEY
+const SHARE_URL = import.meta.env.VITE_SHARE_URL || window.location.origin
 
 const emptyProfile = {
   name: '',
@@ -42,6 +44,20 @@ function App() {
       fetchMyProfile()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!KAKAO_JS_KEY) return
+    if (window.Kakao && window.Kakao.isInitialized()) return
+    const script = document.createElement('script')
+    script.src = 'https://developers.kakao.com/sdk/js/kakao.min.js'
+    script.async = true
+    script.onload = () => {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        window.Kakao.init(KAKAO_JS_KEY)
+      }
+    }
+    document.body.appendChild(script)
   }, [])
 
   const handleKakaoLogin = async () => {
@@ -139,6 +155,31 @@ function App() {
     }
   }
 
+  const shareToKakao = () => {
+    if (!KAKAO_JS_KEY) {
+      setStatus('카카오 JS 키가 없습니다. VITE_KAKAO_JAVASCRIPT_KEY를 설정하세요.')
+      return
+    }
+    const { Kakao } = window
+    if (!Kakao) {
+      setStatus('카카오 SDK 로드 중입니다. 잠시 후 다시 시도하세요.')
+      return
+    }
+    if (!Kakao.isInitialized()) {
+      Kakao.init(KAKAO_JS_KEY)
+    }
+    try {
+      Kakao.Share.sendDefault({
+        objectType: 'text',
+        text: '2025 송년회 초대장: 카카오 로그인 후 자기소개를 남기고 친구들과 만나요.',
+        link: { webUrl: SHARE_URL, mobileWebUrl: SHARE_URL },
+        buttonTitle: '페이지 열기',
+      })
+    } catch (err) {
+      setStatus(`카카오 공유 중 오류가 발생했습니다: ${err}`)
+    }
+  }
+
   const fetchAdminProfiles = async () => {
     setStatus('전체 프로필을 불러옵니다...')
     try {
@@ -165,12 +206,15 @@ function App() {
           <p className="eyebrow">2025 FAREWELL PARTY</p>
           <h1>2025.12.20 송년회</h1>
           <p className="lede">
-            카톡으로 로그인 ㄱㄱ
-            -김영진-
+            카카오 로그인 후 자기소개/취향을 남기면 송년회에서 비슷한 사람과 바로 연결됩니다.
+            모바일에서는 아래 떠 있는 버튼으로 바로 시작하세요.
           </p>
           <div className="cta-row">
             <button className="primary" onClick={handleKakaoLogin}>
               {isLoggedIn ? '다른 계정으로 로그인' : 'Kakao로 시작하기'}
+            </button>
+            <button className="secondary share-btn" onClick={shareToKakao}>
+              카카오톡으로 공유
             </button>
             {isLoggedIn && <span className="muted">환영합니다, {session?.nickname || '친구'}님</span>}
           </div>
@@ -180,6 +224,9 @@ function App() {
 
       <button className="floating-cta" onClick={handleKakaoLogin}>
         {isLoggedIn ? '다른 계정으로 로그인' : '카카오로 로그인'}
+      </button>
+      <button className="floating-cta share" onClick={shareToKakao}>
+        카카오톡으로 공유
       </button>
 
       <section className="panel">

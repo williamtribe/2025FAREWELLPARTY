@@ -67,6 +67,41 @@ class KakaoClient:
         resp.raise_for_status()
         return resp.json()
 
+    async def fetch_friends(self, access_token: str) -> Dict[str, Any]:
+        headers = {"Authorization": f"Bearer {access_token}"}
+        resp = await self.client.get(f"{self.api_base}/v1/api/talk/friends", headers=headers)
+        if resp.is_client_error or resp.is_server_error:
+            logger.error("Kakao friends error %s: %s", resp.status_code, resp.text)
+        resp.raise_for_status()
+        return resp.json()
+
+    async def send_friend_message(
+        self,
+        access_token: str,
+        receiver_uuids: list[str],
+        text: str,
+        link_url: str,
+    ) -> Dict[str, Any]:
+        headers = {"Authorization": f"Bearer {access_token}"}
+        data = {
+            "receiver_uuids": receiver_uuids,
+            "template_object": {
+                "object_type": "text",
+                "text": text,
+                "link": {"web_url": link_url, "mobile_web_url": link_url},
+                "button_title": "열어보기",
+            },
+        }
+        resp = await self.client.post(
+            f"{self.api_base}/v1/api/talk/friends/message/send",
+            headers=headers,
+            json=data,
+        )
+        if resp.is_client_error or resp.is_server_error:
+            logger.error("Kakao message error %s: %s", resp.status_code, resp.text)
+        resp.raise_for_status()
+        return resp.json()
+
 
 class SupabaseService:
     def __init__(self) -> None:
