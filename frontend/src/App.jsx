@@ -201,10 +201,6 @@ function App() {
   }
 
   const isLoggedIn = Boolean(session?.session_token)
-  const displayName = profile.name || session?.nickname || '이름 미입력'
-  const displayTagline = profile.tagline || '한 줄 소개가 여기에 보여요'
-  const displayIntro = profile.intro || '자기소개를 적으면 바로 여기서 확인할 수 있습니다.'
-  const displayContact = profile.contact || '미입력'
 
   return (
     <div className="page">
@@ -246,34 +242,6 @@ function App() {
         </div>
 
         <div className="profile-card">
-          <div className="profile-hero">
-            <div>
-              <p className="eyebrow">PREVIEW</p>
-              <h3>{displayName}</h3>
-              <p className="tagline">{displayTagline}</p>
-              <p className="intro">{displayIntro}</p>
-              <div className="chips">
-                {(profile.interests.length ? profile.interests : ['AI', '음악']).map((chip) => (
-                  <span key={chip} className="chip">
-                    {chip}
-                  </span>
-                ))}
-              </div>
-              <div className="chips subtle">
-                {(profile.strengths.length ? profile.strengths : ['전략', '데이터']).map((chip) => (
-                  <span key={chip} className="chip">
-                    {chip}
-                  </span>
-                ))}
-              </div>
-              <p className="muted">연락처: {displayContact}</p>
-              <p className="muted">공개 범위: {profile.visibility}</p>
-            </div>
-            <div className="profile-badge">
-              <span>{isLoggedIn ? '실시간 미리보기' : '로그인 후 편집'}</span>
-            </div>
-          </div>
-
           <div className="profile-form">
             <div className="two-col">
               <div>
