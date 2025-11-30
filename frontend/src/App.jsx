@@ -248,15 +248,56 @@ function App() {
           </button>
         </div>
 
-        <div className="grid">
-          <div className="card form">
-            <label>이름</label>
-            <input
-              value={profile.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              placeholder="홍길동"
-              disabled={!isLoggedIn}
-            />
+        <div className="profile-card">
+          <div className="profile-hero">
+            <div>
+              <p className="eyebrow">PREVIEW</p>
+              <h3>{displayName}</h3>
+              <p className="tagline">{displayTagline}</p>
+              <p className="intro">{displayIntro}</p>
+              <div className="chips">
+                {(profile.interests.length ? profile.interests : ['AI', '음악']).map((chip) => (
+                  <span key={chip} className="chip">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+              <div className="chips subtle">
+                {(profile.strengths.length ? profile.strengths : ['전략', '데이터']).map((chip) => (
+                  <span key={chip} className="chip">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+              <p className="muted">연락처: {displayContact}</p>
+              <p className="muted">공개 범위: {profile.visibility}</p>
+            </div>
+            <div className="profile-badge">
+              <span>{isLoggedIn ? '실시간 미리보기' : '로그인 후 편집'}</span>
+            </div>
+          </div>
+
+          <div className="profile-form">
+            <div className="two-col">
+              <div>
+                <label>이름</label>
+                <input
+                  value={profile.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  placeholder="홍길동"
+                  disabled={!isLoggedIn}
+                />
+              </div>
+              <div>
+                <label>연락처</label>
+                <input
+                  value={profile.contact}
+                  onChange={(e) => updateField('contact', e.target.value)}
+                  placeholder="이메일, 인스타, 카톡 오픈채팅 등"
+                  disabled={!isLoggedIn}
+                />
+              </div>
+            </div>
 
             <label>한 줄 소개</label>
             <input
@@ -271,7 +312,7 @@ function App() {
               value={profile.intro}
               onChange={(e) => updateField('intro', e.target.value)}
               placeholder="올해 했던 일, 내년 목표, 이번 송년회에서 만나고 싶은 사람..."
-              rows={5}
+              rows={4}
               disabled={!isLoggedIn}
             />
 
@@ -296,56 +337,20 @@ function App() {
               </div>
             </div>
 
-            <div className="two-col">
-              <div>
-                <label>연락처</label>
-                <input
-                  value={profile.contact}
-                  onChange={(e) => updateField('contact', e.target.value)}
-                  placeholder="이메일, 인스타, 카톡 오픈채팅 등"
-                  disabled={!isLoggedIn}
-                />
-              </div>
-              <div>
-                <label>공개 범위</label>
-                <select
-                  value={profile.visibility}
-                  onChange={(e) => updateField('visibility', e.target.value)}
-                  disabled={!isLoggedIn}
-                >
-                  <option value="public">모두 공개</option>
-                  <option value="members">참여자에게만</option>
-                  <option value="private">비공개</option>
-                </select>
-              </div>
-            </div>
+            <label>공개 범위</label>
+            <select
+              value={profile.visibility}
+              onChange={(e) => updateField('visibility', e.target.value)}
+              disabled={!isLoggedIn}
+            >
+              <option value="public">모두 공개</option>
+              <option value="members">참여자에게만</option>
+              <option value="private">비공개</option>
+            </select>
 
             <button className="primary" onClick={saveProfile} disabled={!isLoggedIn || loading}>
               {loading ? '저장 중...' : '프로필 저장 & 벡터 갱신'}
             </button>
-          </div>
-
-          <div className="card preview">
-            <p className="eyebrow">PREVIEW</p>
-            <h3>{displayName}</h3>
-            <p className="tagline">{displayTagline}</p>
-            <p className="intro">{displayIntro}</p>
-            <div className="chips">
-              {(profile.interests.length ? profile.interests : ['AI', '음악']).map((chip) => (
-                <span key={chip} className="chip">
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <div className="chips subtle">
-              {(profile.strengths.length ? profile.strengths : ['전략', '데이터']).map((chip) => (
-                <span key={chip} className="chip">
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <p className="muted">연락처: {displayContact}</p>
-            <p className="muted">공개 범위: {profile.visibility}</p>
           </div>
         </div>
       </section>
