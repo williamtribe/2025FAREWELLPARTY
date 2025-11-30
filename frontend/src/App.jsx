@@ -128,7 +128,7 @@ function App() {
   const saveProfile = async () => {
     if (!session?.session_token) return setStatus('로그인이 필요합니다.')
     setLoading(true)
-    setStatus('저장하고 임베딩/벡터를 업데이트 중입니다...')
+    setStatus('저장하고 있습니다...')
     try {
       const res = await fetch(`${API_BASE}/me`, {
         method: 'PUT',
@@ -217,9 +217,6 @@ function App() {
             -김영진-
           </p>
           <div className="cta-row">
-            <button className="primary" onClick={handleKakaoLogin}>
-              {isLoggedIn ? '다른 계정으로 로그인' : 'Kakao로 시작하기'}
-            </button>
             <button className="secondary share-btn" onClick={shareToKakao}>
               카카오톡으로 공유
             </button>
@@ -229,7 +226,7 @@ function App() {
         </div>
       </div>
 
-      <button className="floating-cta" onClick={handleKakaoLogin}>
+      <button className="floating-cta login-cta" onClick={handleKakaoLogin}>
         {isLoggedIn ? '다른 계정으로 로그인' : '카카오로 로그인'}
       </button>
       <button className="floating-cta share" onClick={shareToKakao}>
@@ -241,7 +238,7 @@ function App() {
           <div>
             <p className="eyebrow">MY PAGE</p>
             <h2>자기소개 카드</h2>
-            <p className="muted">카카오 인증 후 정보를 입력하면 저장과 동시에 임베딩/벡터를 갱신합니다.</p>
+            <p className="muted">카카오 인증 후 정보를 입력하면 저장됩니다.</p>
           </div>
           <button className="ghost" onClick={fetchMyProfile} disabled={!isLoggedIn || loading}>
             새로고침
@@ -349,7 +346,7 @@ function App() {
             </select>
 
             <button className="primary" onClick={saveProfile} disabled={!isLoggedIn || loading}>
-              {loading ? '저장 중...' : '프로필 저장 & 벡터 갱신'}
+              {loading ? '저장 중...' : '프로필 저장'}
             </button>
           </div>
         </div>

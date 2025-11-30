@@ -327,6 +327,10 @@ select:disabled {
   box-shadow: 0 12px 30px rgba(21, 89, 53, 0.35);
 }
 
+.floating-cta.login-cta {
+  display: block;
+}
+
 @media (max-width: 768px) {
   #root {
     max-width: 540px;
