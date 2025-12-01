@@ -403,7 +403,7 @@ function App() {
                   <input
                     value={profile.contact}
                     onChange={(e) => updateField('contact', e.target.value)}
-                    placeholder="01073523102, @williamkim816"
+                    placeholder="공지 전달용입니당 저만 볼 수 있습니다!"
                     disabled={!isLoggedIn}
                   />
                 </div>
