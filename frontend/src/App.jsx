@@ -259,7 +259,7 @@ function App() {
                   <input
                     value={profile.name}
                     onChange={(e) => updateField('name', e.target.value)}
-                    placeholder="홍길동"
+                    placeholder="예시: 김영진"
                     disabled={!isLoggedIn}
                   />
                 </div>
@@ -268,7 +268,7 @@ function App() {
                   <input
                     value={profile.contact}
                     onChange={(e) => updateField('contact', e.target.value)}
-                    placeholder="이메일, 인스타, 카톡 오픈채팅 등"
+                    placeholder="01073523102, @williamkim816"
                     disabled={!isLoggedIn}
                   />
                 </div>
@@ -278,7 +278,7 @@ function App() {
               <input
                 value={profile.tagline}
                 onChange={(e) => updateField('tagline', e.target.value)}
-                placeholder="데이터와 음악을 사랑하는 PM"
+                placeholder="안녕하세요, 오늘 초대한 김영진입니다. 예시: 검사지망 통계싸게"
                 disabled={!isLoggedIn}
               />
 
@@ -286,7 +286,7 @@ function App() {
               <textarea
                 value={profile.intro}
                 onChange={(e) => updateField('intro', e.target.value)}
-                placeholder="올해 했던 일, 내년 목표, 이번 송년회에서 만나고 싶은 사람..."
+                placeholder="예시: 레제를 죽인 마키마를 죽이고 싶은 검사지망생입니다. 마피아42가 너무 재밌어서 그 회사에서 일하는 중입니당."
                 rows={4}
                 disabled={!isLoggedIn}
               />
@@ -297,16 +297,16 @@ function App() {
                   <input
                     value={interestsInput}
                     onChange={(e) => updateListField('interests', e.target.value)}
-                    placeholder="AI, 음악, 러닝, 와인"
+                    placeholder="애니, 레제, 게임, 체인소맨, 마피아42, AI, 법"
                     disabled={!isLoggedIn}
                   />
                 </div>
                 <div>
-                  <label>강점/전문분야 (쉼표로 구분)</label>
+                  <label>특기 (쉼표로 구분)</label>
                   <input
                     value={strengthsInput}
                     onChange={(e) => updateListField('strengths', e.target.value)}
-                    placeholder="프로덕트 전략, 데이터 분석"
+                    placeholder="사람을 좋아함"
                     disabled={!isLoggedIn}
                   />
                 </div>
