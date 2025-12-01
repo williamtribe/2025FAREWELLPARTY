@@ -155,7 +155,11 @@ async def upsert_profile(payload: ProfilePayload, user: SessionUser = Depends(ge
             metadata={"visibility": record["visibility"], "name": record["name"]},
         )
 
-    return {"profile": record, "supabase": supabase_result, "pinecone": pinecone_result}
+    return {
+        "profile": record,
+        "supabase": supabase_result.get("data") if isinstance(supabase_result, dict) else supabase_result,
+        "pinecone": pinecone_result,
+    }
 
 
 @app.post("/preferences")

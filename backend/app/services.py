@@ -171,7 +171,9 @@ class PineconeService:
         upsert_result = self.index.upsert(
             vectors=[{"id": member_id, "values": vector, "metadata": metadata}]
         )
-        return {"upserted": upsert_result}
+        # Pinecone client objects may carry locks/handlers; keep response JSON-serializable.
+        upserted_count = getattr(upsert_result, "upserted_count", None)
+        return {"upserted_count": upserted_count}
 
 
 session_signer = SessionSigner()

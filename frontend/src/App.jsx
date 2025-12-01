@@ -28,7 +28,6 @@ function App() {
   const [profile, setProfile] = useState(emptyProfile)
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
-  const [preferences, setPreferences] = useState({ answers: {}, mood: '🔥 핫한 네트워킹' })
   const [adminProfiles, setAdminProfiles] = useState([])
   const [interestsInput, setInterestsInput] = useState('')
   const [strengthsInput, setStrengthsInput] = useState('')
@@ -149,29 +148,13 @@ function App() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.detail || '저장 실패')
-      setStatus('저장 완료! Pinecone에 동기화했습니다.')
+      setStatus('저장 완료!')
       setProfile((prev) => ({ ...prev, ...data.profile }))
       setIsEditing(false)
     } catch (err) {
       setStatus(err.message)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const submitPreferences = async () => {
-    if (!session?.session_token) return setStatus('로그인이 필요합니다.')
-    setStatus('취향 데이터를 저장 중입니다...')
-    try {
-      const res = await fetch(`${API_BASE}/preferences`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify(preferences),
-      })
-      if (!res.ok) throw new Error('저장 실패')
-      setStatus('설문 저장 완료!')
-    } catch (err) {
-      setStatus(err.message)
     }
   }
 
@@ -240,13 +223,8 @@ function App() {
     <div className="page">
       <div className="header">
         <div>
-          <p className="eyebrow">2025 FAREWELL PARTY</p>
-          <h1>2025.12.20 송년회</h1>
-          <p className="lede multiline">
-            비슷한 관심사 및 취미를 가진 사람들끼리.
-            <br />
-            -챗지피티? NoNo GOAT 테크놀로지입니다-
-          </p>
+          <p className="eyebrow">2025 송년회</p>
+          <h1>대화상대 정해주는 GOAT 테크놀로지와 함께</h1>
           <div className="cta-row">
             {isLoggedIn && <span className="muted">환영합니다, {session?.nickname || '친구'}님</span>}
           </div>
@@ -383,88 +361,7 @@ function App() {
         </div>
       </section>
 
-      <section className="panel">
-        <div className="panel-head">
-          <div>
-            <p className="eyebrow">TINDER STYLE SURVEY</p>
-            <h2>취향/매칭 설문</h2>
-            <p className="muted">이 답변도 프로필과 함께 저장되어 추천에 활용됩니다.</p>
-          </div>
-        </div>
-        <div className="card form">
-          <label>오늘의 무드</label>
-          <select
-            value={preferences.mood}
-            onChange={(e) => setPreferences((prev) => ({ ...prev, mood: e.target.value }))}
-            disabled={!isLoggedIn}
-          >
-            <option>🔥 핫한 네트워킹</option>
-            <option>🧊 조용한 대화</option>
-            <option>🍷 느긋한 시음</option>
-            <option>🎧 음악과 함께</option>
-          </select>
-
-          <label>요즘 꽂힌 주제</label>
-          <input
-            placeholder="예) 에이전트, 제로투원 스케일업, 재즈"
-            disabled={!isLoggedIn}
-            onChange={(e) =>
-              setPreferences((prev) => ({ ...prev, answers: { ...prev.answers, topic: e.target.value } }))
-            }
-          />
-
-          <label>함께 이야기하고 싶은 사람상</label>
-          <textarea
-            rows={3}
-            disabled={!isLoggedIn}
-            onChange={(e) =>
-              setPreferences((prev) => ({
-                ...prev,
-                answers: { ...prev.answers, partner: e.target.value },
-              }))
-            }
-          />
-
-          <button className="secondary" onClick={submitPreferences} disabled={!isLoggedIn || loading}>
-            설문 저장
-          </button>
-        </div>
-      </section>
-
-      {session?.is_admin && (
-        <section className="panel">
-          <div className="panel-head">
-            <div>
-              <p className="eyebrow">ADMIN</p>
-              <h2>전체 프로필 보기</h2>
-            </div>
-            <button className="ghost" onClick={fetchAdminProfiles}>
-              불러오기
-            </button>
-          </div>
-          <div className="admin-grid">
-            {adminProfiles.map((p) => (
-              <div key={p.kakao_id} className="card admin-card">
-                <div className="admin-head">
-                  <strong>{p.name || '이름 없음'}</strong>
-                  <span className="muted">#{p.kakao_id}</span>
-                </div>
-                <p className="tagline">{p.tagline}</p>
-                <p className="intro">{p.intro}</p>
-                <div className="chips">
-                  {(p.interests || []).map((chip) => (
-                    <span className="chip" key={chip}>
-                      {chip}
-                    </span>
-                  ))}
-                </div>
-                <p className="muted">공개 범위: {p.visibility}</p>
-              </div>
-            ))}
-            {!adminProfiles.length && <p className="muted">아직 불러온 데이터가 없습니다.</p>}
-          </div>
-        </section>
-      )}
+      {/* 설문 및 관리자 프로필 섹션은 별도 페이지로 이동 예정 */}
     </div>
   )
 }
