@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { createRef, useEffect, useMemo, useRef, useState } from 'react'
+import TinderCard from 'react-tinder-card'
 import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -9,6 +10,30 @@ const SHARE_IMAGE =
   'https://developers.kakao.com/assets/img/link_sample.jpg' // Kakao feed requires an image; using a docs sample.
 const SHARE_TEST_TEXT = '송년회 페이지를 확인해 주세요.'
 const KAKAO_TEMPLATE_ID = 126447 // 사용자 정의 템플릿 ID
+const LANDING_SEEN_KEY = 'farewell-landing-seen'
+const SWIPE_CANDIDATES = [
+  {
+    id: 'steak',
+    name: '스테이크 러버',
+    bio: '스테이크와 감자는 제가 책임질게요. 대화 주제: 고기 굽기 레벨 테스트.',
+    vibe: '미식',
+    bg: 'linear-gradient(135deg, #ffded9, #ffc4bd)',
+  },
+  {
+    id: 'data',
+    name: '데이터 장인',
+    bio: '연말에는 통계도 파티처럼. AI, 데이터, 마피아42 공략법까지.',
+    vibe: 'AI · 게임',
+    bg: 'linear-gradient(135deg, #d4f2e1, #a8e4c4)',
+  },
+  {
+    id: 'dj',
+    name: '파티 DJ',
+    bio: '춤추는 김영진만큼은 못해도, 분위기 띄우는 건 자신 있어요.',
+    vibe: '음악 · 무드',
+    bg: 'linear-gradient(135deg, #e1e7ff, #c6d2ff)',
+  },
+]
 
 const emptyProfile = {
   name: '',
@@ -32,6 +57,16 @@ function App() {
   const [interestsInput, setInterestsInput] = useState('')
   const [strengthsInput, setStrengthsInput] = useState('')
   const [isEditing, setIsEditing] = useState(true)
+  const [transitionMessage, setTransitionMessage] = useState('')
+  const [lastSwipe, setLastSwipe] = useState('')
+  const [currentIndex, setCurrentIndex] = useState(SWIPE_CANDIDATES.length - 1)
+  const swipeRefs = useMemo(() => SWIPE_CANDIDATES.map(() => createRef()), [])
+  const redirectTimer = useRef(null)
+  const [view, setView] = useState(() => {
+    if (window.location.pathname === '/api/auth/kakao/callback') return 'main'
+    const seen = localStorage.getItem(LANDING_SEEN_KEY)
+    return seen ? 'main' : 'landing'
+  })
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -53,6 +88,8 @@ function App() {
   useEffect(() => {
     if (session?.session_token) {
       fetchMyProfile()
+      localStorage.setItem(LANDING_SEEN_KEY, '1')
+      setView('main')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.session_token])
@@ -71,8 +108,16 @@ function App() {
     document.body.appendChild(script)
   }, [])
 
+  useEffect(() => {
+    return () => {
+      if (redirectTimer.current) clearTimeout(redirectTimer.current)
+    }
+  }, [])
+
   const handleKakaoLogin = async () => {
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
+    localStorage.setItem(LANDING_SEEN_KEY, '1')
+    setView('main')
     setStatus('카카오 로그인 페이지로 이동합니다...')
     const res = await fetch(`${API_BASE}/auth/kakao/login`)
     const data = await res.json()
@@ -99,6 +144,8 @@ function App() {
     localStorage.removeItem('kakao-state')
     setSession(sessionPayload)
     setStatus('로그인 완료! 프로필을 불러오는 중...')
+    localStorage.setItem(LANDING_SEEN_KEY, '1')
+    setView('main')
     window.history.replaceState({}, document.title, '/')
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
   }
@@ -218,6 +265,69 @@ function App() {
   const displayTagline = profile.tagline || '한 줄 소개가 여기에 보여요'
   const displayIntro = profile.intro || '자기소개를 적으면 바로 여기서 확인할 수 있습니다.'
   const displayContact = profile.contact || '미입력'
+
+  const handleSwipe = (direction, candidate, index) => {
+    setLastSwipe(`${candidate.name}에게 ${direction === 'right' ? '좋아요' : '넘김'}!`)
+    setCurrentIndex(Math.max(index - 1, -1))
+  }
+
+  const startLoginFlow = (message, delayMs) => {
+    if (redirectTimer.current) clearTimeout(redirectTimer.current)
+    setTransitionMessage(message)
+    setView('transition')
+    redirectTimer.current = setTimeout(() => {
+      localStorage.setItem(LANDING_SEEN_KEY, '1')
+      setView('main')
+      if (!session?.session_token) {
+        handleKakaoLogin()
+      }
+    }, delayMs)
+  }
+
+  if (view !== 'main') {
+    return (
+      <div className="landing-page">
+          <div className="landing-card">
+            <div className="landing-image">
+              <img
+                src="/dance.png"
+                alt="춤추는 김영진"
+              />
+              <div className="image-overlay">*저희 모임은 술을 강제하지 않습니다* <br/> *주최자의 주량은 소주 한병입니다*</div>
+            </div>
+          <div className="landing-copy">
+            <p className="eyebrow">2025 송년회</p>
+            <h1>나는 이걸</h1>
+            <p className="lede">
+            </p>
+            {view === 'landing' ? (
+              <div className="landing-actions">
+                <button className="primary" onClick={() => startLoginFlow('그러면 빨리 로그인 해', 900)}>
+                  안다
+                </button>
+                <button
+                  className="secondary"
+                  onClick={() =>
+                    startLoginFlow(
+                      '안녕하세요, 김영진이라고 합니다. 초대에 응해주셔서 감사합니다! 오시면 맛있는 스테이크와 감자는 보장합니다.',
+                      3000
+                    )
+                  }
+                >
+                  모른다
+                </button>
+              </div>
+            ) : (
+              <div className="transition-message">
+                <p className="lede">{transitionMessage || '잠시만요...'}</p>
+                <p className="muted">로그인 화면으로 이동합니다.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="page">
@@ -358,6 +468,66 @@ function App() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="panel swipe-panel">
+        <div className="panel-head">
+          <div>
+            <p className="eyebrow">SWIPE</p>
+            <h2>누구와 먼저 얘기해볼까요?</h2>
+          </div>
+          <p className="muted small">카드를 좌우로 스와이프하세요.</p>
+        </div>
+        <div className="swipe-layout">
+          <div className="swipe-deck">
+            {SWIPE_CANDIDATES.map((person, idx) => (
+              <TinderCard
+                key={person.id}
+                className="swipe"
+                ref={swipeRefs[idx]}
+                onSwipe={(dir) => handleSwipe(dir, person, idx)}
+                preventSwipe={['up', 'down']}
+              >
+                <div className="swipe-card" style={{ background: person.bg, zIndex: SWIPE_CANDIDATES.length - idx }}>
+                  <div className="swipe-pill">{person.vibe}</div>
+                  <h3>{person.name}</h3>
+                  <p className="intro">{person.bio}</p>
+                  <p className="muted small">스와이프해서 선택하거나 넘겨보세요.</p>
+                </div>
+              </TinderCard>
+            ))}
+          </div>
+          <div className="swipe-hint">
+            <p className="lede">{lastSwipe || '오른쪽은 좋아요, 왼쪽은 패스!'}</p>
+            <div className="swipe-controls">
+              <button
+                className="ghost"
+                onClick={() => {
+                  const ref = swipeRefs[currentIndex]?.current
+                  if (ref) ref.swipe('left')
+                }}
+                disabled={currentIndex < 0}
+              >
+                패스
+              </button>
+              <button
+                className="primary"
+                onClick={() => {
+                  const ref = swipeRefs[currentIndex]?.current
+                  if (ref) ref.swipe('right')
+                }}
+                disabled={currentIndex < 0}
+              >
+                좋아요
+              </button>
+            </div>
+            {!session?.session_token && (
+              <button className="primary" onClick={handleKakaoLogin}>
+                스와이프 후 로그인하기
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
