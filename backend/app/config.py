@@ -13,7 +13,9 @@ load_dotenv(ROOT_DIR / ".env")
 class Settings:
     def __init__(self) -> None:
         self.supabase_url = os.getenv("REACT_APP_SUPABASE_URL", "")
-        self.supabase_key = os.getenv("REACT_APP_SUPABASE_ANON_KEY", "")
+        # Prefer service-role key when available so RLS/reads don't get blocked locally.
+        self.supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+        self.supabase_key = self.supabase_service_key or os.getenv("REACT_APP_SUPABASE_ANON_KEY", "")
         self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
         self.kakao_client_id = os.getenv("KAKAO_CLIENT_ID", "")
         self.kakao_client_secret = os.getenv("KAKAO_CLIENT_SECRET", "")

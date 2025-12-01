@@ -5,6 +5,10 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 const CALLBACK_PROCESSED_KEY = 'kakao-callback-processed'
 const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY || import.meta.env.VITE_KAKAO_JS_KEY
 const SHARE_URL = import.meta.env.VITE_SHARE_URL || window.location.origin
+const SHARE_IMAGE =
+  'https://developers.kakao.com/assets/img/link_sample.jpg' // Kakao feed requires an image; using a docs sample.
+const SHARE_TEST_TEXT = '송년회 페이지를 확인해 주세요.'
+const KAKAO_TEMPLATE_ID = 126447 // 사용자 정의 템플릿 ID
 
 const emptyProfile = {
   name: '',
@@ -88,10 +92,12 @@ function App() {
     const data = await res.json()
     if (savedState && state !== savedState) {
       setStatus('state 불일치: 다시 시도해주세요.')
+      localStorage.removeItem('kakao-state')
       return
     }
     const sessionPayload = { ...data.profile, session_token: data.session_token }
     localStorage.setItem('farewell-session', JSON.stringify(sessionPayload))
+    localStorage.removeItem('kakao-state')
     setSession(sessionPayload)
     setStatus('로그인 완료! 프로필을 불러오는 중...')
     window.history.replaceState({}, document.title, '/')
@@ -170,25 +176,42 @@ function App() {
   }
 
   const shareToKakao = () => {
-    if (!KAKAO_JS_KEY) {
-      setStatus('카카오 JS 키가 없습니다. VITE_KAKAO_JAVASCRIPT_KEY를 설정하세요.')
-      return
-    }
     const { Kakao } = window
-    if (!Kakao) {
-      setStatus('카카오 SDK 로드 중입니다. 잠시 후 다시 시도하세요.')
-      return
-    }
-    if (!Kakao.isInitialized()) {
-      Kakao.init(KAKAO_JS_KEY)
-    }
+    if (!KAKAO_JS_KEY) return setStatus('카카오 JS 키가 없습니다. VITE_KAKAO_JAVASCRIPT_KEY를 설정하세요.')
+    if (!Kakao) return setStatus('카카오 SDK 로드 중입니다. 잠시 후 다시 시도하세요.')
+    if (!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY)
+
+    const title = '2025.12.20 송년회'
+    const description =
+      profile.tagline ||
+      '얘기가 잘 통하는 사람들만 만날겁니다. 12월 20일 잠실에서 함께해요.'
+    const name = profile.name || session?.nickname || '친구'
+
     try {
-      Kakao.Share.sendDefault({
-        objectType: 'text',
-        text: '너, 초대된거야: 12월 20일 오후 6시 잠실 석촌역에서 스테이크와 함께.',
-        link: { webUrl: SHARE_URL, mobileWebUrl: SHARE_URL },
-        buttonTitle: '페이지 열기',
-      })
+      Kakao.Share.sendCustom(
+        {
+          templateId: KAKAO_TEMPLATE_ID,
+          templateArgs: {
+            title,
+            description,
+            name,
+            link_url: SHARE_URL,
+          },
+        },
+        {
+          fail: () => {
+            // 카카오톡 미설치 등으로 실패 시 링크 복사/대체 안내
+            if (navigator?.clipboard?.writeText) {
+              navigator.clipboard.writeText(SHARE_URL).then(
+                () => setStatus('카카오톡이 없어 링크를 복사했습니다. 붙여넣어 공유하세요.'),
+                () => setStatus('카카오톡이 없어 공유를 못했습니다. 링크를 직접 복사해 주세요.')
+              )
+            } else {
+              setStatus('카카오톡이 없어 공유를 못했습니다. 링크를 직접 복사해 주세요.')
+            }
+          },
+        }
+      )
     } catch (err) {
       setStatus(`카카오 공유 중 오류가 발생했습니다: ${err}`)
     }
@@ -219,37 +242,34 @@ function App() {
         <div>
           <p className="eyebrow">2025 FAREWELL PARTY</p>
           <h1>2025.12.20 송년회</h1>
-          <p className="lede">
-            카톡으로 로그인 ㄱㄱ
-            -김영진-
+          <p className="lede multiline">
+            비슷한 관심사 및 취미를 가진 사람들끼리.
+            <br />
+            -챗지피티? NoNo GOAT 테크놀로지입니다-
           </p>
           <div className="cta-row">
-            <button className="secondary share-btn" onClick={shareToKakao}>
-              카카오톡으로 공유
-            </button>
             {isLoggedIn && <span className="muted">환영합니다, {session?.nickname || '친구'}님</span>}
           </div>
           {status && <div className="status">{status}</div>}
         </div>
       </div>
 
-      <button className="floating-cta login-cta" onClick={handleKakaoLogin}>
-        {isLoggedIn ? '다른 계정으로 로그인' : '카카오로 로그인'}
-      </button>
-      <button className="floating-cta share" onClick={shareToKakao}>
-        카카오톡으로 공유
-      </button>
+      {isLoggedIn ? (
+        <button className="floating-cta share" onClick={shareToKakao}>
+          카카오톡으로 공유
+        </button>
+      ) : (
+        <button className="floating-cta login-cta" onClick={handleKakaoLogin}>
+          카카오톡으로 로그인
+        </button>
+      )}
 
       <section className="panel">
         <div className="panel-head">
           <div>
             <p className="eyebrow">MY PAGE</p>
             <h2>자기소개 카드</h2>
-            <p className="muted">카카오 인증 후 정보를 입력하면 저장됩니다.</p>
           </div>
-          <button className="ghost" onClick={fetchMyProfile} disabled={!isLoggedIn || loading}>
-            새로고침
-          </button>
         </div>
 
         <div className="profile-card">
@@ -354,7 +374,6 @@ function App() {
                 <p className="muted">공개 범위: {profile.visibility}</p>
               </div>
               <div className="profile-badge">
-                <span>{isLoggedIn ? '실시간 미리보기' : '로그인 후 편집'}</span>
                 <button className="ghost inline" onClick={() => setIsEditing(true)} disabled={!isLoggedIn}>
                   편집
                 </button>
