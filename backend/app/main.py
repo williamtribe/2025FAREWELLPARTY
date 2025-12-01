@@ -173,6 +173,12 @@ async def save_preferences(payload: PreferencePayload, user: SessionUser = Depen
     return {"preferences": data, "supabase": supabase_result}
 
 
+@app.get("/profiles/public")
+async def list_public_profiles(limit: int = 6):
+    profiles = supabase_service.fetch_public_profiles(limit=limit)
+    return {"profiles": profiles}
+
+
 @app.get("/profiles/{kakao_id}")
 async def view_profile(
     kakao_id: str,
@@ -188,7 +194,6 @@ async def view_profile(
     if profile.get("visibility") == "private" and not (is_owner or is_admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="forbidden")
     return {"profile": profile}
-
 
 @app.get("/admin/profiles")
 async def admin_profiles(user: SessionUser = Depends(get_current_user)):

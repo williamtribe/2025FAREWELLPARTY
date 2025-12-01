@@ -125,6 +125,19 @@ class SupabaseService:
             return None
         return result.data[0]
 
+    def fetch_public_profiles(self, limit: int = 6) -> list[Dict[str, Any]]:
+        if not self.client:
+            return []
+        result = (
+            self.client.table("member_profiles")
+            .select("kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at")
+            .eq("visibility", "public")
+            .order("updated_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return result.data or []
+
     def upsert_preferences(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.client:
             return {"skipped": True, "reason": "supabase_not_configured"}

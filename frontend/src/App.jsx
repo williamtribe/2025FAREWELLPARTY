@@ -11,6 +11,15 @@ const SHARE_IMAGE =
 const SHARE_TEST_TEXT = '송년회 페이지를 확인해 주세요.'
 const KAKAO_TEMPLATE_ID = 126447 // 사용자 정의 템플릿 ID
 const LANDING_SEEN_KEY = 'farewell-landing-seen'
+const HOST_ID = '4609921299'
+const defaultHostProfile = {
+  name: '김영진',
+  tagline: '초대한 사람입니다. 오늘은 제가 DJ이자 호스트!',
+  intro: '안녕하세요, 김영진이라고 합니다. 초대에 응해주셔서 감사합니다! 오시면 맛있는 스테이크와 감자는 보장합니다.',
+  interests: ['스테이크', '감자', '음악', 'AI'],
+  strengths: ['분위기 메이커', '요리', '게임'],
+  contact: '@williamkim816',
+}
 const SWIPE_CANDIDATES = [
   {
     id: 'steak',
@@ -62,6 +71,8 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(SWIPE_CANDIDATES.length - 1)
   const swipeRefs = useMemo(() => SWIPE_CANDIDATES.map(() => createRef()), [])
   const redirectTimer = useRef(null)
+  const [transitionNeedsAction, setTransitionNeedsAction] = useState(false)
+  const [hostProfile, setHostProfile] = useState(defaultHostProfile)
   const [view, setView] = useState(() => {
     if (window.location.pathname === '/api/auth/kakao/callback') return 'main'
     const seen = localStorage.getItem(LANDING_SEEN_KEY)
@@ -106,6 +117,10 @@ function App() {
       }
     }
     document.body.appendChild(script)
+  }, [])
+
+  useEffect(() => {
+    fetchHostProfile()
   }, [])
 
   useEffect(() => {
@@ -271,10 +286,12 @@ function App() {
     setCurrentIndex(Math.max(index - 1, -1))
   }
 
-  const startLoginFlow = (message, delayMs) => {
+  const startLoginFlow = (message, delayMs, auto = true) => {
     if (redirectTimer.current) clearTimeout(redirectTimer.current)
     setTransitionMessage(message)
     setView('transition')
+    setTransitionNeedsAction(!auto)
+    if (!auto) return
     redirectTimer.current = setTimeout(() => {
       localStorage.setItem(LANDING_SEEN_KEY, '1')
       setView('main')
@@ -284,43 +301,80 @@ function App() {
     }, delayMs)
   }
 
+  const fetchHostProfile = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/profiles/${HOST_ID}`)
+      if (!res.ok) throw new Error('host_profile_unavailable')
+      const data = await res.json()
+      if (data?.profile) setHostProfile((prev) => ({ ...prev, ...data.profile }))
+    } catch (err) {
+      console.warn('Host profile load failed, using default', err)
+    }
+  }
+
   if (view !== 'main') {
     return (
       <div className="landing-page">
-          <div className="landing-card">
-            <div className="landing-image">
-              <img
-                src="/dance.png"
-                alt="춤추는 김영진"
-              />
-              <div className="image-overlay">*저희 모임은 술을 강제하지 않습니다* <br/> *주최자의 주량은 소주 한병입니다*</div>
-            </div>
+        <div className="landing-card">
           <div className="landing-copy">
-            <p className="eyebrow">2025 송년회</p>
-            <h1>나는 이걸</h1>
-            <p className="lede">
-            </p>
             {view === 'landing' ? (
-              <div className="landing-actions">
-                <button className="primary" onClick={() => startLoginFlow('그러면 빨리 로그인 해', 900)}>
-                  안다
-                </button>
-                <button
-                  className="secondary"
-                  onClick={() =>
-                    startLoginFlow(
-                      '안녕하세요, 김영진이라고 합니다. 초대에 응해주셔서 감사합니다! 오시면 맛있는 스테이크와 감자는 보장합니다.',
-                      3000
-                    )
-                  }
-                >
-                  모른다
-                </button>
+              <div className="landing-swipe">
+                <div className="landing-swipe-card">
+                  <TinderCard
+                    preventSwipe={['up', 'down']}
+                    onSwipe={(dir) => {
+                      if (dir === 'right') {
+                        startLoginFlow('그러면 빨리 로그인 해', 900, true)
+                      } else if (dir === 'left') {
+                        if (redirectTimer.current) clearTimeout(redirectTimer.current)
+                        localStorage.setItem(LANDING_SEEN_KEY, '1')
+                        setTransitionMessage('')
+                        setTransitionNeedsAction(false)
+                        setView('main')
+                      }
+                    }}
+                  >
+                    <div className="swipe-card preview-card">
+                      <div className="preview-photo-wrap">
+                        <img src="/dance.png" alt="호스트 사진" className="preview-photo" />
+                        <div className="image-overlay preview-overlay">
+                          *저희 모임은 술을 강제하지 않습니다* <br /> *주최자의 주량은 소주 한병입니다*
+                        </div>
+                      </div>
+                      <div className="preview-body">
+                        <p className="eyebrow">HOST</p>
+                        <h3>{hostProfile.name}</h3>
+                        <p className="tagline">{hostProfile.tagline}</p>
+                        <p className="intro">{hostProfile.intro}</p>
+                        <div className="chips">
+                          {(hostProfile.interests || []).slice(0, 4).map((chip) => (
+                            <span key={chip} className="chip">
+                              {chip}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TinderCard>
+                </div>
+                <p className="swipe-hint-inline outside">나는 이 놈을 <br/> 모른다: 왼쪽으로 스윽 <br/> 안다: 오른쪽으로 스윽 <br/> *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서 명시* <br/> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사 테이블이 배정됩니다.*</p>
               </div>
             ) : (
               <div className="transition-message">
                 <p className="lede">{transitionMessage || '잠시만요...'}</p>
-                <p className="muted">로그인 화면으로 이동합니다.</p>
+                {transitionNeedsAction ? (
+                  <button
+                    className="primary"
+                    onClick={() => {
+                      localStorage.setItem(LANDING_SEEN_KEY, '1')
+                      handleKakaoLogin()
+                    }}
+                  >
+                    로그인 화면으로 이동
+                  </button>
+                ) : (
+                  <p className="muted">로그인 화면으로 이동합니다.</p>
+                )}
               </div>
             )}
           </div>

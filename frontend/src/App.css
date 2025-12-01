@@ -32,40 +32,28 @@ body {
 }
 
 .landing-card {
-  width: min(1000px, 96vw);
+  width: min(760px, 96vw);
   background: linear-gradient(135deg, rgba(214, 40, 40, 0.08), rgba(31, 122, 77, 0.1)),
     rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(31, 122, 77, 0.12);
   box-shadow: 0 20px 60px rgba(17, 47, 24, 0.16);
   border-radius: 26px;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  overflow: hidden;
-}
-
-.landing-image {
-  position: relative;
-  height: 100%;
-}
-
-.landing-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
-  filter: saturate(1.05);
+  overflow: hidden;
+  padding: 1rem 0.8rem 1.4rem;
 }
 
 .image-overlay {
   position: absolute;
-  left: 16px;
-  bottom: 16px;
+  left: 12px;
+  top: 12px;
   background: rgba(31, 122, 77, 0.82);
   color: #fefefe;
-  padding: 0.6rem 0.85rem;
+  padding: 0.45rem 0.65rem;
   border-radius: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
+  line-height: 1.4;
 }
 
 .landing-copy {
@@ -86,6 +74,79 @@ body {
   border: 1px dashed rgba(31, 122, 77, 0.35);
   padding: 1rem 1.1rem;
   border-radius: 14px;
+}
+
+.host-card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(31, 122, 77, 0.12);
+  border-radius: 14px;
+  padding: 0.9rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.host-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.host-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.public-preview {
+  margin-top: 0.4rem;
+}
+
+.landing-swipe {
+  margin-top: 0.6rem;
+}
+
+.landing-swipe-card {
+  margin-top: 0.4rem;
+  max-width: 420px;
+}
+
+.preview-card {
+  gap: 0.5rem;
+  padding: 0.8rem;
+}
+
+.preview-photo-wrap {
+  position: relative;
+}
+
+.preview-photo {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.preview-overlay {
+  left: 12px;
+  top: 12px;
+}
+
+.preview-body h3 {
+  margin: 0.2rem 0;
+}
+
+.swipe-hint-inline {
+  margin-top: 0.4rem;
+  font-weight: 700;
+  color: #c4313b;
+}
+
+.swipe-hint-inline.outside {
+  text-align: center;
+  color: #0f2216;
+  font-size: 14px;
 }
 
 .page {
@@ -109,7 +170,7 @@ body {
   letter-spacing: 0.16em;
   font-size: 12px;
   font-weight: 600;
-  color: #c4313b;
+  color: #0f2216;
   margin: 0 0 0.5rem;
   text-transform: uppercase;
 }
@@ -474,16 +535,48 @@ select:disabled {
 
 @media (max-width: 768px) {
   #root {
-    max-width: 540px;
-    padding: 1rem 0.75rem 4rem;
+    max-width: 520px;
+    padding: 0.6rem 0.65rem 3rem;
   }
 
-  .landing-card {
-    grid-template-columns: 1fr;
+  .image-overlay {
+    font-size: 12px;
+    padding: 0.45rem 0.65rem;
   }
 
-  .landing-image {
-    max-height: 320px;
+  .landing-copy {
+  padding: 1rem 0.9rem 1.2rem;
+  gap: 0.7rem;
+}
+
+.host-card {
+  grid-template-columns: 1fr;
+    padding: 0.8rem;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .lede {
+    font-size: 14px;
+  }
+
+  .host-card .chip {
+    font-size: 12px;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .landing-swipe {
+    margin-top: 0.5rem;
+  }
+
+  .landing-swipe-card {
+    max-width: 100%;
   }
 
   .swipe-layout {
@@ -491,7 +584,7 @@ select:disabled {
   }
 
   .swipe-deck {
-    height: 320px;
+    height: 300px;
   }
 
   .header {
