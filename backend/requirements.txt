@@ -5,5 +5,5 @@ python-dotenv==1.0.1
 itsdangerous==2.2.0
 supabase==2.5.0
 openai==1.59.7
-pinecone-client==5.0.1
+pinecone==5.0.1
 python-multipart==0.0.9
