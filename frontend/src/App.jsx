@@ -358,7 +358,7 @@ function App() {
             카톡 공유
           </button>
           <Link className="floating-cta ai-intro" to="/ai-intro">
-            {profile.intro ? "초간단 취향확인" : "AI생성 자기소개"}
+            {profile.intro ? "3초 취향확인" : "3초 AI생성 자기소개"}
           </Link>
         </>
       ) : (

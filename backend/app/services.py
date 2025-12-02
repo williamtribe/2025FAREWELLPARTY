@@ -14,6 +14,7 @@ logger = logging.getLogger("farewell-party.services")
 
 
 class SessionSigner:
+
     def __init__(self) -> None:
         self.serializer = URLSafeTimedSerializer(settings.app_secret)
 
@@ -22,7 +23,8 @@ class SessionSigner:
 
     def verify(self, token: str) -> Dict[str, Any]:
         try:
-            return self.serializer.loads(token, max_age=settings.session_ttl_seconds)
+            return self.serializer.loads(token,
+                                         max_age=settings.session_ttl_seconds)
         except SignatureExpired as exc:
             raise ValueError("session_expired") from exc
         except BadSignature as exc:
@@ -44,7 +46,8 @@ class KakaoClient:
             "state": state,
         }
         # httpx.URL has immutable params; copy_merge_params builds a new URL with query values.
-        url = httpx.URL(f"{self.auth_base}/oauth/authorize").copy_merge_params(params)
+        url = httpx.URL(f"{self.auth_base}/oauth/authorize").copy_merge_params(
+            params)
         return str(url)
 
     async def exchange_code_for_token(self, code: str) -> Dict[str, Any]:
@@ -55,23 +58,28 @@ class KakaoClient:
             "redirect_uri": settings.kakao_redirect_uri,
             "code": code,
         }
-        resp = await self.client.post(f"{self.auth_base}/oauth/token", data=data)
+        resp = await self.client.post(f"{self.auth_base}/oauth/token",
+                                      data=data)
         if resp.is_client_error or resp.is_server_error:
-            logger.error("Kakao token error %s: %s", resp.status_code, resp.text)
+            logger.error("Kakao token error %s: %s", resp.status_code,
+                         resp.text)
         resp.raise_for_status()
         return resp.json()
 
     async def fetch_user(self, access_token: str) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        resp = await self.client.get(f"{self.api_base}/v2/user/me", headers=headers)
+        resp = await self.client.get(f"{self.api_base}/v2/user/me",
+                                     headers=headers)
         resp.raise_for_status()
         return resp.json()
 
     async def fetch_friends(self, access_token: str) -> Dict[str, Any]:
         headers = {"Authorization": f"Bearer {access_token}"}
-        resp = await self.client.get(f"{self.api_base}/v1/api/talk/friends", headers=headers)
+        resp = await self.client.get(f"{self.api_base}/v1/api/talk/friends",
+                                     headers=headers)
         if resp.is_client_error or resp.is_server_error:
-            logger.error("Kakao friends error %s: %s", resp.status_code, resp.text)
+            logger.error("Kakao friends error %s: %s", resp.status_code,
+                         resp.text)
         resp.raise_for_status()
         return resp.json()
 
@@ -88,7 +96,10 @@ class KakaoClient:
             "template_object": {
                 "object_type": "text",
                 "text": text,
-                "link": {"web_url": link_url, "mobile_web_url": link_url},
+                "link": {
+                    "web_url": link_url,
+                    "mobile_web_url": link_url
+                },
                 "button_title": "열어보기",
             },
         }
@@ -98,18 +109,23 @@ class KakaoClient:
             json=data,
         )
         if resp.is_client_error or resp.is_server_error:
-            logger.error("Kakao message error %s: %s", resp.status_code, resp.text)
+            logger.error("Kakao message error %s: %s", resp.status_code,
+                         resp.text)
         resp.raise_for_status()
         return resp.json()
 
 
 class SupabaseService:
+
     def __init__(self) -> None:
         self.client: Optional[Client] = None
         if settings.supabase_url and settings.supabase_key:
-            self.client = create_client(settings.supabase_url, settings.supabase_key)
+            self.client = create_client(settings.supabase_url,
+                                        settings.supabase_key)
         else:
-            logger.warning("Supabase credentials missing; data operations will be skipped.")
+            logger.warning(
+                "Supabase credentials missing; data operations will be skipped."
+            )
 
     def upsert_profile(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.client:
@@ -120,7 +136,8 @@ class SupabaseService:
     def fetch_profile(self, kakao_id: str) -> Optional[Dict[str, Any]]:
         if not self.client:
             return None
-        result = self.client.table("member_profiles").select("*").eq("kakao_id", kakao_id).limit(1).execute()
+        result = self.client.table("member_profiles").select("*").eq(
+            "kakao_id", kakao_id).limit(1).execute()
         if not result.data:
             return None
         return result.data[0]
@@ -128,14 +145,10 @@ class SupabaseService:
     def fetch_public_profiles(self, limit: int = 6) -> list[Dict[str, Any]]:
         if not self.client:
             return []
-        result = (
-            self.client.table("member_profiles")
-            .select("kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at")
-            .eq("visibility", "public")
-            .order("updated_at", desc=True)
-            .limit(limit)
-            .execute()
-        )
+        result = (self.client.table("member_profiles").select(
+            "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
+        ).eq("visibility", "public").order("updated_at",
+                                           desc=True).limit(limit).execute())
         return result.data or []
 
     def upsert_preferences(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -144,14 +157,19 @@ class SupabaseService:
         result = self.client.table("member_preferences").upsert(data).execute()
         return {"data": result.data}
 
-    def upsert_yesorno(self, kakao_id: str, question_num: int, response: int) -> Dict[str, Any]:
+    def upsert_yesorno(self, kakao_id: str, question_num: int,
+                       response: int) -> Dict[str, Any]:
         if not self.client:
             return {"skipped": True, "reason": "supabase_not_configured"}
         if question_num < 1 or question_num > 5:
             return {"error": "question_num must be 1-5"}
-        existing = self.client.table("intro_yesorno").select("*").eq("kakao_id", kakao_id).limit(1).execute()
+        existing = self.client.table("intro_yesorno").select("*").eq(
+            "kakao_id", kakao_id).limit(1).execute()
         if existing.data:
-            result = self.client.table("intro_yesorno").update({str(question_num): response}).eq("kakao_id", kakao_id).execute()
+            result = self.client.table("intro_yesorno").update({
+                str(question_num):
+                response
+            }).eq("kakao_id", kakao_id).execute()
         else:
             data = {"kakao_id": kakao_id, str(question_num): response}
             result = self.client.table("intro_yesorno").insert(data).execute()
@@ -160,13 +178,15 @@ class SupabaseService:
     def fetch_yesorno(self, kakao_id: str) -> Optional[Dict[str, Any]]:
         if not self.client:
             return None
-        result = self.client.table("intro_yesorno").select("*").eq("kakao_id", kakao_id).limit(1).execute()
+        result = self.client.table("intro_yesorno").select("*").eq(
+            "kakao_id", kakao_id).limit(1).execute()
         if not result.data:
             return None
         return result.data[0]
 
 
 class EmbeddingService:
+
     def __init__(self) -> None:
         if not settings.openai_api_key:
             logger.warning("OpenAI key missing; embeddings will be skipped.")
@@ -177,16 +197,42 @@ class EmbeddingService:
     def embed_member(self, text: str) -> Optional[List[float]]:
         if not self.client:
             return None
-        resp = self.client.embeddings.create(model=settings.embedding_model, input=text)
+        resp = self.client.embeddings.create(model=settings.embedding_model,
+                                             input=text)
         return resp.data[0].embedding
 
 
 CARDS = [
-    {"num": 1, "question": "나는", "leftLabel": "E다.", "rightLabel": "I다."},
-    {"num": 2, "question": "나는", "leftLabel": "T다.", "rightLabel": "F다."},
-    {"num": 3, "question": "나는 여기 뭐하러 가는가", "leftLabel": "스테이크 못참지", "rightLabel": "사람 만나러 가죠"},
-    {"num": 4, "question": "나는 애니를", "leftLabel": "본다", "rightLabel": "안본다"},
-    {"num": 5, "question": "나는 이 사람을", "leftLabel": "ㅉㅉ", "rightLabel": "숭배한다"},
+    {
+        "num": 1,
+        "question": "나는",
+        "leftLabel": "E다.",
+        "rightLabel": "I다."
+    },
+    {
+        "num": 2,
+        "question": "나는",
+        "leftLabel": "T다.",
+        "rightLabel": "F다."
+    },
+    {
+        "num": 3,
+        "question": "나는 여기 뭐하러 가는가",
+        "leftLabel": "스테이크 못참지",
+        "rightLabel": "사람 만나러 가죠"
+    },
+    {
+        "num": 4,
+        "question": "나는 애니를",
+        "leftLabel": "본다",
+        "rightLabel": "안본다"
+    },
+    {
+        "num": 5,
+        "question": "나는 이 사람을",
+        "leftLabel": "ㅉㅉ",
+        "rightLabel": "숭배한다"
+    },
 ]
 
 YESORNO_MAPPINGS = {
@@ -208,20 +254,23 @@ YESORNO_MAPPINGS = {
     },
     5: {
         1: "이 사람을 숭배한다",
-        -1: "이 사람에게 ㅉㅉ한다",
+        -1: "이 사람이 바보라고 생각한다",
     },
 }
 
 
 class IntroGenerationService:
+
     def __init__(self) -> None:
         if not settings.openai_api_key:
-            logger.warning("OpenAI key missing; intro generation will be skipped.")
+            logger.warning(
+                "OpenAI key missing; intro generation will be skipped.")
             self.client = None
         else:
             self.client = OpenAI(api_key=settings.openai_api_key)
 
-    def generate_intro_from_yesorno(self, yesorno_data: Dict[str, Any], nickname: str) -> Optional[Dict[str, Any]]:
+    def generate_intro_from_yesorno(self, yesorno_data: Dict[str, Any],
+                                    nickname: str) -> Optional[Dict[str, Any]]:
         if not self.client:
             return None
 
@@ -229,7 +278,8 @@ class IntroGenerationService:
         for q_num in range(1, 6):
             raw_response = yesorno_data.get(str(q_num))
             try:
-                response = int(raw_response) if raw_response is not None else None
+                response = int(
+                    raw_response) if raw_response is not None else None
             except (ValueError, TypeError):
                 response = None
             if response in (1, -1):
@@ -264,10 +314,15 @@ class IntroGenerationService:
         try:
             resp = self.client.chat.completions.create(
                 model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "당신은 재미있는 자기소개를 만들어주는 전문가입니다. JSON 형식으로만 응답하세요."},
-                    {"role": "user", "content": prompt}
-                ],
+                messages=[{
+                    "role":
+                    "system",
+                    "content":
+                    "당신은 재미있는 자기소개를 만들어주는 전문가입니다. JSON 형식으로만 응답하세요."
+                }, {
+                    "role": "user",
+                    "content": prompt
+                }],
                 temperature=0.8,
                 max_tokens=500,
             )
@@ -279,19 +334,27 @@ class IntroGenerationService:
             import json
             raw_result = json.loads(content)
             validated_result = {
-                "tagline": str(raw_result.get("tagline", ""))[:50] if raw_result.get("tagline") else "",
-                "intro": str(raw_result.get("intro", ""))[:200] if raw_result.get("intro") else "",
+                "tagline":
+                str(raw_result.get("tagline", ""))[:50]
+                if raw_result.get("tagline") else "",
+                "intro":
+                str(raw_result.get("intro", ""))[:200]
+                if raw_result.get("intro") else "",
                 "interests": [],
                 "strengths": [],
             }
             raw_interests = raw_result.get("interests", [])
             if isinstance(raw_interests, list):
-                validated_result["interests"] = [str(i)[:20] for i in raw_interests[:5] if i]
+                validated_result["interests"] = [
+                    str(i)[:20] for i in raw_interests[:5] if i
+                ]
             elif isinstance(raw_interests, str):
                 validated_result["interests"] = [raw_interests[:20]]
             raw_strengths = raw_result.get("strengths", [])
             if isinstance(raw_strengths, list):
-                validated_result["strengths"] = [str(s)[:20] for s in raw_strengths[:5] if s]
+                validated_result["strengths"] = [
+                    str(s)[:20] for s in raw_strengths[:5] if s
+                ]
             elif isinstance(raw_strengths, str):
                 validated_result["strengths"] = [raw_strengths[:20]]
             return validated_result
@@ -299,7 +362,8 @@ class IntroGenerationService:
             logger.error(f"Intro generation from yesorno failed: {e}")
             return None
 
-    def generate_intro(self, answers: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def generate_intro(self, answers: Dict[str,
+                                           Any]) -> Optional[Dict[str, Any]]:
         if not self.client:
             return None
 
@@ -308,11 +372,13 @@ class IntroGenerationService:
             q_num = i + 1
             raw_response = answers.get(str(q_num))
             try:
-                response = int(raw_response) if raw_response is not None else None
+                response = int(
+                    raw_response) if raw_response is not None else None
             except (ValueError, TypeError):
                 response = None
             if response in (1, -1):
-                answer_text = YESORNO_MAPPINGS.get(q_num, {}).get(response, '미입력')
+                answer_text = YESORNO_MAPPINGS.get(q_num,
+                                                   {}).get(response, '미입력')
             else:
                 answer_text = '미입력'
             answer_lines.append(f"{card['question']}: {answer_text}")
@@ -341,10 +407,15 @@ class IntroGenerationService:
         try:
             resp = self.client.chat.completions.create(
                 model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "당신은 재미있는 자기소개를 만들어주는 전문가입니다. JSON 형식으로만 응답하세요."},
-                    {"role": "user", "content": prompt}
-                ],
+                messages=[{
+                    "role":
+                    "system",
+                    "content":
+                    "당신은 재미있는 자기소개를 만들어주는 전문가입니다. JSON 형식으로만 응답하세요."
+                }, {
+                    "role": "user",
+                    "content": prompt
+                }],
                 temperature=0.8,
                 max_tokens=500,
             )
@@ -356,19 +427,27 @@ class IntroGenerationService:
             import json
             raw_result = json.loads(content)
             validated_result = {
-                "tagline": str(raw_result.get("tagline", ""))[:50] if raw_result.get("tagline") else "",
-                "intro": str(raw_result.get("intro", ""))[:200] if raw_result.get("intro") else "",
+                "tagline":
+                str(raw_result.get("tagline", ""))[:50]
+                if raw_result.get("tagline") else "",
+                "intro":
+                str(raw_result.get("intro", ""))[:200]
+                if raw_result.get("intro") else "",
                 "interests": [],
                 "strengths": [],
             }
             raw_interests = raw_result.get("interests", [])
             if isinstance(raw_interests, list):
-                validated_result["interests"] = [str(i)[:20] for i in raw_interests[:5] if i]
+                validated_result["interests"] = [
+                    str(i)[:20] for i in raw_interests[:5] if i
+                ]
             elif isinstance(raw_interests, str):
                 validated_result["interests"] = [raw_interests[:20]]
             raw_strengths = raw_result.get("strengths", [])
             if isinstance(raw_strengths, list):
-                validated_result["strengths"] = [str(s)[:20] for s in raw_strengths[:5] if s]
+                validated_result["strengths"] = [
+                    str(s)[:20] for s in raw_strengths[:5] if s
+                ]
             elif isinstance(raw_strengths, str):
                 validated_result["strengths"] = [raw_strengths[:20]]
             return validated_result
@@ -378,15 +457,19 @@ class IntroGenerationService:
 
 
 class PineconeService:
+
     def __init__(self) -> None:
         if not settings.pinecone_api_key:
-            logger.warning("Pinecone key missing; vector sync will be skipped.")
+            logger.warning(
+                "Pinecone key missing; vector sync will be skipped.")
             self.client = None
             self.index = None
             return
 
         self.client = Pinecone(api_key=settings.pinecone_api_key)
-        if settings.pinecone_index not in [idx["name"] for idx in self.client.list_indexes()]:
+        if settings.pinecone_index not in [
+                idx["name"] for idx in self.client.list_indexes()
+        ]:
             self.client.create_index(
                 name=settings.pinecone_index,
                 dimension=3072,
@@ -395,12 +478,15 @@ class PineconeService:
             )
         self.index = self.client.Index(settings.pinecone_index)
 
-    def upsert_embedding(self, member_id: str, vector: List[float], metadata: Dict[str, Any]) -> Dict[str, Any]:
+    def upsert_embedding(self, member_id: str, vector: List[float],
+                         metadata: Dict[str, Any]) -> Dict[str, Any]:
         if not self.index:
             return {"skipped": True, "reason": "pinecone_not_configured"}
-        upsert_result = self.index.upsert(
-            vectors=[{"id": member_id, "values": vector, "metadata": metadata}]
-        )
+        upsert_result = self.index.upsert(vectors=[{
+            "id": member_id,
+            "values": vector,
+            "metadata": metadata
+        }])
         # Pinecone client objects may carry locks/handlers; keep response JSON-serializable.
         upserted_count = getattr(upsert_result, "upserted_count", None)
         return {"upserted_count": upserted_count}
@@ -426,7 +512,8 @@ def normalize_profile_text(payload: Dict[str, Any]) -> str:
     return "\n".join([p for p in parts if p])
 
 
-def assemble_profile_record(kakao_id: str, profile: Dict[str, Any]) -> Dict[str, Any]:
+def assemble_profile_record(kakao_id: str,
+                            profile: Dict[str, Any]) -> Dict[str, Any]:
     now = datetime.now(timezone.utc).isoformat()
     return {
         "kakao_id": kakao_id,
