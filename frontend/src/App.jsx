@@ -69,6 +69,9 @@ function App() {
   const [isEditing, setIsEditing] = useState(true);
   const [hostProfile, setHostProfile] = useState(defaultHostProfile);
   const [reembedStatus, setReembedStatus] = useState("");
+  const [roleResult, setRoleResult] = useState(null);
+  const [roleLoading, setRoleLoading] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -379,6 +382,32 @@ function App() {
     }
   };
 
+  const fetchMyRole = async () => {
+    if (!session?.session_token || !profile.intro) return;
+    setRoleLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/role-assignment`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          name: profile.name,
+          tagline: profile.tagline,
+          intro: profile.intro,
+          interests: profile.interests,
+          strengths: profile.strengths,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "역할 배정 실패");
+      setRoleResult(data);
+      setShowRoleModal(true);
+    } catch (err) {
+      setStatus(`역할 확인 오류: ${err.message}`);
+    } finally {
+      setRoleLoading(false);
+    }
+  };
+
   const isLoggedIn = Boolean(session?.session_token);
   const displayName = profile.name || session?.nickname || "이름 미입력";
   const displayTagline = profile.tagline || "한 줄 소개가 여기에 보여요";
@@ -569,6 +598,15 @@ function App() {
                 </div>
                 <p className="muted">연락처: {displayContact}</p>
                 <p className="muted">공개 범위: {profile.visibility}</p>
+                {profile.intro && (
+                  <button
+                    className="role-check-btn"
+                    onClick={fetchMyRole}
+                    disabled={roleLoading}
+                  >
+                    {roleLoading ? "분석 중..." : "🎭 나의 마피아42 직업 확인"}
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -580,6 +618,33 @@ function App() {
           다른 사람들 자기소개 카드 보기
         </Link>
       </div>
+
+      {showRoleModal && roleResult && (
+        <div className="role-modal-overlay" onClick={() => setShowRoleModal(false)}>
+          <div className="role-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="role-modal-header">
+              <h2>🎭 마피아42 직업 배정</h2>
+              <button className="close-btn" onClick={() => setShowRoleModal(false)}>×</button>
+            </div>
+            <div className="role-modal-body">
+              <div className="role-reveal">
+                <p className="role-team">{roleResult.team}</p>
+                <h3 className="role-name">{roleResult.role}</h3>
+              </div>
+              <div className="role-reasoning">
+                <p>{roleResult.reasoning}</p>
+              </div>
+              <button
+                className="regenerate-btn"
+                onClick={fetchMyRole}
+                disabled={roleLoading}
+              >
+                {roleLoading ? "분석 중..." : "🔄 다시 분석하기"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {session?.is_admin && (
         <section className="panel admin-panel">
