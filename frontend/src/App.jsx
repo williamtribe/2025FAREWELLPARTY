@@ -91,6 +91,22 @@ function App() {
     }
   }, [location.pathname, navigate])
 
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.type === 'kakao-login-success') {
+        console.log('Login success from popup:', event.data.session)
+        setSession(event.data.session)
+        setStatus('로그인 완료! 프로필을 불러오는 중...')
+        navigate('/', { replace: true })
+      } else if (event.data?.type === 'kakao-login-error') {
+        console.error('Login error from popup:', event.data.error)
+        setStatus(`로그인 오류: ${event.data.error}`)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [navigate])
+
   const handleKakaoLogin = async () => {
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
     setStatus('카카오 로그인 페이지로 이동합니다...')
@@ -103,7 +119,16 @@ function App() {
       const data = await res.json()
       console.log('Login response:', data)
       localStorage.setItem('kakao-state', data.state)
-      window.location.href = data.auth_url
+      const width = 500
+      const height = 600
+      const left = window.screenX + (window.outerWidth - width) / 2
+      const top = window.screenY + (window.outerHeight - height) / 2
+      window.open(
+        data.auth_url,
+        'KakaoLogin',
+        `width=${width},height=${height},left=${left},top=${top},popup=yes`
+      )
+      setStatus('카카오 로그인 창에서 로그인해주세요. 완료되면 자동으로 돌아옵니다.')
     } catch (err) {
       console.error('Kakao login error:', err)
       setStatus(`로그인 오류: ${err.message}`)
@@ -117,20 +142,34 @@ function App() {
     const savedState = localStorage.getItem('kakao-state')
     if (!code) return
     setStatus('카카오 인증 처리 중...')
-    const res = await fetch(`${API_BASE}/auth/kakao/callback?code=${code}&state=${state}`)
-    const data = await res.json()
-    if (savedState && state !== savedState) {
-      setStatus('state 불일치: 다시 시도해주세요.')
+    try {
+      const res = await fetch(`${API_BASE}/auth/kakao/callback?code=${code}&state=${state}`)
+      const data = await res.json()
+      if (savedState && state !== savedState) {
+        setStatus('state 불일치: 다시 시도해주세요.')
+        localStorage.removeItem('kakao-state')
+        return
+      }
+      const sessionPayload = { ...data.profile, session_token: data.session_token }
+      localStorage.setItem('farewell-session', JSON.stringify(sessionPayload))
       localStorage.removeItem('kakao-state')
-      return
+      localStorage.setItem(LANDING_SEEN_KEY, '1')
+      if (window.opener) {
+        window.opener.postMessage({ type: 'kakao-login-success', session: sessionPayload }, '*')
+        window.close()
+      } else {
+        setSession(sessionPayload)
+        setStatus('로그인 완료! 프로필을 불러오는 중...')
+        navigate('/', { replace: true })
+      }
+    } catch (err) {
+      console.error('Kakao callback error:', err)
+      setStatus(`인증 오류: ${err.message}`)
+      if (window.opener) {
+        window.opener.postMessage({ type: 'kakao-login-error', error: err.message }, '*')
+        window.close()
+      }
     }
-    const sessionPayload = { ...data.profile, session_token: data.session_token }
-    localStorage.setItem('farewell-session', JSON.stringify(sessionPayload))
-    localStorage.removeItem('kakao-state')
-    setSession(sessionPayload)
-    setStatus('로그인 완료! 프로필을 불러오는 중...')
-    localStorage.setItem(LANDING_SEEN_KEY, '1')
-    navigate('/', { replace: true })
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
   }
 
