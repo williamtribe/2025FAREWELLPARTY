@@ -25,6 +25,16 @@ Korean farewell party website with:
   - 10 categories: 애니, 운동, 게임, 기술, 음악, 사회, 철학, 책, 문화, 음식
   - Users tap chips to select/deselect interests
   - Selected interests display with visual highlighting
+- **8-step onboarding wizard**: New users redirected to /onboarding after login
+  1. AI 취향 테스트 (card swipe to generate intro)
+  2. 이름 확인/수정
+  3. 한 줄 소개 확인/수정
+  4. 자기소개 확인/수정
+  5. 관심사 선택 (categorized chips + custom add)
+  6. 특기 입력
+  7. 연락처 입력
+  8. 마피아42 역할 공개 (AI-generated based on profile)
+- Backend /role-assignment endpoint for Mafia42 role determination using OpenAI
 
 ## Project Structure
 ```
@@ -125,6 +135,9 @@ CREATE POLICY "Allow public read"
 - ✅ AI-generated intro feature with 5-question form and OpenAI integration
 - ✅ Card swipe feature (/ai-intro) with Supabase storage (intro_yesorno table)
 - ✅ AI intro generation from swipe results with aligned question/trait mappings
+- ✅ 8-step onboarding wizard for new users
+- ✅ New user redirect to /onboarding after Kakao login
+- ✅ Mafia42 role assignment with AI-generated reasoning
 
 ## Notes
 - Kakao OAuth login uses popup window to bypass iframe cookie restrictions
