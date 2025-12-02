@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import IntroPage from './pages/IntroPage'
+import EventInfo from './pages/EventInfo'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 const CALLBACK_PROCESSED_KEY = 'kakao-callback-processed'
@@ -244,7 +245,11 @@ function App() {
         <div>
           <p className="eyebrow">2025 송년회</p>
           <h1>대화상대 정해주는 GOAT 테크놀로지와 함께</h1>
-          {isLoggedIn && <div className="cta-row muted">와주셔서 감사합니다, {session?.nickname || '친구'}님</div>}
+          {isLoggedIn && (
+            <div className="cta-row">
+              <span className="muted">와주셔서 감사합니다, {session?.nickname || '친구'}님</span>
+            </div>
+          )}
           {status && <div className="status">{status}</div>}
         </div>
       </div>
@@ -258,6 +263,9 @@ function App() {
           카톡 로그인 먼저!
         </button>
       )}
+      <Link className="floating-cta info" to="/info">
+        행사 정보
+      </Link>
 
       <section className="panel">
         <div className="panel-head">
@@ -386,6 +394,7 @@ function App() {
         path="/intro"
         element={<IntroPage hostProfile={hostProfile} onLogin={handleKakaoLogin} onSeenIntro={markIntroSeen} />}
       />
+      <Route path="/info" element={<EventInfo />} />
       <Route path="*" element={mainPage} />
     </Routes>
   )

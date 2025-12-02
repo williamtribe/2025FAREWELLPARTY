@@ -275,6 +275,7 @@ a.secondary,
 a.ghost {
   text-decoration: none;
   display: inline-block;
+  color: inherit;
 }
 
 .primary {
@@ -528,6 +529,16 @@ select:disabled {
   background: #1f7a4d;
   color: #fefefe;
   box-shadow: 0 12px 30px rgba(21, 89, 53, 0.35);
+}
+
+.floating-cta.info {
+  right: 18px;
+  bottom: 20px;
+  background: linear-gradient(120deg, #d62828, #f25454);
+  color: #fefefe;
+  font-weight: 800;
+  box-shadow: 0 12px 26px rgba(214, 40, 40, 0.32);
+  text-decoration: none;
 }
 
 .floating-cta.login-cta {
