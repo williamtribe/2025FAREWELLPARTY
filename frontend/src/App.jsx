@@ -4,7 +4,7 @@ import './App.css'
 import IntroPage from './pages/IntroPage'
 import EventInfo from './pages/EventInfo'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 const CALLBACK_PROCESSED_KEY = 'kakao-callback-processed'
 const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY || import.meta.env.VITE_KAKAO_JS_KEY
 const SHARE_URL = import.meta.env.VITE_SHARE_URL || window.location.origin
