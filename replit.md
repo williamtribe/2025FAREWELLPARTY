@@ -16,6 +16,10 @@ Korean farewell party website with:
 - Added "다른 사람들 자기소개 카드 보기" feature with Pinecone vector similarity search
 - New /others page with "나랑 닮은 사람" and "나랑 다른 사람" options
 - Added conditional button text: "3초 취향확인" if intro exists, "3초 AI생성 자기소개" if empty
+- **Separate intro/interests embeddings**: Now stores two types of embeddings in Pinecone namespaces
+  - "intro" namespace: Based on name, tagline, and intro text
+  - "interests" namespace: Based on interests and strengths
+- Updated /others page with criteria selection step (자기소개 기준 vs 관심사 기준)
 
 ## Project Structure
 ```
