@@ -942,6 +942,19 @@ button.secondary:disabled {
   object-fit: cover;
 }
 
+.card-question-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  color: #fff;
+  padding: 2rem 1rem 1rem;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .ai-intro-page .swipe-side-label {
   position: absolute;
   top: 50%;

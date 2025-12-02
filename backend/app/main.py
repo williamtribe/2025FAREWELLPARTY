@@ -212,6 +212,25 @@ async def get_yesorno(user: SessionUser = Depends(get_current_user)):
     return {"responses": row}
 
 
+@app.post("/generate-intro-from-yesorno")
+async def generate_intro_from_yesorno(user: SessionUser = Depends(get_current_user)):
+    yesorno_data = supabase_service.fetch_yesorno(user.kakao_id)
+    if not yesorno_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="yesorno_data_not_found")
+    
+    has_responses = any(yesorno_data.get(str(i)) in (1, -1) for i in range(1, 6))
+    if not has_responses:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="no_responses_found")
+    
+    result = intro_generation_service.generate_intro_from_yesorno(yesorno_data, user.nickname or "친구")
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="intro_generation_failed",
+        )
+    return result
+
+
 @app.get("/profiles/public")
 async def list_public_profiles(limit: int = 6):
     profiles = supabase_service.fetch_public_profiles(limit=limit)

@@ -10,34 +10,39 @@ const cards = [
     image: '/dance.png',
     leftLabel: 'ㅉㅉ',
     rightLabel: '숭배',
+    question: '김영진을?',
   },
   {
     num: 2,
     image: '/2.png',
-    leftLabel: '아니',
-    rightLabel: '응',
+    leftLabel: '싫어',
+    rightLabel: '좋아',
+    question: '술을?',
   },
   {
     num: 3,
     image: '/3.png',
-    leftLabel: '아니',
-    rightLabel: '응',
+    leftLabel: '조용히',
+    rightLabel: '파티!',
+    question: '파티 vs 조용한 분위기',
   },
   {
     num: 4,
     image: '/4.png',
-    leftLabel: '아니',
-    rightLabel: '응',
+    leftLabel: '기존친구',
+    rightLabel: '새친구',
+    question: '새로운 만남?',
   },
   {
     num: 5,
     image: '/5.png',
-    leftLabel: '아니',
-    rightLabel: '응',
+    leftLabel: '아쉬워',
+    rightLabel: '기대돼',
+    question: '2025년이?',
   },
 ]
 
-function AIIntroPage({ session }) {
+function AIIntroPage({ session, onIntroGenerated }) {
   const navigate = useNavigate()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [responses, setResponses] = useState({})
@@ -45,6 +50,8 @@ function AIIntroPage({ session }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [generatedIntro, setGeneratedIntro] = useState(null)
+  const [generating, setGenerating] = useState(false)
 
   useEffect(() => {
     const loadExistingResponses = async () => {
@@ -119,6 +126,35 @@ function AIIntroPage({ session }) {
     }
   }
 
+  const generateIntro = async () => {
+    if (!session?.session_token) return
+
+    setGenerating(true)
+    setError('')
+
+    try {
+      const res = await fetch(`${API_BASE}/generate-intro-from-yesorno`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.session_token}`,
+        },
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || '자기소개 생성에 실패했습니다')
+      }
+
+      const data = await res.json()
+      setGeneratedIntro(data)
+    } catch (err) {
+      console.error('Failed to generate intro:', err)
+      setError('자기소개 생성에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const handleSwipe = async (direction) => {
     if (!currentCard || saving) return
 
@@ -148,7 +184,15 @@ function AIIntroPage({ session }) {
     setResponses({})
     setCurrentIndex(0)
     setCompleted(false)
+    setGeneratedIntro(null)
     setError('')
+  }
+
+  const handleUseIntro = () => {
+    if (generatedIntro && onIntroGenerated) {
+      onIntroGenerated(generatedIntro)
+      navigate('/')
+    }
   }
 
   if (loading) {
@@ -170,35 +214,94 @@ function AIIntroPage({ session }) {
         <div className="header">
           <div>
             <p className="eyebrow">완료!</p>
-            <h1>모든 카드에<br/>응답했습니다</h1>
+            <h1>{generatedIntro ? 'AI가 만든 자기소개' : '모든 카드에 응답했습니다'}</h1>
           </div>
         </div>
 
-        <section className="panel">
-          <div className="panel-head">
-            <h2>응답 결과</h2>
-          </div>
+        <button className="floating-cta info" onClick={() => navigate('/')}>
+          돌아가기
+        </button>
 
-          <div className="response-summary">
-            {cards.map((card) => (
-              <div key={card.num} className="response-item">
-                <span className="response-label">질문 {card.num}</span>
-                <span className={`response-value ${responses[card.num] === 1 ? 'positive' : 'negative'}`}>
-                  {responses[card.num] === 1 ? card.rightLabel : card.leftLabel}
-                </span>
+        {!generatedIntro ? (
+          <section className="panel">
+            <div className="panel-head">
+              <h2>응답 결과</h2>
+            </div>
+
+            <div className="response-summary">
+              {cards.map((card) => (
+                <div key={card.num} className="response-item">
+                  <span className="response-label">{card.question}</span>
+                  <span className={`response-value ${responses[card.num] === 1 ? 'positive' : 'negative'}`}>
+                    {responses[card.num] === 1 ? card.rightLabel : card.leftLabel}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {error && <p className="error-message">{error}</p>}
+
+            <div className="button-row">
+              <button className="secondary" onClick={handleReset}>
+                다시하기
+              </button>
+              <button className="primary" onClick={generateIntro} disabled={generating}>
+                {generating ? '생성 중...' : 'AI 자기소개 만들기'}
+              </button>
+            </div>
+          </section>
+        ) : (
+          <section className="panel">
+            <div className="panel-head">
+              <h2>AI가 만든 자기소개</h2>
+            </div>
+
+            <div className="generated-result">
+              <div className="result-item">
+                <label>한 줄 소개</label>
+                <p className="result-text">{generatedIntro.tagline}</p>
               </div>
-            ))}
-          </div>
 
-          <div className="button-row">
-            <button className="secondary" onClick={handleReset}>
-              다시하기
-            </button>
-            <button className="primary" onClick={() => navigate('/')}>
-              홈으로
-            </button>
-          </div>
-        </section>
+              <div className="result-item">
+                <label>자세한 소개</label>
+                <p className="result-text intro-text">{generatedIntro.intro}</p>
+              </div>
+
+              {Array.isArray(generatedIntro.interests) && generatedIntro.interests.length > 0 && (
+                <div className="result-item">
+                  <label>관심사</label>
+                  <div className="chips">
+                    {generatedIntro.interests.map((chip, idx) => (
+                      <span key={`interest-${idx}`} className="chip">{String(chip)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {Array.isArray(generatedIntro.strengths) && generatedIntro.strengths.length > 0 && (
+                <div className="result-item">
+                  <label>강점</label>
+                  <div className="chips">
+                    {generatedIntro.strengths.map((chip, idx) => (
+                      <span key={`strength-${idx}`} className="chip">{String(chip)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {error && <p className="error-message">{error}</p>}
+
+            <div className="button-row">
+              <button className="secondary" onClick={generateIntro} disabled={generating}>
+                {generating ? '생성 중...' : '다시 생성'}
+              </button>
+              <button className="primary" onClick={handleUseIntro}>
+                프로필에 적용
+              </button>
+            </div>
+          </section>
+        )}
       </div>
     )
   }
@@ -236,6 +339,9 @@ function AIIntroPage({ session }) {
                     e.target.src = '/dance.png'
                   }}
                 />
+                <div className="card-question-overlay">
+                  {currentCard.question}
+                </div>
               </div>
             </div>
           </TinderCard>

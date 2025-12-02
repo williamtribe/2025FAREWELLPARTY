@@ -181,6 +181,30 @@ class EmbeddingService:
         return resp.data[0].embedding
 
 
+YESORNO_MAPPINGS = {
+    1: {
+        1: "김영진을 숭배하는",
+        -1: "김영진에게 ㅉㅉ하는",
+    },
+    2: {
+        1: "술을 좋아하는",
+        -1: "술보다 다른 음료를 좋아하는",
+    },
+    3: {
+        1: "파티를 즐기는",
+        -1: "조용한 분위기를 선호하는",
+    },
+    4: {
+        1: "새로운 만남을 기대하는",
+        -1: "기존 친구들과 어울리는 것을 좋아하는",
+    },
+    5: {
+        1: "2025년을 기대하는",
+        -1: "2024년이 아쉬운",
+    },
+}
+
+
 class IntroGenerationService:
     def __init__(self) -> None:
         if not settings.openai_api_key:
@@ -188,6 +212,80 @@ class IntroGenerationService:
             self.client = None
         else:
             self.client = OpenAI(api_key=settings.openai_api_key)
+
+    def generate_intro_from_yesorno(self, yesorno_data: Dict[str, Any], nickname: str) -> Optional[Dict[str, Any]]:
+        if not self.client:
+            return None
+
+        traits = []
+        for q_num in range(1, 6):
+            response = yesorno_data.get(str(q_num))
+            if response in (1, -1):
+                trait = YESORNO_MAPPINGS.get(q_num, {}).get(response, "")
+                if trait:
+                    traits.append(trait)
+
+        if not traits:
+            return None
+
+        traits_text = ", ".join(traits)
+
+        prompt = f"""다음 성향을 가진 '{nickname}'님의 재미있는 자기소개를 만들어주세요.
+
+성향: {traits_text}
+
+다음 JSON 형식으로 응답해주세요:
+{{
+    "tagline": "한 줄로 나를 소개하는 문장 (20자 이내, 유머러스하게)",
+    "intro": "2-3문장의 자세한 자기소개 (친근하고 재미있게, 100자 이내)",
+    "interests": ["관심사1", "관심사2", "관심사3"],
+    "strengths": ["강점1", "강점2"]
+}}
+
+주의사항:
+- 반드시 JSON 형식만 출력하세요
+- 한국어로 작성하세요
+- 유머러스하고 친근한 톤으로 작성하세요
+- 송년회 분위기에 맞게 밝고 긍정적으로 작성하세요
+- 위에 언급된 성향들을 자연스럽게 녹여주세요"""
+
+        try:
+            resp = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "당신은 재미있는 자기소개를 만들어주는 전문가입니다. JSON 형식으로만 응답하세요."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.8,
+                max_tokens=500,
+            )
+            content = resp.choices[0].message.content.strip()
+            if content.startswith("```"):
+                content = content.split("```")[1]
+                if content.startswith("json"):
+                    content = content[4:]
+            import json
+            raw_result = json.loads(content)
+            validated_result = {
+                "tagline": str(raw_result.get("tagline", ""))[:50] if raw_result.get("tagline") else "",
+                "intro": str(raw_result.get("intro", ""))[:200] if raw_result.get("intro") else "",
+                "interests": [],
+                "strengths": [],
+            }
+            raw_interests = raw_result.get("interests", [])
+            if isinstance(raw_interests, list):
+                validated_result["interests"] = [str(i)[:20] for i in raw_interests[:5] if i]
+            elif isinstance(raw_interests, str):
+                validated_result["interests"] = [raw_interests[:20]]
+            raw_strengths = raw_result.get("strengths", [])
+            if isinstance(raw_strengths, list):
+                validated_result["strengths"] = [str(s)[:20] for s in raw_strengths[:5] if s]
+            elif isinstance(raw_strengths, str):
+                validated_result["strengths"] = [raw_strengths[:20]]
+            return validated_result
+        except Exception as e:
+            logger.error(f"Intro generation from yesorno failed: {e}")
+            return None
 
     def generate_intro(self, answers: Dict[str, str]) -> Optional[Dict[str, Any]]:
         if not self.client:

@@ -45,6 +45,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      '/generate-intro-from-yesorno': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 })

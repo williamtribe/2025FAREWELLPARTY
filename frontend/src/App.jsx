@@ -467,7 +467,7 @@ function App() {
       <Route path="/info" element={<EventInfo />} />
       <Route
         path="/ai-intro"
-        element={<AIIntroPage session={session} />}
+        element={<AIIntroPage session={session} onIntroGenerated={handleIntroGenerated} />}
       />
       <Route path="*" element={mainPage} />
     </Routes>
