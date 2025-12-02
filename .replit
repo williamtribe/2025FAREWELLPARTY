@@ -9,8 +9,8 @@ channel = "stable-25_05"
 
 [userenv.shared]
 VITE_API_BASE_URL = "http://localhost:8000"
-NEXT_PUBLIC_BASE_URL = "https://5a4d3575-c26f-45c0-bf6c-bc9f23c6185d-00-k80bf8bkpqif.pike.replit.dev"
-KAKAO_REDIRECT_URI = "https://5a4d3575-c26f-45c0-bf6c-bc9f23c6185d-00-k80bf8bkpqif.pike.replit.dev/api/auth/kakao/callback"
+NEXT_PUBLIC_BASE_URL = "http://localhost:8000"
+KAKAO_REDIRECT_URI = "http://localhost:5000/api/auth/kakao/callback"
 PINECONE_INDEX = "members"
 PINECONE_ENVIRONMENT = "us-east-1"
 OPENAI_EMBED_MODEL = "text-embedding-3-large"
