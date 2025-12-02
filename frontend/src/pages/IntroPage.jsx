@@ -39,7 +39,7 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro }) {
                 startLoginFlow('그러면 빨리 로그인 해', 900, true)
               } else if (dir === 'left') {
                 onSeenIntro?.()
-                navigate('/')
+                navigate('/info')
               }
             }}
           >

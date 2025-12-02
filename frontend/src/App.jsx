@@ -16,7 +16,7 @@ const defaultHostProfile = {
   tagline: '변호사지망 씹덕',
   intro: '안녕하세요, 25년도도 고생 많으셨고, 미슐랭 쉐프의 스테이크 맛있게 썰어주세요.',
   interests: ['레제', '마피아42', '법', 'AI'],
-  strengths: ['사람 좋아함'],
+  strengths: ['사람을 좋아함'],
   contact: '@williamkim816',
 }
 const emptyProfile = {
@@ -259,7 +259,7 @@ function App() {
           카톡 공유
         </button>
       ) : (
-        <button className="floating-cta login-cta" onClick={handleKakaoLogin}>
+        <button className="floating-cta share" onClick={handleKakaoLogin}>
           카톡 로그인 먼저!
         </button>
       )}
@@ -297,7 +297,7 @@ function App() {
                   <input
                     value={profile.contact}
                     onChange={(e) => updateField('contact', e.target.value)}
-                    placeholder="공지 전달용입니당 저만 볼 수 있습니다!"
+                    placeholder="(비공개) 전화번호/카카오id"
                     disabled={!isLoggedIn}
                   />
                 </div>
@@ -307,7 +307,7 @@ function App() {
               <input
                 value={profile.tagline}
                 onChange={(e) => updateField('tagline', e.target.value)}
-                placeholder="안녕하세요, 오늘 초대한 김영진입니다. 예시: 검사지망 통계싸게"
+                placeholder="안녕하세요, 오늘 초대한 김영진입니다. 예시: 변호사지망 씹덕"
                 disabled={!isLoggedIn}
               />
 
@@ -315,14 +315,14 @@ function App() {
               <textarea
                 value={profile.intro}
                 onChange={(e) => updateField('intro', e.target.value)}
-                placeholder="예시: 레제를 죽인 마키마를 죽이고 싶은 검사지망생입니다. 마피아42가 너무 재밌어서 그 회사에서 일하는 중입니당."
+                placeholder="예시: 레제를 죽인 마키마를 개싫어하는 법조인 지망생입니다. 마피아42가 너무 재밌어서 그 회사에서 일하는 중입니당."
                 rows={4}
                 disabled={!isLoggedIn}
               />
 
               <div className="two-col">
                 <div>
-                  <label>관심사 <br/> (쉼표로 구분)</label>
+                  <label>관심사 <br /> (쉼표로 구분)</label>
                   <input
                     value={interestsInput}
                     onChange={(e) => updateListField('interests', e.target.value)}
@@ -331,7 +331,7 @@ function App() {
                   />
                 </div>
                 <div>
-                  <label>특기 <br/> (쉼표로 구분)</label>
+                  <label>특기 <br /> (쉼표로 구분)</label>
                   <input
                     value={strengthsInput}
                     onChange={(e) => updateListField('strengths', e.target.value)}

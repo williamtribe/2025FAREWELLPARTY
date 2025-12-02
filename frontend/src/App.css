@@ -418,6 +418,57 @@ a.ghost {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 320px;
+}
+
+.info-table th,
+.info-table td {
+  padding: 0.65rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(31, 122, 77, 0.08);
+}
+
+.info-table th {
+  background: rgba(31, 122, 77, 0.08);
+  color: #143221;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.info-table td:first-child {
+  width: 64px;
+  color: #c4313b;
+  font-weight: 800;
+}
+
+.info-table tr:last-child td {
+  border-bottom: none;
+}
+
+.card-compact p {
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0 0 0.35rem;
+}
+
+.card-compact .muted {
+  font-size: 11px;
+}
+
+.card-compact {
+  padding: 0.85rem;
+  font-size: 12px;
+  line-height: 1.35;
+}
 .form {
   display: flex;
   flex-direction: column;
@@ -514,13 +565,14 @@ select:disabled {
   color: #fdfdfd;
   border: none;
   border-radius: 999px;
-  padding: 0.95rem 1.6rem;
+  padding: 0.7rem 1.1rem;
   font-weight: 800;
-  font-size: 15px;
+  font-size: 14px;
   box-shadow: 0 12px 30px rgba(214, 40, 40, 0.35);
   z-index: 20;
   cursor: pointer;
   display: block;
+  width: auto;
 }
 
 .floating-cta.share {
@@ -539,6 +591,18 @@ select:disabled {
   font-weight: 800;
   box-shadow: 0 12px 26px rgba(214, 40, 40, 0.32);
   text-decoration: none;
+}
+
+.floating-cta,
+.floating-cta.share,
+.floating-cta.info {
+  padding: 0.7rem 1.1rem;
+  font-size: 14px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
 }
 
 .floating-cta.login-cta {
