@@ -110,6 +110,7 @@ CREATE POLICY "Allow public read"
 - ✅ Supabase database connected and working
 - ✅ Profile data loading correctly from database
 - ✅ Kakao OAuth login working (popup-based for iframe compatibility)
+- ✅ AI-generated intro feature with 5-question form and OpenAI integration
 
 ## Notes
 - Kakao OAuth login uses popup window to bypass iframe cookie restrictions
