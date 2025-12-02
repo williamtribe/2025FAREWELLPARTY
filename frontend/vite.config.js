@@ -37,6 +37,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      '/generate-intro': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 })

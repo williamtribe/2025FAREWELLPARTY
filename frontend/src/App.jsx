@@ -3,6 +3,7 @@ import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import IntroPage from './pages/IntroPage'
 import EventInfo from './pages/EventInfo'
+import AIIntroPage from './pages/AIIntroPage'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 const CALLBACK_PROCESSED_KEY = 'kakao-callback-processed'
@@ -304,9 +305,14 @@ function App() {
       </div>
 
       {isLoggedIn ? (
-        <button className="floating-cta share" onClick={shareToKakao}>
-          카톡 공유
-        </button>
+        <>
+          <button className="floating-cta share" onClick={shareToKakao}>
+            카톡 공유
+          </button>
+          <Link className="floating-cta ai-intro" to="/ai-intro">
+            AI생성 자기소개
+          </Link>
+        </>
       ) : (
         <button className="floating-cta login-btn" onClick={handleKakaoLogin}>
           카톡 로그인 먼저!
@@ -437,6 +443,21 @@ function App() {
     </div>
   )
 
+  const handleIntroGenerated = (generated) => {
+    const safeInterests = Array.isArray(generated?.interests) ? generated.interests : []
+    const safeStrengths = Array.isArray(generated?.strengths) ? generated.strengths : []
+    setProfile((prev) => ({
+      ...prev,
+      tagline: String(generated?.tagline || prev.tagline),
+      intro: String(generated?.intro || prev.intro),
+      interests: safeInterests.length ? safeInterests.map(String) : prev.interests,
+      strengths: safeStrengths.length ? safeStrengths.map(String) : prev.strengths,
+    }))
+    setInterestsInput(safeInterests.map(String).join(', '))
+    setStrengthsInput(safeStrengths.map(String).join(', '))
+    setStatus('AI가 생성한 자기소개가 적용되었습니다! 저장 버튼을 눌러주세요.')
+  }
+
   return (
     <Routes>
       <Route
@@ -444,6 +465,10 @@ function App() {
         element={<IntroPage hostProfile={hostProfile} onLogin={handleKakaoLogin} onSeenIntro={markIntroSeen} />}
       />
       <Route path="/info" element={<EventInfo />} />
+      <Route
+        path="/ai-intro"
+        element={<AIIntroPage session={session} onIntroGenerated={handleIntroGenerated} />}
+      />
       <Route path="*" element={mainPage} />
     </Routes>
   )

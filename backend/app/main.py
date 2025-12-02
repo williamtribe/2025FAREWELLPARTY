@@ -11,6 +11,7 @@ from .config import logger, settings
 from .services import (
     assemble_profile_record,
     embedding_service,
+    intro_generation_service,
     kakao_client,
     normalize_profile_text,
     pinecone_service,
@@ -173,6 +174,21 @@ async def save_preferences(payload: PreferencePayload, user: SessionUser = Depen
     }
     supabase_result = supabase_service.upsert_preferences(data)
     return {"preferences": data, "supabase": supabase_result}
+
+
+class IntroGenerationPayload(BaseModel):
+    answers: Dict[str, str]
+
+
+@app.post("/generate-intro")
+async def generate_intro(payload: IntroGenerationPayload, user: SessionUser = Depends(get_current_user)):
+    result = intro_generation_service.generate_intro(payload.answers)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="intro_generation_failed",
+        )
+    return result
 
 
 @app.get("/profiles/public")
