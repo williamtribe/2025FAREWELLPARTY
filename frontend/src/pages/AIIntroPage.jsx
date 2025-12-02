@@ -6,31 +6,31 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 const cards = [
   {
-    id: 'q1',
+    num: 1,
     image: '/dance.png',
     leftLabel: 'ㅉㅉ',
     rightLabel: '숭배',
   },
   {
-    id: 'q2',
+    num: 2,
     image: '/2.png',
     leftLabel: '아니',
     rightLabel: '응',
   },
   {
-    id: 'q3',
+    num: 3,
     image: '/3.png',
     leftLabel: '아니',
     rightLabel: '응',
   },
   {
-    id: 'q4',
+    num: 4,
     image: '/4.png',
     leftLabel: '아니',
     rightLabel: '응',
   },
   {
-    id: 'q5',
+    num: 5,
     image: '/5.png',
     leftLabel: '아니',
     rightLabel: '응',
@@ -62,24 +62,24 @@ function AIIntroPage({ session }) {
 
         if (res.ok) {
           const data = await res.json()
-          const existingResponses = {}
-          let answeredCount = 0
+          if (data.responses) {
+            const existingResponses = {}
+            let answeredCount = 0
 
-          if (data.responses && Array.isArray(data.responses)) {
-            data.responses.forEach((r) => {
-              existingResponses[r.question_id] = r.response
-              const cardIndex = cards.findIndex((c) => c.id === r.question_id)
-              if (cardIndex !== -1) {
-                answeredCount = Math.max(answeredCount, cardIndex + 1)
+            for (let i = 1; i <= 5; i++) {
+              const val = data.responses[String(i)]
+              if (val === -1 || val === 1) {
+                existingResponses[i] = val
+                answeredCount = i
               }
-            })
-          }
+            }
 
-          setResponses(existingResponses)
-          if (answeredCount >= cards.length) {
-            setCompleted(true)
-          } else {
-            setCurrentIndex(answeredCount)
+            setResponses(existingResponses)
+            if (answeredCount >= 5) {
+              setCompleted(true)
+            } else {
+              setCurrentIndex(answeredCount)
+            }
           }
         }
       } catch (err) {
@@ -94,7 +94,7 @@ function AIIntroPage({ session }) {
 
   const currentCard = cards[currentIndex]
 
-  const saveResponse = async (questionId, response) => {
+  const saveResponse = async (questionNum, response) => {
     if (!session?.session_token) return false
 
     try {
@@ -104,11 +104,12 @@ function AIIntroPage({ session }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.session_token}`,
         },
-        body: JSON.stringify({ question_id: questionId, response }),
+        body: JSON.stringify({ question_num: questionNum, response }),
       })
 
       if (!res.ok) {
-        throw new Error('저장에 실패했습니다')
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || '저장에 실패했습니다')
       }
       return true
     } catch (err) {
@@ -125,10 +126,10 @@ function AIIntroPage({ session }) {
     setError('')
     setSaving(true)
 
-    const success = await saveResponse(currentCard.id, response)
+    const success = await saveResponse(currentCard.num, response)
 
     if (success) {
-      setResponses((prev) => ({ ...prev, [currentCard.id]: response }))
+      setResponses((prev) => ({ ...prev, [currentCard.num]: response }))
 
       if (currentIndex < cards.length - 1) {
         setCurrentIndex((prev) => prev + 1)
@@ -179,11 +180,11 @@ function AIIntroPage({ session }) {
           </div>
 
           <div className="response-summary">
-            {cards.map((card, idx) => (
-              <div key={card.id} className="response-item">
-                <span className="response-label">질문 {idx + 1}</span>
-                <span className={`response-value ${responses[card.id] === 1 ? 'positive' : 'negative'}`}>
-                  {responses[card.id] === 1 ? card.rightLabel : card.leftLabel}
+            {cards.map((card) => (
+              <div key={card.num} className="response-item">
+                <span className="response-label">질문 {card.num}</span>
+                <span className={`response-value ${responses[card.num] === 1 ? 'positive' : 'negative'}`}>
+                  {responses[card.num] === 1 ? card.rightLabel : card.leftLabel}
                 </span>
               </div>
             ))}
@@ -220,7 +221,7 @@ function AIIntroPage({ session }) {
 
         {currentCard && (
           <TinderCard
-            key={currentCard.id}
+            key={currentCard.num}
             preventSwipe={['up', 'down']}
             onSwipe={handleSwipe}
             onCardLeftScreen={handleCardLeftScreen}
@@ -229,7 +230,7 @@ function AIIntroPage({ session }) {
               <div className="preview-photo-wrap">
                 <img
                   src={currentCard.image}
-                  alt={`질문 ${currentIndex + 1}`}
+                  alt={`질문 ${currentCard.num}`}
                   className="preview-photo"
                   onError={(e) => {
                     e.target.src = '/dance.png'
@@ -244,10 +245,10 @@ function AIIntroPage({ session }) {
       </div>
 
       <div className="progress-bar">
-        {cards.map((_, idx) => (
+        {cards.map((card) => (
           <div
-            key={idx}
-            className={`progress-dot ${idx < currentIndex ? 'done' : ''} ${idx === currentIndex ? 'current' : ''}`}
+            key={card.num}
+            className={`progress-dot ${card.num <= currentIndex ? 'done' : ''} ${card.num === currentIndex + 1 ? 'current' : ''}`}
           />
         ))}
       </div>
