@@ -294,11 +294,11 @@ class IntroGenerationService:
         prompt = f"""다음 정보를 바탕으로 재미있고 친근한 자기소개를 만들어주세요.
 
 사용자 답변:
-- 나를 한 마디로 표현한다면: {answers.get('personality', '미입력')}
-- 요즘 빠져있는 것: {answers.get('hobby', '미입력')}
-- 내가 자신있는 것: {answers.get('skill', '미입력')}
-- 2025년에 이루고 싶은 것: {answers.get('goal', '미입력')}
-- 사람들이 잘 모르는 TMI: {answers.get('fun_fact', '미입력')}
+{cards[0]['question']}: {YESORNO_MAPPINGS.get(1, {}).get(answers.get('1', ''), '미입력')}
+{cards[1]['question']}: {YESORNO_MAPPINGS.get(2, {}).get(answers.get('2', ''), '미입력')}
+{cards[2]['question']}: {YESORNO_MAPPINGS.get(3, {}).get(answers.get('3', ''), '미입력')}
+{cards[3]['question']}: {YESORNO_MAPPINGS.get(4, {}).get(answers.get('4', ''), '미입력')}
+{cards[4]['question']}: {YESORNO_MAPPINGS.get(5, {}).get(answers.get('5', ''), '미입력')}
 
 다음 JSON 형식으로 응답해주세요:
 {{
