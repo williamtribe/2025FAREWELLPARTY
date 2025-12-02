@@ -487,9 +487,58 @@ class PineconeService:
             "values": vector,
             "metadata": metadata
         }])
-        # Pinecone client objects may carry locks/handlers; keep response JSON-serializable.
         upserted_count = getattr(upsert_result, "upserted_count", None)
         return {"upserted_count": upserted_count}
+
+    def fetch_vector(self, member_id: str) -> Optional[List[float]]:
+        if not self.index:
+            return None
+        try:
+            result = self.index.fetch(ids=[member_id])
+            vectors = result.get("vectors", {})
+            if member_id in vectors:
+                return vectors[member_id].get("values")
+            return None
+        except Exception as e:
+            logger.error(f"Pinecone fetch error: {e}")
+            return None
+
+    def query_similar(self, member_id: str, top_k: int = 10, 
+                      exclude_self: bool = True) -> List[Dict[str, Any]]:
+        if not self.index:
+            return []
+        vector = self.fetch_vector(member_id)
+        if not vector:
+            return []
+        try:
+            result = self.index.query(
+                vector=vector,
+                top_k=top_k + (1 if exclude_self else 0),
+                include_metadata=True,
+            )
+            matches = []
+            for match in result.get("matches", []):
+                if exclude_self and match["id"] == member_id:
+                    continue
+                matches.append({
+                    "kakao_id": match["id"],
+                    "score": match["score"],
+                    "metadata": match.get("metadata", {}),
+                })
+            return matches[:top_k]
+        except Exception as e:
+            logger.error(f"Pinecone query error: {e}")
+            return []
+
+    def query_different(self, member_id: str, top_k: int = 10,
+                        exclude_self: bool = True) -> List[Dict[str, Any]]:
+        if not self.index:
+            return []
+        similar = self.query_similar(member_id, top_k=100, exclude_self=exclude_self)
+        if not similar:
+            return []
+        different = sorted(similar, key=lambda x: x["score"])
+        return different[:top_k]
 
 
 session_signer = SessionSigner()

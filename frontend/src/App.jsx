@@ -10,6 +10,7 @@ import "./App.css";
 import IntroPage from "./pages/IntroPage";
 import EventInfo from "./pages/EventInfo";
 import AIIntroPage from "./pages/AIIntroPage";
+import OthersProfilePage from "./pages/OthersProfilePage";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
@@ -505,7 +506,11 @@ function App() {
         </div>
       </section>
 
-      {/* 설문 및 관리자 프로필 섹션은 별도 페이지로 이동 예정 */}
+      <div className="center-button-wrap">
+        <Link className="btn-others-profiles" to="/others">
+          다른 사람들 자기소개 카드 보기
+        </Link>
+      </div>
     </div>
   );
 
@@ -554,6 +559,7 @@ function App() {
           />
         }
       />
+      <Route path="/others" element={<OthersProfilePage session={session} />} />
       <Route path="*" element={mainPage} />
     </Routes>
   );

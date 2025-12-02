@@ -290,3 +290,35 @@ async def kakao_message(payload: KakaoMessagePayload, user: SessionUser = Depend
         return {"sent": True, "result": result}
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"kakao_message_error: {exc}") from exc
+
+
+@app.get("/similar-profiles")
+async def get_similar_profiles(user: SessionUser = Depends(get_current_user), limit: int = 10):
+    matches = pinecone_service.query_similar(user.kakao_id, top_k=limit)
+    if not matches:
+        return {"profiles": [], "message": "no_embedding_found"}
+    profiles = []
+    for match in matches:
+        profile = supabase_service.fetch_profile(match["kakao_id"])
+        if profile and profile.get("visibility") == "public":
+            profiles.append({
+                **profile,
+                "similarity_score": match["score"],
+            })
+    return {"profiles": profiles}
+
+
+@app.get("/different-profiles")
+async def get_different_profiles(user: SessionUser = Depends(get_current_user), limit: int = 10):
+    matches = pinecone_service.query_different(user.kakao_id, top_k=limit)
+    if not matches:
+        return {"profiles": [], "message": "no_embedding_found"}
+    profiles = []
+    for match in matches:
+        profile = supabase_service.fetch_profile(match["kakao_id"])
+        if profile and profile.get("visibility") == "public":
+            profiles.append({
+                **profile,
+                "similarity_score": match["score"],
+            })
+    return {"profiles": profiles}
