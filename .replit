@@ -18,7 +18,7 @@ SESSION_TTL_SECONDS = "604800"
 APP_SECRET = "${SESSION_SECRET}"
 
 [workflows]
-runButton = "Project"
+runButton = "Start Application"
 
 [[workflows.workflow]]
 name = "Project"
