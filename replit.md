@@ -109,9 +109,16 @@ CREATE POLICY "Allow public read"
 - ✅ All API keys configured (Kakao, Supabase, OpenAI, Pinecone)
 - ✅ Supabase database connected and working
 - ✅ Profile data loading correctly from database
+- ✅ Kakao OAuth login working (popup-based for iframe compatibility)
 
 ## Notes
-- Kakao OAuth login is fully functional
+- Kakao OAuth login uses popup window to bypass iframe cookie restrictions
 - Profile storage and retrieval works through Supabase
 - AI matching with OpenAI embeddings and Pinecone is available
-- Kakao redirect URI is configured for the Replit domain
+- Kakao redirect URI must be registered in Kakao Developer Console:
+  `https://5a4d3575-c26f-45c0-bf6c-bc9f23c6185d-00-k80bf8bkpqif.pike.replit.dev/api/auth/kakao/callback`
+
+## Troubleshooting
+- **KOE006 Error**: Register the Redirect URI in Kakao Developer Console
+- **Cookie/Browser Settings Error**: OAuth uses popup window to avoid iframe restrictions
+- **Backend not ready**: start.sh waits for backend health check before starting frontend
