@@ -5,7 +5,7 @@ function EventInfo() {
         <a className="floating-cta info" href="/">
           내 프로필 보기
         </a>
-        <button className="floating-cta share">카톡 로그인 부터!</button>
+        <a className="floating-cta share" href="/">카톡 로그인 부터!</a>
       </div>
 
       <div className="header">
