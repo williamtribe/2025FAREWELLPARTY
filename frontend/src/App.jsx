@@ -1,23 +1,21 @@
-import { createRef, useEffect, useMemo, useRef, useState } from 'react'
-import TinderCard from 'react-tinder-card'
+import { useEffect, useMemo, useState } from 'react'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
+import IntroPage from './pages/IntroPage'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 const CALLBACK_PROCESSED_KEY = 'kakao-callback-processed'
 const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY || import.meta.env.VITE_KAKAO_JS_KEY
 const SHARE_URL = import.meta.env.VITE_SHARE_URL || window.location.origin
-const SHARE_IMAGE =
-  'https://developers.kakao.com/assets/img/link_sample.jpg' // Kakao feed requires an image; using a docs sample.
-const SHARE_TEST_TEXT = '송년회 페이지를 확인해 주세요.'
 const KAKAO_TEMPLATE_ID = 126447 // 사용자 정의 템플릿 ID
-const LANDING_SEEN_KEY = 'farewell-landing-seen'
 const HOST_ID = '4609921299'
+const LANDING_SEEN_KEY = 'farewell-landing-seen'
 const defaultHostProfile = {
   name: '김영진',
-  tagline: '초대한 사람입니다. 오늘은 제가 DJ이자 호스트!',
-  intro: '안녕하세요, 김영진이라고 합니다. 초대에 응해주셔서 감사합니다! 오시면 맛있는 스테이크와 감자는 보장합니다.',
-  interests: ['스테이크', '감자', '음악', 'AI'],
-  strengths: ['분위기 메이커', '요리', '게임'],
+  tagline: '변호사지망 씹덕',
+  intro: '안녕하세요, 25년도도 고생 많으셨고, 미슐랭 쉐프의 스테이크 맛있게 썰어주세요.',
+  interests: ['레제', '마피아42', '법', 'AI'],
+  strengths: ['사람 좋아함'],
   contact: '@williamkim816',
 }
 const emptyProfile = {
@@ -31,6 +29,8 @@ const emptyProfile = {
 }
 
 function App() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [session, setSession] = useState(() => {
     const saved = localStorage.getItem('farewell-session')
     return saved ? JSON.parse(saved) : null
@@ -38,22 +38,10 @@ function App() {
   const [profile, setProfile] = useState(emptyProfile)
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
-  const [adminProfiles, setAdminProfiles] = useState([])
   const [interestsInput, setInterestsInput] = useState('')
   const [strengthsInput, setStrengthsInput] = useState('')
   const [isEditing, setIsEditing] = useState(true)
-  const [transitionMessage, setTransitionMessage] = useState('')
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const [questions, setQuestions] = useState([])
-  const swipeRefs = useMemo(() => questions.map(() => createRef()), [questions])
-  const redirectTimer = useRef(null)
-  const [transitionNeedsAction, setTransitionNeedsAction] = useState(false)
   const [hostProfile, setHostProfile] = useState(defaultHostProfile)
-  const [view, setView] = useState(() => {
-    if (window.location.pathname === '/api/auth/kakao/callback') return 'main'
-    const seen = localStorage.getItem(LANDING_SEEN_KEY)
-    return seen ? 'main' : 'landing'
-  })
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -62,21 +50,17 @@ function App() {
   }, [session])
 
   useEffect(() => {
-    const isCallback = window.location.pathname === '/api/auth/kakao/callback'
-    if (isCallback) {
-      // React StrictMode에서 useEffect가 두 번 실행되어 Kakao code가 재사용되는 것을 방지.
-      if (sessionStorage.getItem(CALLBACK_PROCESSED_KEY)) return
-      sessionStorage.setItem(CALLBACK_PROCESSED_KEY, '1')
-      handleKakaoCallback()
-    }
+    if (location.pathname !== '/api/auth/kakao/callback') return
+    // React StrictMode에서 useEffect가 두 번 실행되어 Kakao code가 재사용되는 것을 방지.
+    if (sessionStorage.getItem(CALLBACK_PROCESSED_KEY)) return
+    sessionStorage.setItem(CALLBACK_PROCESSED_KEY, '1')
+    handleKakaoCallback()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [location.pathname])
 
   useEffect(() => {
     if (session?.session_token) {
       fetchMyProfile()
-      localStorage.setItem(LANDING_SEEN_KEY, '1')
-      setView('main')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.session_token])
@@ -100,15 +84,14 @@ function App() {
   }, [])
 
   useEffect(() => {
-    return () => {
-      if (redirectTimer.current) clearTimeout(redirectTimer.current)
+    const seen = localStorage.getItem(LANDING_SEEN_KEY)
+    if (!seen && location.pathname === '/') {
+      navigate('/intro', { replace: true })
     }
-  }, [])
+  }, [location.pathname, navigate])
 
   const handleKakaoLogin = async () => {
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
-    localStorage.setItem(LANDING_SEEN_KEY, '1')
-    setView('main')
     setStatus('카카오 로그인 페이지로 이동합니다...')
     const res = await fetch(`${API_BASE}/auth/kakao/login`)
     const data = await res.json()
@@ -136,8 +119,7 @@ function App() {
     setSession(sessionPayload)
     setStatus('로그인 완료! 프로필을 불러오는 중...')
     localStorage.setItem(LANDING_SEEN_KEY, '1')
-    setView('main')
-    window.history.replaceState({}, document.title, '/')
+    navigate('/', { replace: true })
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
   }
 
@@ -238,40 +220,6 @@ function App() {
     }
   }
 
-  const fetchAdminProfiles = async () => {
-    setStatus('전체 프로필을 불러옵니다...')
-    try {
-      const res = await fetch(`${API_BASE}/admin/profiles`, { headers: authHeaders })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.detail || '불러오기 실패')
-      setAdminProfiles(data.profiles || [])
-      setStatus('')
-    } catch (err) {
-      setStatus(err.message)
-    }
-  }
-
-  const isLoggedIn = Boolean(session?.session_token)
-  const displayName = profile.name || session?.nickname || '이름 미입력'
-  const displayTagline = profile.tagline || '한 줄 소개가 여기에 보여요'
-  const displayIntro = profile.intro || '자기소개를 적으면 바로 여기서 확인할 수 있습니다.'
-  const displayContact = profile.contact || '미입력'
-
-  const startLoginFlow = (message, delayMs, auto = true) => {
-    if (redirectTimer.current) clearTimeout(redirectTimer.current)
-    setTransitionMessage(message)
-    setView('transition')
-    setTransitionNeedsAction(!auto)
-    if (!auto) return
-    redirectTimer.current = setTimeout(() => {
-      localStorage.setItem(LANDING_SEEN_KEY, '1')
-      setView('main')
-      if (!session?.session_token) {
-        handleKakaoLogin()
-      }
-    }, delayMs)
-  }
-
   const fetchHostProfile = async () => {
     try {
       const res = await fetch(`${API_BASE}/profiles/${HOST_ID}`)
@@ -283,86 +231,20 @@ function App() {
     }
   }
 
-  if (view !== 'main') {
-    return (
-      <div className="landing-page">
-        <div className="landing-card">
-          <div className="landing-copy">
-            {view === 'landing' ? (
-              <div className="landing-swipe">
-                <div className="landing-swipe-card">
-                  <TinderCard
-                    preventSwipe={['up', 'down']}
-                    onSwipe={(dir) => {
-                      if (dir === 'right') {
-                        startLoginFlow('그러면 빨리 로그인 해', 900, true)
-                      } else if (dir === 'left') {
-                        if (redirectTimer.current) clearTimeout(redirectTimer.current)
-                        localStorage.setItem(LANDING_SEEN_KEY, '1')
-                        setTransitionMessage('')
-                        setTransitionNeedsAction(false)
-                        setView('main')
-                      }
-                    }}
-                  >
-                    <div className="swipe-card preview-card">
-                      <div className="preview-photo-wrap">
-                        <img src="/dance.png" alt="호스트 사진" className="preview-photo" />
-                        <div className="image-overlay preview-overlay">
-                          *저희 모임은 술을 강제하지 않습니다* <br /> *주최자의 주량은 소주 한병입니다*
-                        </div>
-                      </div>
-                      <div className="preview-body">
-                        <p className="eyebrow">HOST</p>
-                        <h3>{hostProfile.name}</h3>
-                        <p className="tagline">{hostProfile.tagline}</p>
-                        <p className="intro">{hostProfile.intro}</p>
-                        <div className="chips">
-                          {(hostProfile.interests || []).slice(0, 4).map((chip) => (
-                            <span key={chip} className="chip">
-                              {chip}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </TinderCard>
-                </div>
-                <p className="swipe-hint-inline outside">나는 이 놈을 <br/> 모른다: 왼쪽으로 스윽 <br/> 안다: 오른쪽으로 스윽 <br/> *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서 명시* <br/> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사 테이블이 배정됩니다.*</p>
-              </div>
-            ) : (
-              <div className="transition-message">
-                <p className="lede">{transitionMessage || '잠시만요...'}</p>
-                {transitionNeedsAction ? (
-                  <button
-                    className="primary"
-                    onClick={() => {
-                      localStorage.setItem(LANDING_SEEN_KEY, '1')
-                      handleKakaoLogin()
-                    }}
-                  >
-                    로그인 화면으로 이동
-                  </button>
-                ) : (
-                  <p className="muted">로그인 화면으로 이동합니다.</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const isLoggedIn = Boolean(session?.session_token)
+  const displayName = profile.name || session?.nickname || '이름 미입력'
+  const displayTagline = profile.tagline || '한 줄 소개가 여기에 보여요'
+  const displayIntro = profile.intro || '자기소개를 적으면 바로 여기서 확인할 수 있습니다.'
+  const displayContact = profile.contact || '미입력'
+  const markIntroSeen = () => localStorage.setItem(LANDING_SEEN_KEY, '1')
 
-  return (
+  const mainPage = (
     <div className="page">
       <div className="header">
         <div>
           <p className="eyebrow">2025 송년회</p>
           <h1>대화상대 정해주는 GOAT 테크놀로지와 함께</h1>
-          <div className="cta-row">
-            {isLoggedIn && <span className="muted">환영합니다, {session?.nickname || '친구'}님</span>}
-          </div>
+          {isLoggedIn && <div className="cta-row muted">환영합니다, {session?.nickname || '친구'}님</div>}
           {status && <div className="status">{status}</div>}
         </div>
       </div>
@@ -498,6 +380,16 @@ function App() {
 
       {/* 설문 및 관리자 프로필 섹션은 별도 페이지로 이동 예정 */}
     </div>
+  )
+
+  return (
+    <Routes>
+      <Route
+        path="/intro"
+        element={<IntroPage hostProfile={hostProfile} onLogin={handleKakaoLogin} onSeenIntro={markIntroSeen} />}
+      />
+      <Route path="*" element={mainPage} />
+    </Routes>
   )
 }
 
