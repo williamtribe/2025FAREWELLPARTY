@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import TinderCard from "react-tinder-card";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -44,6 +44,9 @@ const cards = [
 
 function AIIntroPage({ session, onIntroGenerated }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromOnboarding = location.state?.fromOnboarding || false;
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState({});
   const [completed, setCompleted] = useState(false);
@@ -188,9 +191,14 @@ function AIIntroPage({ session, onIntroGenerated }) {
   };
 
   const handleUseIntro = () => {
-    if (generatedIntro && onIntroGenerated) {
-      onIntroGenerated(generatedIntro);
-      navigate("/");
+    if (generatedIntro) {
+      if (fromOnboarding) {
+        localStorage.setItem("ai-generated-intro", JSON.stringify(generatedIntro));
+        navigate("/onboarding", { state: { aiGenerated: generatedIntro, step: 1 } });
+      } else if (onIntroGenerated) {
+        onIntroGenerated(generatedIntro);
+        navigate("/");
+      }
     }
   };
 

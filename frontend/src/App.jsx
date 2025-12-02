@@ -11,6 +11,7 @@ import IntroPage from "./pages/IntroPage";
 import EventInfo from "./pages/EventInfo";
 import AIIntroPage from "./pages/AIIntroPage";
 import OthersProfilePage from "./pages/OthersProfilePage";
+import OnboardingPage from "./pages/OnboardingPage";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
@@ -599,6 +600,12 @@ function App() {
     setStatus("AI가 생성한 자기소개가 적용되었습니다! 저장 버튼을 눌러주세요.");
   };
 
+  const handleOnboardingComplete = (completedProfile) => {
+    setProfile(prev => ({ ...prev, ...completedProfile }));
+    setIsEditing(false);
+    setStatus("프로필이 완성되었습니다!");
+  };
+
   return (
     <Routes>
       <Route
@@ -622,6 +629,16 @@ function App() {
         }
       />
       <Route path="/others" element={<OthersProfilePage session={session} />} />
+      <Route 
+        path="/onboarding" 
+        element={
+          <OnboardingPage 
+            session={session} 
+            authHeaders={authHeaders}
+            onComplete={handleOnboardingComplete}
+          />
+        } 
+      />
       <Route path="*" element={mainPage} />
     </Routes>
   );

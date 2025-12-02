@@ -404,3 +404,101 @@ async def get_different_profiles(
                 "similarity_score": match["score"],
             })
     return {"profiles": profiles, "criteria": criteria}
+
+
+MAFIA42_ROLES = {
+    "마피아팀": ["마피아", "스파이", "짐승인간", "마담", "도둑", "마녀", "과학자", "사기꾼", "청부업자", "악인"],
+    "시민팀": ["경찰", "자경단원", "요원", "의사", "군인", "정치인", "영매", "연인", "건달", "기자", 
+              "사립탐정", "도굴꾼", "테러리스트", "성직자", "예언자", "판사", "간호사", "마술사", 
+              "해커", "심리학자", "용병", "공무원", "비밀결사", "파파라치", "최면술사", "점쟁이", "시민"],
+    "교주팀": ["교주", "광신도"],
+}
+
+
+class RoleAssignmentPayload(BaseModel):
+    name: str = ""
+    tagline: str = ""
+    intro: str = ""
+    interests: List[str] = Field(default_factory=list)
+    strengths: List[str] = Field(default_factory=list)
+
+
+@app.post("/role-assignment")
+async def assign_mafia_role(
+    payload: RoleAssignmentPayload, 
+    user: SessionUser = Depends(get_current_user)
+):
+    from openai import OpenAI
+    import json
+    
+    openai_key = settings.openai_api_key
+    if not openai_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="openai_not_configured"
+        )
+    
+    client = OpenAI(api_key=openai_key)
+    
+    all_roles = []
+    for team, roles in MAFIA42_ROLES.items():
+        for role in roles:
+            all_roles.append(f"{team}: {role}")
+    
+    profile_text = f"""
+이름: {payload.name}
+한 줄 소개: {payload.tagline}
+자기소개: {payload.intro}
+관심사: {', '.join(payload.interests)}
+특기: {', '.join(payload.strengths)}
+"""
+    
+    system_prompt = f"""당신은 마피아42 게임의 직업 배정 전문가입니다.
+사용자의 프로필을 분석해서 가장 어울리는 마피아42 직업을 배정해주세요.
+
+가능한 직업 목록:
+{chr(10).join(all_roles)}
+
+반드시 다음 JSON 형식으로만 응답하세요:
+{{"team": "팀이름", "role": "직업이름", "reasoning": "왜 이 직업이 어울리는지 2-3문장으로 재미있게 설명"}}
+
+예시:
+{{"team": "시민팀", "role": "해커", "reasoning": "AI와 프로그래밍에 관심이 많고 데이터를 다루는 당신! 디지털 세계에서 정보를 캐내는 해커가 딱이에요."}}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"다음 프로필을 분석해서 마피아42 직업을 배정해주세요:\n{profile_text}"},
+            ],
+            temperature=0.8,
+            max_tokens=300,
+        )
+        
+        result_text = response.choices[0].message.content.strip()
+        if result_text.startswith("```"):
+            result_text = result_text.split("```")[1]
+            if result_text.startswith("json"):
+                result_text = result_text[4:]
+        result_text = result_text.strip()
+        
+        result = json.loads(result_text)
+        return {
+            "team": result.get("team", "시민팀"),
+            "role": result.get("role", "시민"),
+            "reasoning": result.get("reasoning", "당신은 평범하지만 특별한 시민입니다!"),
+        }
+    except json.JSONDecodeError:
+        return {
+            "team": "시민팀",
+            "role": "시민",
+            "reasoning": "분석 중 오류가 있었지만, 당신은 분명 멋진 시민이에요!",
+        }
+    except Exception as e:
+        logger.error(f"Role assignment error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"role_assignment_error: {str(e)}"
+        )
