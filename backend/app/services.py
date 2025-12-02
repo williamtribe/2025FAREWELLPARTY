@@ -181,26 +181,34 @@ class EmbeddingService:
         return resp.data[0].embedding
 
 
+CARDS = [
+    {"num": 1, "question": "나는", "leftLabel": "E다.", "rightLabel": "I다."},
+    {"num": 2, "question": "나는", "leftLabel": "T다.", "rightLabel": "F다."},
+    {"num": 3, "question": "나는 여기 뭐하러 가는가", "leftLabel": "스테이크 못참지", "rightLabel": "사람 만나러 가죠"},
+    {"num": 4, "question": "나는 애니를", "leftLabel": "본다", "rightLabel": "안본다"},
+    {"num": 5, "question": "나는 이 사람을", "leftLabel": "ㅉㅉ", "rightLabel": "숭배한다"},
+]
+
 YESORNO_MAPPINGS = {
     1: {
-        1: "김영진을 숭배하는",
-        -1: "김영진에게 ㅉㅉ하는",
+        1: "I다 (내향적)",
+        -1: "E다 (외향적)",
     },
     2: {
-        1: "술을 좋아하는",
-        -1: "술보다 다른 음료를 좋아하는",
+        1: "F다 (감정적)",
+        -1: "T다 (논리적)",
     },
     3: {
-        1: "파티를 즐기는",
-        -1: "조용한 분위기를 선호하는",
+        1: "사람 만나러 간다",
+        -1: "스테이크 못참는다",
     },
     4: {
-        1: "새로운 만남을 기대하는",
-        -1: "기존 친구들과 어울리는 것을 좋아하는",
+        1: "애니를 안본다",
+        -1: "애니를 본다",
     },
     5: {
-        1: "2025년을 기대하는",
-        -1: "2024년이 아쉬운",
+        1: "이 사람을 숭배한다",
+        -1: "이 사람에게 ㅉㅉ한다",
     },
 }
 
@@ -219,7 +227,11 @@ class IntroGenerationService:
 
         traits = []
         for q_num in range(1, 6):
-            response = yesorno_data.get(str(q_num))
+            raw_response = yesorno_data.get(str(q_num))
+            try:
+                response = int(raw_response) if raw_response is not None else None
+            except (ValueError, TypeError):
+                response = None
             if response in (1, -1):
                 trait = YESORNO_MAPPINGS.get(q_num, {}).get(response, "")
                 if trait:
@@ -287,18 +299,30 @@ class IntroGenerationService:
             logger.error(f"Intro generation from yesorno failed: {e}")
             return None
 
-    def generate_intro(self, answers: Dict[str, str]) -> Optional[Dict[str, Any]]:
+    def generate_intro(self, answers: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if not self.client:
             return None
+
+        answer_lines = []
+        for i, card in enumerate(CARDS):
+            q_num = i + 1
+            raw_response = answers.get(str(q_num))
+            try:
+                response = int(raw_response) if raw_response is not None else None
+            except (ValueError, TypeError):
+                response = None
+            if response in (1, -1):
+                answer_text = YESORNO_MAPPINGS.get(q_num, {}).get(response, '미입력')
+            else:
+                answer_text = '미입력'
+            answer_lines.append(f"{card['question']}: {answer_text}")
+
+        answers_text = "\n".join(answer_lines)
 
         prompt = f"""다음 정보를 바탕으로 재미있고 친근한 자기소개를 만들어주세요.
 
 사용자 답변:
-{cards[0]['question']}: {YESORNO_MAPPINGS.get(1, {}).get(answers.get('1', ''), '미입력')}
-{cards[1]['question']}: {YESORNO_MAPPINGS.get(2, {}).get(answers.get('2', ''), '미입력')}
-{cards[2]['question']}: {YESORNO_MAPPINGS.get(3, {}).get(answers.get('3', ''), '미입력')}
-{cards[3]['question']}: {YESORNO_MAPPINGS.get(4, {}).get(answers.get('4', ''), '미입력')}
-{cards[4]['question']}: {YESORNO_MAPPINGS.get(5, {}).get(answers.get('5', ''), '미입력')}
+{answers_text}
 
 다음 JSON 형식으로 응답해주세요:
 {{
