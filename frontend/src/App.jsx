@@ -244,27 +244,31 @@ function App() {
         <div>
           <p className="eyebrow">2025 송년회</p>
           <h1>대화상대 정해주는 GOAT 테크놀로지와 함께</h1>
-          {isLoggedIn && <div className="cta-row muted">환영합니다, {session?.nickname || '친구'}님</div>}
+          {isLoggedIn && <div className="cta-row muted">와주셔서 감사합니다, {session?.nickname || '친구'}님</div>}
           {status && <div className="status">{status}</div>}
         </div>
       </div>
 
       {isLoggedIn ? (
         <button className="floating-cta share" onClick={shareToKakao}>
-          카카오톡으로 공유
+          카톡 공유
         </button>
       ) : (
         <button className="floating-cta login-cta" onClick={handleKakaoLogin}>
-          카카오톡으로 로그인
+          카톡 로그인
         </button>
       )}
 
       <section className="panel">
         <div className="panel-head">
           <div>
-            <p className="eyebrow">MY PAGE</p>
             <h2>자기소개 카드</h2>
           </div>
+          {!isEditing && (
+            <button className="ghost inline" onClick={() => setIsEditing(true)} disabled={!isLoggedIn}>
+              편집
+            </button>
+          )}
         </div>
 
         <div className="profile-card">
@@ -367,11 +371,6 @@ function App() {
                 </div>
                 <p className="muted">연락처: {displayContact}</p>
                 <p className="muted">공개 범위: {profile.visibility}</p>
-              </div>
-              <div className="profile-badge">
-                <button className="ghost inline" onClick={() => setIsEditing(true)} disabled={!isLoggedIn}>
-                  편집
-                </button>
               </div>
             </div>
           )}

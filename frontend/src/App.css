@@ -99,15 +99,16 @@ body {
 
 .image-overlay {
   position: absolute;
-  left: 12px;
-  top: 12px;
-  background: rgba(31, 122, 77, 0.82);
+  left: 8px;
+  top: 8px;
+  background: rgba(31, 122, 77, 0.85);
   color: #fefefe;
-  padding: 0.45rem 0.65rem;
-  border-radius: 12px;
+  padding: 0.35rem 0.55rem;
+  border-radius: 10px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  font-size: 12px;
 }
 
 .landing-actions {
@@ -197,14 +198,14 @@ body {
 .page {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.4rem;
 }
 
 .header {
   background: linear-gradient(180deg, rgba(232, 246, 237, 0.95), rgba(255, 255, 255, 0.9));
   border: 1px solid rgba(28, 63, 37, 0.08);
-  border-radius: 24px;
-  padding: 1.75rem 1.4rem 2.25rem;
+  border-radius: 16px;
+  padding: 0.9rem 1.1rem 1rem;
   box-shadow: 0 20px 60px rgba(17, 47, 24, 0.14);
   display: flex;
   flex-direction: column;
@@ -222,14 +223,14 @@ body {
 
 h1 {
   margin: 0 0 0.4rem;
-  font-size: 36px;
+  font-size: 24px;
   color: #143221;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 h2 {
   margin: 0.2rem 0 0.4rem;
-  font-size: 24px;
+  font-size: 20px;
   color: #143221;
 }
 
@@ -335,6 +336,11 @@ a.ghost {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.panel-head .ghost.inline {
+  align-self: flex-start;
 }
 
 .grid {
@@ -356,10 +362,11 @@ a.ghost {
 }
 
 .profile-hero {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(31, 122, 77, 0.1);
   border-radius: 14px;
@@ -376,13 +383,19 @@ a.ghost {
 }
 
 .ghost.inline {
-  padding: 0.8rem 1rem;
+  padding: 0.5rem 0.8rem;
   font-weight: 700;
-  font-size: 15px;
-  width: 100%;
+  font-size: 14px;
+  width: auto;
   background: #1f7a4d;
   color: #fefefe;
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: horizontal-tb;
+  white-space: nowrap;
+  min-width: 72px;
 }
 
 .profile-form {
@@ -492,9 +505,10 @@ select:disabled {
 
 .floating-cta {
   position: fixed;
-  left: 50%;
+  left: auto;
+  right: 18px;
   bottom: 18px;
-  transform: translateX(-50%);
+  transform: none;
   background: linear-gradient(120deg, #d62828, #f25454);
   color: #fdfdfd;
   border: none;
@@ -510,6 +524,7 @@ select:disabled {
 
 .floating-cta.share {
   bottom: 80px;
+  right: 18px;
   background: #1f7a4d;
   color: #fefefe;
   box-shadow: 0 12px 30px rgba(21, 89, 53, 0.35);
@@ -589,7 +604,7 @@ select:disabled {
 @media (max-width: 768px) {
   #root {
     max-width: 520px;
-    padding: 0.4rem 0.4rem 2.4rem;
+    padding: 0.4rem 0.4rem 1.8rem;
   }
 
   .landing-copy {
@@ -597,6 +612,15 @@ select:disabled {
     gap: 0.25rem;
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(20, 55, 32, 0.08);
+  }
+
+  h1 {
+    font-size: 16px;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: 19px;
   }
 
   .tinder-stage {
@@ -622,6 +646,20 @@ select:disabled {
   .landing-page {
     padding: 0.25rem 0.35rem 0.6rem;
     align-items: flex-start;
+  }
+
+  .profile-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .page {
+    gap: 0.5rem;
+  }
+
+  .header {
+    padding: 0.8rem 0.95rem 0.9rem;
   }
 }
 
@@ -655,4 +693,15 @@ select:disabled {
   .swipe-hint-inline.outside {
     width: min(520px, 100%);
   }
+}
+
+/* Hide Grammarly overlays that can sit on top of the app in some browsers */
+[data-grammarly-part],
+.grammarly-desktop-integration,
+.grammarly-editor,
+.grammarly-extension {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
