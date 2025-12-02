@@ -479,12 +479,12 @@ select:disabled {
 }
 
 .chip {
-  padding: 0.35rem 0.7rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 12px;
   background: rgba(214, 40, 40, 0.12);
   color: #c4313b;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .admin-grid {

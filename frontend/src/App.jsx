@@ -255,7 +255,7 @@ function App() {
         </button>
       ) : (
         <button className="floating-cta login-cta" onClick={handleKakaoLogin}>
-          카톡 로그인
+          카톡 로그인 먼저!
         </button>
       )}
 
@@ -314,7 +314,7 @@ function App() {
 
               <div className="two-col">
                 <div>
-                  <label>관심사 (쉼표로 구분)</label>
+                  <label>관심사 <br/> (쉼표로 구분)</label>
                   <input
                     value={interestsInput}
                     onChange={(e) => updateListField('interests', e.target.value)}
@@ -323,7 +323,7 @@ function App() {
                   />
                 </div>
                 <div>
-                  <label>특기 (쉼표로 구분)</label>
+                  <label>특기 <br/> (쉼표로 구분)</label>
                   <input
                     value={strengthsInput}
                     onChange={(e) => updateListField('strengths', e.target.value)}
@@ -351,7 +351,6 @@ function App() {
           ) : (
             <div className="profile-hero">
               <div>
-                <p className="eyebrow">PREVIEW</p>
                 <h3>{displayName}</h3>
                 <p className="tagline">{displayTagline}</p>
                 <p className="intro">{displayIntro}</p>
