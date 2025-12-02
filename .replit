@@ -53,10 +53,6 @@ externalPort = 8000
 localPort = 36773
 externalPort = 3000
 
-[[ports]]
-localPort = 44145
-externalPort = 3001
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "start.sh"]
