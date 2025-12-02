@@ -49,6 +49,14 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      '/similar-profiles': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/different-profiles': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 })
