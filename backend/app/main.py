@@ -191,6 +191,25 @@ async def generate_intro(payload: IntroGenerationPayload, user: SessionUser = De
     return result
 
 
+class YesOrNoPayload(BaseModel):
+    question_id: str
+    response: int = Field(..., ge=-1, le=1)
+
+
+@app.post("/intro-yesorno")
+async def save_yesorno(payload: YesOrNoPayload, user: SessionUser = Depends(get_current_user)):
+    if payload.response not in (-1, 1):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="response must be -1 or 1")
+    result = supabase_service.upsert_yesorno(user.kakao_id, payload.question_id, payload.response)
+    return {"saved": True, "result": result}
+
+
+@app.get("/intro-yesorno")
+async def get_yesorno(user: SessionUser = Depends(get_current_user)):
+    responses = supabase_service.fetch_yesorno(user.kakao_id)
+    return {"responses": responses}
+
+
 @app.get("/profiles/public")
 async def list_public_profiles(limit: int = 6):
     profiles = supabase_service.fetch_public_profiles(limit=limit)

@@ -144,6 +144,24 @@ class SupabaseService:
         result = self.client.table("member_preferences").upsert(data).execute()
         return {"data": result.data}
 
+    def upsert_yesorno(self, kakao_id: str, question_id: str, response: int) -> Dict[str, Any]:
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        data = {
+            "kakao_id": kakao_id,
+            "question_id": question_id,
+            "response": response,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        result = self.client.table("intro_yesorno").upsert(data, on_conflict="kakao_id,question_id").execute()
+        return {"data": result.data}
+
+    def fetch_yesorno(self, kakao_id: str) -> List[Dict[str, Any]]:
+        if not self.client:
+            return []
+        result = self.client.table("intro_yesorno").select("*").eq("kakao_id", kakao_id).execute()
+        return result.data or []
+
 
 class EmbeddingService:
     def __init__(self) -> None:

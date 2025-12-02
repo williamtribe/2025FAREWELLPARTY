@@ -12,7 +12,13 @@ function EventInfo() {
         <div>
           <p className="eyebrow">EVENT INFO</p>
           <h1>2025 송년회 안내</h1>
-          <p className="muted"> 안녕하세요, 김영진이라고 합니다. <br/> 현재 KAIST를 다니다 휴학해서 제가 즐기던 게임인 마피아42의 회사에서 일하고 있습니다. <br/> 제 소중한 분들 및 그들의 소중한 분들, <br/> 1년동안 고생하셨습니다. <br/> 맛있게 먹고, 신나게 놀다 가세요.</p>
+          <p className="muted">
+            {" "}
+            안녕하세요, 김영진이라고 합니다. <br /> 현재 KAIST를 다니다 휴학해서
+            제가 즐기던 게임인 마피아42의 회사에서 일하고 있습니다. <br /> 제
+            소중한 분들 및 그들의 소중한 분들, <br /> 1년동안 고생하셨습니다.{" "}
+            <br /> 맛있게 먹고, 신나게 놀다 가세요.
+          </p>
         </div>
       </div>
 
@@ -32,7 +38,11 @@ function EventInfo() {
                 </tr>
                 <tr>
                   <th>장소</th>
-                  <td>서울 송파구 백제고분로 41길 6-5 302호<br />비윗미 (요리파티룸)</td>
+                  <td>
+                    서울 송파구 백제고분로 41길 6-5 302호
+                    <br />
+                    비윗미 (요리파티룸)
+                  </td>
                 </tr>
                 <tr>
                   <th>드레스코드</th>
@@ -40,7 +50,10 @@ function EventInfo() {
                 </tr>
                 <tr>
                   <th>참석자</th>
-                  <td>제 친한 분들과 그들의 친한 분들. <br/> 인성은 제가 보장합니다.</td>
+                  <td>
+                    제 친한 분들과 그들의 친한 분들. <br /> 인성은 제가
+                    보장합니다.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -121,20 +134,26 @@ function EventInfo() {
           <p className="muted">정산 안내</p>
           <p>송년회 이후 인당 만 원씩 정산을 할 예정입니다.</p>
           <p>
-            원래 무료로 해드리고 싶었는데, 운영비용이 많이 들어서 일부를 받기로 했습니다. <br />
+            원래 무료로 해드리고 싶었는데, 운영비용이 많이 들어서 일부를 받기로
+            했습니다. <br />
             정산 대신 행사준비를 돕거나 음료를 가져오셔도 됩니다.
           </p>
           <p className="muted">운영비 사용 내역</p>
           <p>
             운영비의 사용 내역은 아래 링크에서 확인하실 수 있습니다. <br />
-            <a href="https://docs.google.com/document/d/1tj-n6YULimIUiKwujQUNbaV4fYyJzPRJktBLoyjyy04/edit?tab=t.0" className="link" target="_blank" rel="noreferrer">
+            <a
+              href="https://docs.google.com/document/d/1tj-n6YULimIUiKwujQUNbaV4fYyJzPRJktBLoyjyy04/edit?usp=sharing"
+              className="link"
+              target="_blank"
+              rel="noreferrer"
+            >
               운영비 사용 내역
             </a>
           </p>
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default EventInfo
+export default EventInfo;
