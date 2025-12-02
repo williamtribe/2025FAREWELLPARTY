@@ -20,6 +20,11 @@ Korean farewell party website with:
   - "intro" namespace: Based on name, tagline, and intro text
   - "interests" namespace: Based on interests and strengths
 - Updated /others page with criteria selection step (자기소개 기준 vs 관심사 기준)
+- Added admin panel with "전체 프로필 임베딩 갱신" button (visible to admins only)
+- **Categorized interest selection UI**: Replaced free-text input with category-based chip selection
+  - 10 categories: 애니, 운동, 게임, 기술, 음악, 사회, 철학, 책, 문화, 음식
+  - Users tap chips to select/deselect interests
+  - Selected interests display with visual highlighting
 
 ## Project Structure
 ```
