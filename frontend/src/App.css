@@ -500,20 +500,6 @@ select {
 }
 
 input:disabled,
-textarea:disabled,
-select:disabled {
-  opacity: 0.6;
-}
-
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
-}
-
-.preview {
-  background: linear-gradient(145deg, rgba(245, 89, 89, 0.08), rgba(50, 150, 100, 0.12));
-}
 
 .tagline {
   color: #2e5a37;

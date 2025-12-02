@@ -322,7 +322,7 @@ function App() {
 
               <div className="two-col">
                 <div>
-                  <label>관심사 <br /> (쉼표로 구분)</label>
+                  <label>관심사 (쉼표로 구분)</label>
                   <input
                     value={interestsInput}
                     onChange={(e) => updateListField('interests', e.target.value)}
@@ -331,7 +331,7 @@ function App() {
                   />
                 </div>
                 <div>
-                  <label>특기 <br /> (쉼표로 구분)</label>
+                  <label>특기 (쉼표로 구분)</label>
                   <input
                     value={strengthsInput}
                     onChange={(e) => updateListField('strengths', e.target.value)}
