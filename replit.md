@@ -111,6 +111,7 @@ CREATE POLICY "Allow public read"
 - ✅ Profile data loading correctly from database
 - ✅ Kakao OAuth login working (popup-based for iframe compatibility)
 - ✅ AI-generated intro feature with 5-question form and OpenAI integration
+- ✅ Card swipe feature (/ai-intro) with Supabase storage (intro_yesorno table)
 
 ## Notes
 - Kakao OAuth login uses popup window to bypass iframe cookie restrictions
