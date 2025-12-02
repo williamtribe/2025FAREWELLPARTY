@@ -94,10 +94,20 @@ function App() {
   const handleKakaoLogin = async () => {
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY)
     setStatus('카카오 로그인 페이지로 이동합니다...')
-    const res = await fetch(`${API_BASE}/auth/kakao/login`)
-    const data = await res.json()
-    localStorage.setItem('kakao-state', data.state)
-    window.location.href = data.auth_url
+    try {
+      console.log('Fetching login URL from:', `${API_BASE}/auth/kakao/login`)
+      const res = await fetch(`${API_BASE}/auth/kakao/login`)
+      if (!res.ok) {
+        throw new Error(`Login request failed: ${res.status}`)
+      }
+      const data = await res.json()
+      console.log('Login response:', data)
+      localStorage.setItem('kakao-state', data.state)
+      window.location.href = data.auth_url
+    } catch (err) {
+      console.error('Kakao login error:', err)
+      setStatus(`로그인 오류: ${err.message}`)
+    }
   }
 
   const handleKakaoCallback = async () => {
