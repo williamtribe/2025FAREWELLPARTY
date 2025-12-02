@@ -21,6 +21,20 @@ const SHARE_URL = import.meta.env.VITE_SHARE_URL || window.location.origin;
 const KAKAO_TEMPLATE_ID = 126447; // 사용자 정의 템플릿 ID
 const HOST_ID = "4609921299";
 const LANDING_SEEN_KEY = "farewell-landing-seen";
+
+const INTEREST_CATEGORIES = {
+  "🎬 애니": ["체인소맨", "귀멸의 칼날", "주술회전", "진격의 거인", "그 비스크 돌은 사랑을 한다"],
+  "🏋️ 운동": ["레슬링", "테니스", "MMA", "배드민턴", "축구", "헬스", "수영"],
+  "🎮 게임": ["롤", "마피아42", "오버워치", "발로란트"],
+  "🧪 기술": ["AI", "프로그래밍", "데이터"],
+  "🎵 음악": ["KPOP", "재즈", "OST", "밴드", "클래식"],
+  "🧑‍⚖️ 사회": ["군대", "법", "정치", "경제"],
+  "📚 철학": ["니체", "칸트", "스피노자"],
+  "📖 책": ["소설", "에세이", "자기계발"],
+  "🎨 문화": ["영화", "드라마", "전시회", "공연"],
+  "🍜 음식": ["맛집탐방", "요리", "카페"],
+};
+
 const defaultHostProfile = {
   name: "김영진",
   tagline: "변호사지망 씹덕",
@@ -50,7 +64,6 @@ function App() {
   const [profile, setProfile] = useState(emptyProfile);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [interestsInput, setInterestsInput] = useState("");
   const [strengthsInput, setStrengthsInput] = useState("");
   const [isEditing, setIsEditing] = useState(true);
   const [hostProfile, setHostProfile] = useState(defaultHostProfile);
@@ -216,7 +229,6 @@ function App() {
         name: incoming.name || baseName,
         ...incoming,
       });
-      setInterestsInput((incoming.interests || []).join(", "));
       setStrengthsInput((incoming.strengths || []).join(", "));
       setIsEditing(false);
       setStatus("");
@@ -237,7 +249,6 @@ function App() {
       .map((v) => v.trim())
       .filter(Boolean);
     setProfile((prev) => ({ ...prev, [field]: parts }));
-    if (field === "interests") setInterestsInput(value);
     if (field === "strengths") setStrengthsInput(value);
   };
 
@@ -447,30 +458,48 @@ function App() {
                 disabled={!isLoggedIn}
               />
 
-              <div className="two-col">
-                <div>
-                  <label>관심사 (쉼표로 구분)</label>
-                  <input
-                    value={interestsInput}
-                    onChange={(e) =>
-                      updateListField("interests", e.target.value)
-                    }
-                    placeholder="애니, 레제, 게임, 체인소맨, 마피아42, AI, 법"
-                    disabled={!isLoggedIn}
-                  />
-                </div>
-                <div>
-                  <label>특기 (쉼표로 구분)</label>
-                  <input
-                    value={strengthsInput}
-                    onChange={(e) =>
-                      updateListField("strengths", e.target.value)
-                    }
-                    placeholder="사람을 좋아함"
-                    disabled={!isLoggedIn}
-                  />
-                </div>
+              <label>관심사 선택</label>
+              <div className="interest-selector">
+                {Object.entries(INTEREST_CATEGORIES).map(([category, items]) => (
+                  <div key={category} className="interest-category">
+                    <div className="category-title">{category}</div>
+                    <div className="interest-chips">
+                      {items.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          className={`interest-chip ${profile.interests.includes(item) ? "selected" : ""}`}
+                          onClick={() => {
+                            if (!isLoggedIn) return;
+                            setProfile((prev) => ({
+                              ...prev,
+                              interests: prev.interests.includes(item)
+                                ? prev.interests.filter((i) => i !== item)
+                                : [...prev.interests, item],
+                            }));
+                          }}
+                          disabled={!isLoggedIn}
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
+              {profile.interests.length > 0 && (
+                <p className="selected-count">선택됨: {profile.interests.join(", ")}</p>
+              )}
+
+              <label>특기 (쉼표로 구분)</label>
+              <input
+                value={strengthsInput}
+                onChange={(e) =>
+                  updateListField("strengths", e.target.value)
+                }
+                placeholder="사람을 좋아함"
+                disabled={!isLoggedIn}
+              />
 
               <label>공개 범위</label>
               <select
