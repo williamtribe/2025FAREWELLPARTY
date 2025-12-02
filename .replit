@@ -48,3 +48,7 @@ externalPort = 80
 [[ports]]
 localPort = 38481
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "start.sh"]
