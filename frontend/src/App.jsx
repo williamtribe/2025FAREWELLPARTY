@@ -259,7 +259,7 @@ function App() {
           카톡 공유
         </button>
       ) : (
-        <button className="floating-cta share" onClick={handleKakaoLogin}>
+        <button className="floating-cta login-btn" onClick={handleKakaoLogin}>
           카톡 로그인 먼저!
         </button>
       )}

@@ -279,19 +279,24 @@ a.ghost {
 }
 
 .primary {
-  background: linear-gradient(120deg, #d62828, #f25454);
-  box-shadow: 0 12px 30px rgba(214, 40, 40, 0.28);
+  background: linear-gradient(145deg, rgba(245, 89, 89, 0.08), rgba(50, 150, 100, 0.12)),
+    rgba(245, 251, 247, 0.95);
+  border: 1px solid rgba(31, 122, 77, 0.12);
+  box-shadow: 0 14px 36px rgba(20, 55, 32, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #1f3322;
 }
 
 .primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 40px rgba(214, 40, 40, 0.38);
+  box-shadow: 0 18px 40px rgba(20, 55, 32, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .secondary {
-  background: #1f7a4d;
-  color: #fefefe;
-  border: 1px solid rgba(21, 89, 53, 0.22);
+  background: linear-gradient(145deg, rgba(245, 89, 89, 0.08), rgba(50, 150, 100, 0.12)),
+    rgba(245, 251, 247, 0.95);
+  border: 1px solid rgba(31, 122, 77, 0.12);
+  box-shadow: 0 14px 36px rgba(20, 55, 32, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #1f3322;
 }
 
 .secondary.share-btn {
@@ -469,6 +474,7 @@ a.ghost {
   font-size: 12px;
   line-height: 1.35;
 }
+
 .form {
   display: flex;
   flex-direction: column;
@@ -561,41 +567,45 @@ select:disabled {
   right: 18px;
   bottom: 18px;
   transform: none;
-  background: linear-gradient(120deg, #d62828, #f25454);
-  color: #fdfdfd;
-  border: none;
+  background: linear-gradient(145deg, rgba(245, 89, 89, 0.08), rgba(50, 150, 100, 0.12)),
+    rgba(245, 251, 247, 0.95);
+  color: #1f3322;
+  border: 1px solid rgba(31, 122, 77, 0.12);
   border-radius: 999px;
   padding: 0.7rem 1.1rem;
   font-weight: 800;
   font-size: 14px;
-  box-shadow: 0 12px 30px rgba(214, 40, 40, 0.35);
+  box-shadow: 0 14px 36px rgba(20, 55, 32, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   z-index: 20;
   cursor: pointer;
   display: block;
   width: auto;
 }
 
-.floating-cta.share {
+.floating-cta.share,
+.floating-cta.login-btn {
   bottom: 80px;
   right: 18px;
-  background: #1f7a4d;
-  color: #fefefe;
-  box-shadow: 0 12px 30px rgba(21, 89, 53, 0.35);
+  background: linear-gradient(135deg, #f48fb1, #ec407a) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(183, 28, 28, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .floating-cta.info {
   right: 18px;
   bottom: 20px;
-  background: linear-gradient(120deg, #d62828, #f25454);
-  color: #fefefe;
-  font-weight: 800;
-  box-shadow: 0 12px 26px rgba(214, 40, 40, 0.32);
   text-decoration: none;
+  background: linear-gradient(135deg, #81c784, #66bb6a) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(27, 94, 32, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .floating-cta,
 .floating-cta.share,
-.floating-cta.info {
+.floating-cta.info,
+.floating-cta.login-btn {
   padding: 0.7rem 1.1rem;
   font-size: 14px;
   min-height: 42px;
