@@ -479,22 +479,25 @@ class PineconeService:
         self.index = self.client.Index(settings.pinecone_index)
 
     def upsert_embedding(self, member_id: str, vector: List[float],
-                         metadata: Dict[str, Any]) -> Dict[str, Any]:
+                         metadata: Dict[str, Any], namespace: str = "") -> Dict[str, Any]:
         if not self.index:
             return {"skipped": True, "reason": "pinecone_not_configured"}
-        upsert_result = self.index.upsert(vectors=[{
-            "id": member_id,
-            "values": vector,
-            "metadata": metadata
-        }])
+        upsert_result = self.index.upsert(
+            vectors=[{
+                "id": member_id,
+                "values": vector,
+                "metadata": metadata
+            }],
+            namespace=namespace
+        )
         upserted_count = getattr(upsert_result, "upserted_count", None)
-        return {"upserted_count": upserted_count}
+        return {"upserted_count": upserted_count, "namespace": namespace}
 
-    def fetch_vector(self, member_id: str) -> Optional[List[float]]:
+    def fetch_vector(self, member_id: str, namespace: str = "") -> Optional[List[float]]:
         if not self.index:
             return None
         try:
-            result = self.index.fetch(ids=[member_id])
+            result = self.index.fetch(ids=[member_id], namespace=namespace)
             vectors = result.get("vectors", {})
             if member_id in vectors:
                 return vectors[member_id].get("values")
@@ -504,10 +507,10 @@ class PineconeService:
             return None
 
     def query_similar(self, member_id: str, top_k: int = 10, 
-                      exclude_self: bool = True) -> List[Dict[str, Any]]:
+                      exclude_self: bool = True, namespace: str = "") -> List[Dict[str, Any]]:
         if not self.index:
             return []
-        vector = self.fetch_vector(member_id)
+        vector = self.fetch_vector(member_id, namespace=namespace)
         if not vector:
             return []
         try:
@@ -515,6 +518,7 @@ class PineconeService:
                 vector=vector,
                 top_k=top_k + (1 if exclude_self else 0),
                 include_metadata=True,
+                namespace=namespace,
             )
             matches = []
             for match in result.get("matches", []):
@@ -531,10 +535,10 @@ class PineconeService:
             return []
 
     def query_different(self, member_id: str, top_k: int = 10,
-                        exclude_self: bool = True) -> List[Dict[str, Any]]:
+                        exclude_self: bool = True, namespace: str = "") -> List[Dict[str, Any]]:
         if not self.index:
             return []
-        similar = self.query_similar(member_id, top_k=100, exclude_self=exclude_self)
+        similar = self.query_similar(member_id, top_k=100, exclude_self=exclude_self, namespace=namespace)
         if not similar:
             return []
         different = sorted(similar, key=lambda x: x["score"])
@@ -557,6 +561,28 @@ def normalize_profile_text(payload: Dict[str, Any]) -> str:
         ", ".join(payload.get("interests") or []),
         ", ".join(payload.get("strengths") or []),
         payload.get("contact", ""),
+    ]
+    return "\n".join([p for p in parts if p])
+
+
+def normalize_intro_text(payload: Dict[str, Any]) -> str:
+    """Extract intro-focused text for embedding."""
+    parts = [
+        payload.get("name", ""),
+        payload.get("tagline", ""),
+        payload.get("intro", ""),
+    ]
+    return "\n".join([p for p in parts if p])
+
+
+def normalize_interests_text(payload: Dict[str, Any]) -> str:
+    """Extract interests-focused text for embedding."""
+    interests = payload.get("interests") or []
+    strengths = payload.get("strengths") or []
+    parts = [
+        payload.get("name", ""),
+        "관심사: " + ", ".join(interests) if interests else "",
+        "강점: " + ", ".join(strengths) if strengths else "",
     ]
     return "\n".join([p for p in parts if p])
 

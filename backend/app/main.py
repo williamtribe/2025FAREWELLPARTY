@@ -14,6 +14,8 @@ from .services import (
     intro_generation_service,
     kakao_client,
     normalize_profile_text,
+    normalize_intro_text,
+    normalize_interests_text,
     pinecone_service,
     session_signer,
     supabase_service,
@@ -148,20 +150,35 @@ async def upsert_profile(payload: ProfilePayload, user: SessionUser = Depends(ge
     record = assemble_profile_record(user.kakao_id, payload.model_dump())
     supabase_result = supabase_service.upsert_profile(record)
 
-    # Embed and push to Pinecone.
-    embedding_vector = embedding_service.embed_member(normalize_profile_text(record))
-    pinecone_result = None
-    if embedding_vector:
-        pinecone_result = pinecone_service.upsert_embedding(
-            member_id=user.kakao_id,
-            vector=embedding_vector,
-            metadata={"visibility": record["visibility"], "name": record["name"]},
-        )
+    metadata = {"visibility": record["visibility"], "name": record["name"]}
+    pinecone_results = {}
+
+    intro_text = normalize_intro_text(record)
+    if intro_text.strip():
+        intro_vector = embedding_service.embed_member(intro_text)
+        if intro_vector:
+            pinecone_results["intro"] = pinecone_service.upsert_embedding(
+                member_id=user.kakao_id,
+                vector=intro_vector,
+                metadata=metadata,
+                namespace="intro",
+            )
+
+    interests_text = normalize_interests_text(record)
+    if interests_text.strip():
+        interests_vector = embedding_service.embed_member(interests_text)
+        if interests_vector:
+            pinecone_results["interests"] = pinecone_service.upsert_embedding(
+                member_id=user.kakao_id,
+                vector=interests_vector,
+                metadata=metadata,
+                namespace="interests",
+            )
 
     return {
         "profile": record,
         "supabase": supabase_result.get("data") if isinstance(supabase_result, dict) else supabase_result,
-        "pinecone": pinecone_result,
+        "pinecone": pinecone_results if pinecone_results else None,
     }
 
 
@@ -293,10 +310,15 @@ async def kakao_message(payload: KakaoMessagePayload, user: SessionUser = Depend
 
 
 @app.get("/similar-profiles")
-async def get_similar_profiles(user: SessionUser = Depends(get_current_user), limit: int = 10):
-    matches = pinecone_service.query_similar(user.kakao_id, top_k=limit)
+async def get_similar_profiles(
+    user: SessionUser = Depends(get_current_user), 
+    limit: int = 10,
+    criteria: Literal["intro", "interests"] = "intro"
+):
+    namespace = criteria
+    matches = pinecone_service.query_similar(user.kakao_id, top_k=limit, namespace=namespace)
     if not matches:
-        return {"profiles": [], "message": "no_embedding_found"}
+        return {"profiles": [], "message": "no_embedding_found", "criteria": criteria}
     profiles = []
     for match in matches:
         profile = supabase_service.fetch_profile(match["kakao_id"])
@@ -305,14 +327,19 @@ async def get_similar_profiles(user: SessionUser = Depends(get_current_user), li
                 **profile,
                 "similarity_score": match["score"],
             })
-    return {"profiles": profiles}
+    return {"profiles": profiles, "criteria": criteria}
 
 
 @app.get("/different-profiles")
-async def get_different_profiles(user: SessionUser = Depends(get_current_user), limit: int = 10):
-    matches = pinecone_service.query_different(user.kakao_id, top_k=limit)
+async def get_different_profiles(
+    user: SessionUser = Depends(get_current_user), 
+    limit: int = 10,
+    criteria: Literal["intro", "interests"] = "intro"
+):
+    namespace = criteria
+    matches = pinecone_service.query_different(user.kakao_id, top_k=limit, namespace=namespace)
     if not matches:
-        return {"profiles": [], "message": "no_embedding_found"}
+        return {"profiles": [], "message": "no_embedding_found", "criteria": criteria}
     profiles = []
     for match in matches:
         profile = supabase_service.fetch_profile(match["kakao_id"])
@@ -321,4 +348,4 @@ async def get_different_profiles(user: SessionUser = Depends(get_current_user), 
                 **profile,
                 "similarity_score": match["score"],
             })
-    return {"profiles": profiles}
+    return {"profiles": profiles, "criteria": criteria}
