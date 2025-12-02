@@ -655,6 +655,15 @@ function App() {
             <button className="admin-btn" onClick={handleReembedAll}>
               전체 프로필 임베딩 갱신
             </button>
+            <button 
+              className="admin-btn" 
+              onClick={() => {
+                localStorage.removeItem("onboarding-draft");
+                navigate("/onboarding");
+              }}
+            >
+              🔄 온보딩 다시하기 (테스트용)
+            </button>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
           </div>
         </section>
