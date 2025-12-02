@@ -13,6 +13,9 @@ Korean farewell party website with:
 - Fixed Pinecone package from `pinecone-client` to `pinecone`
 - Configured deployment with autoscale target
 - Set up unified startup script (start.sh) that runs both frontend and backend
+- Added "다른 사람들 자기소개 카드 보기" feature with Pinecone vector similarity search
+- New /others page with "나랑 닮은 사람" and "나랑 다른 사람" options
+- Added conditional button text: "3초 취향확인" if intro exists, "3초 AI생성 자기소개" if empty
 
 ## Project Structure
 ```
