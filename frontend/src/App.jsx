@@ -121,11 +121,31 @@ function App() {
   }, [location.pathname, navigate]);
 
   useEffect(() => {
-    const handleMessage = (event) => {
+    const handleMessage = async (event) => {
       if (event.data?.type === "kakao-login-success") {
         console.log("Login success from popup:", event.data.session);
         setSession(event.data.session);
         setStatus("로그인 완료! 프로필을 불러오는 중...");
+        
+        try {
+          const res = await fetch(`${API_BASE}/me`, {
+            headers: {
+              Authorization: `Bearer ${event.data.session.session_token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const incoming = data.profile || {};
+            const hasProfile = incoming.intro || incoming.tagline || (incoming.interests && incoming.interests.length > 0);
+            if (!hasProfile) {
+              navigate("/onboarding", { replace: true });
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("Profile check failed:", err);
+        }
         navigate("/", { replace: true });
       } else if (event.data?.type === "kakao-login-error") {
         console.error("Login error from popup:", event.data.error);
