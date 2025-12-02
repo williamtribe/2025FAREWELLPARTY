@@ -8,7 +8,7 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-VITE_API_BASE_URL = "http://localhost:8000"
+VITE_API_BASE_URL = "https://two025farewellparty.onrender.com"
 NEXT_PUBLIC_BASE_URL = "https://5a4d3575-c26f-45c0-bf6c-bc9f23c6185d-00-k80bf8bkpqif.pike.replit.dev"
 KAKAO_REDIRECT_URI = "https://5a4d3575-c26f-45c0-bf6c-bc9f23c6185d-00-k80bf8bkpqif.pike.replit.dev/api/auth/kakao/callback"
 PINECONE_INDEX = "members"
@@ -48,10 +48,6 @@ externalPort = 80
 [[ports]]
 localPort = 8000
 externalPort = 8000
-
-[[ports]]
-localPort = 38481
-externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
