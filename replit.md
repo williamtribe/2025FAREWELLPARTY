@@ -53,7 +53,7 @@ To fully run this application, you need to set these secrets in Replit:
 - `ADMIN_KAKAO_IDS` - Comma-separated list of Kakao IDs for admin users
 
 ## Environment Variables (Already Set)
-- `VITE_API_BASE_URL` - Backend API URL (http://localhost:8000)
+- `VITE_API_BASE_URL` - Empty string (uses Vite proxy for API requests)
 - `NEXT_PUBLIC_BASE_URL` - Public frontend URL (Replit domain)
 - `KAKAO_REDIRECT_URI` - Kakao OAuth callback URL
 - `PINECONE_INDEX` - Pinecone index name (members)
@@ -62,8 +62,13 @@ To fully run this application, you need to set these secrets in Replit:
 - `SESSION_TTL_SECONDS` - Session duration (604800 = 7 days)
 - `APP_SECRET` - Session signing secret
 
+## API Proxy Configuration
+Frontend uses Vite's proxy to forward `/api/*` requests to the backend:
+- Frontend: `fetch('/profiles/123')` → Vite proxy → Backend `http://localhost:8000/profiles/123`
+- This avoids CORS issues and works correctly in Replit's proxied environment
+
 ## Supabase Database Schema
-You need to create these tables in your Supabase project:
+Tables are set up in Supabase with RLS policies:
 
 ```sql
 -- Member profiles table
@@ -86,6 +91,12 @@ CREATE TABLE public.member_preferences (
   mood TEXT,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- RLS Policy for public profile reads
+CREATE POLICY "Allow public read"
+  ON public.member_profiles
+  FOR SELECT
+  USING (visibility = 'public');
 ```
 
 ## Current State
@@ -93,12 +104,14 @@ CREATE TABLE public.member_preferences (
 - ✅ Backend running on port 8000
 - ✅ Dependencies installed (Python via uv, Node.js via npm)
 - ✅ Vite configured for Replit proxy
+- ✅ Vite proxy configured for API requests
 - ✅ Deployment configured
-- ⚠️ API keys not yet configured (app runs but features disabled)
-- ⚠️ Supabase database not yet set up
+- ✅ All API keys configured (Kakao, Supabase, OpenAI, Pinecone)
+- ✅ Supabase database connected and working
+- ✅ Profile data loading correctly from database
 
 ## Notes
-- The application will run without API keys, but features like login, profile storage, and AI matching will be disabled
+- Kakao OAuth login is fully functional
+- Profile storage and retrieval works through Supabase
+- AI matching with OpenAI embeddings and Pinecone is available
 - Kakao redirect URI is configured for the Replit domain
-- Frontend shows intro page even without backend integration
-- Backend gracefully handles missing credentials with warnings
