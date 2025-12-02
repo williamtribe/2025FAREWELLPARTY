@@ -283,6 +283,61 @@ async def admin_profiles(user: SessionUser = Depends(get_current_user)):
     return {"profiles": result.data}
 
 
+@app.post("/admin/reembed-all")
+async def reembed_all_profiles(user: SessionUser = Depends(get_current_user)):
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
+    if not supabase_service.client:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="supabase_not_configured",
+        )
+    
+    result = supabase_service.client.table("member_profiles").select("*").execute()
+    profiles = result.data or []
+    
+    stats = {"total": len(profiles), "intro_success": 0, "interests_success": 0, "errors": []}
+    
+    for profile in profiles:
+        kakao_id = profile.get("kakao_id")
+        if not kakao_id:
+            continue
+            
+        metadata = {"visibility": profile.get("visibility", "public"), "name": profile.get("name", "")}
+        
+        intro_text = normalize_intro_text(profile)
+        if intro_text.strip():
+            intro_vector = embedding_service.embed_member(intro_text)
+            if intro_vector:
+                try:
+                    pinecone_service.upsert_embedding(
+                        member_id=kakao_id,
+                        vector=intro_vector,
+                        metadata=metadata,
+                        namespace="intro",
+                    )
+                    stats["intro_success"] += 1
+                except Exception as e:
+                    stats["errors"].append(f"intro:{kakao_id}:{str(e)}")
+        
+        interests_text = normalize_interests_text(profile)
+        if interests_text.strip():
+            interests_vector = embedding_service.embed_member(interests_text)
+            if interests_vector:
+                try:
+                    pinecone_service.upsert_embedding(
+                        member_id=kakao_id,
+                        vector=interests_vector,
+                        metadata=metadata,
+                        namespace="interests",
+                    )
+                    stats["interests_success"] += 1
+                except Exception as e:
+                    stats["errors"].append(f"interests:{kakao_id}:{str(e)}")
+    
+    return {"message": "reembedding_complete", "stats": stats}
+
+
 @app.get("/kakao/friends")
 async def kakao_friends(access_token: str, user: SessionUser = Depends(get_current_user)):
     try:

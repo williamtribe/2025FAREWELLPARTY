@@ -54,6 +54,7 @@ function App() {
   const [strengthsInput, setStrengthsInput] = useState("");
   const [isEditing, setIsEditing] = useState(true);
   const [hostProfile, setHostProfile] = useState(defaultHostProfile);
+  const [reembedStatus, setReembedStatus] = useState("");
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -328,6 +329,24 @@ function App() {
     }
   };
 
+  const handleReembedAll = async () => {
+    if (!session?.is_admin) return;
+    setReembedStatus("임베딩 갱신 중...");
+    try {
+      const res = await fetch(`${API_BASE}/admin/reembed-all`, {
+        method: "POST",
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "실패");
+      setReembedStatus(
+        `완료! 총 ${data.stats.total}명 중 자기소개 ${data.stats.intro_success}개, 관심사 ${data.stats.interests_success}개 임베딩됨`
+      );
+    } catch (err) {
+      setReembedStatus(`오류: ${err.message}`);
+    }
+  };
+
   const isLoggedIn = Boolean(session?.session_token);
   const displayName = profile.name || session?.nickname || "이름 미입력";
   const displayTagline = profile.tagline || "한 줄 소개가 여기에 보여요";
@@ -511,6 +530,20 @@ function App() {
           다른 사람들 자기소개 카드 보기
         </Link>
       </div>
+
+      {session?.is_admin && (
+        <section className="panel admin-panel">
+          <div className="panel-head">
+            <h2>관리자 도구</h2>
+          </div>
+          <div className="admin-tools">
+            <button className="admin-btn" onClick={handleReembedAll}>
+              전체 프로필 임베딩 갱신
+            </button>
+            {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
+          </div>
+        </section>
+      )}
     </div>
   );
 
