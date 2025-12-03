@@ -6,25 +6,21 @@ Korean farewell party website with:
 - **Backend**: FastAPI (Python) on port 8000
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
-## Recent Changes (December 2, 2025)
+## Recent Changes (December 3, 2025)
+- **New simplified landing page at /**: Shows member count + swipeable public profile cards
+  - Displays "X명이 참여 중" with real-time count from database
+  - Browse public profiles with carousel navigation
+  - Cleaner UX before login - no long form visible
+- Profile editing moved to /my-profile (accessible after login)
+- Fixed Mafia42 role assignment to use only valid game roles
+  - Added validation to prevent AI from making up non-existent roles
+  - Roles: 마피아, 스파이, 짐승인간, 경찰, 의사, 해커, 판사, etc.
+- Admin "온보딩 다시하기" button for testing onboarding flow
+
+## Previous Changes (December 2, 2025)
 - Imported from GitHub repository
 - Updated Vite config to run on port 5000 with `allowedHosts: true` for Replit proxy
-- Updated backend CORS to allow port 5000
-- Fixed Pinecone package from `pinecone-client` to `pinecone`
-- Configured deployment with autoscale target
-- Set up unified startup script (start.sh) that runs both frontend and backend
 - Added "다른 사람들 자기소개 카드 보기" feature with Pinecone vector similarity search
-- New /others page with "나랑 닮은 사람" and "나랑 다른 사람" options
-- Added conditional button text: "3초 취향확인" if intro exists, "3초 AI생성 자기소개" if empty
-- **Separate intro/interests embeddings**: Now stores two types of embeddings in Pinecone namespaces
-  - "intro" namespace: Based on name, tagline, and intro text
-  - "interests" namespace: Based on interests and strengths
-- Updated /others page with criteria selection step (자기소개 기준 vs 관심사 기준)
-- Added admin panel with "전체 프로필 임베딩 갱신" button (visible to admins only)
-- **Categorized interest selection UI**: Replaced free-text input with category-based chip selection
-  - 10 categories: 애니, 운동, 게임, 기술, 음악, 사회, 철학, 책, 문화, 음식
-  - Users tap chips to select/deselect interests
-  - Selected interests display with visual highlighting
 - **8-step onboarding wizard**: New users redirected to /onboarding after login
   1. AI 취향 테스트 (card swipe to generate intro)
   2. 이름 확인/수정
