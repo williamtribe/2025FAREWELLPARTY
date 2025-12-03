@@ -26,6 +26,11 @@ Korean farewell party website with:
   - Drag-and-drop UI to reorder landing page profile cards
   - Arrow buttons for fine-tuned ordering
   - Saves display_order to Supabase (with fallback to updated_at if column missing)
+- **Admin fixed role assignment**: 
+  - Admins can manually assign Mafia42 roles to users (bypasses RAG similarity search)
+  - "🎯 직업 고정 배정" button opens modal with user list and job dropdown
+  - Fixed roles show immediately during onboarding without AI reasoning generation
+  - Stored in member_profiles.fixed_role column
 
 ## Previous Changes (December 2, 2025)
 - Imported from GitHub repository
