@@ -455,6 +455,12 @@ class FixedRolePayload(BaseModel):
     fixed_role: Optional[str] = None
 
 
+@app.get("/admin/jobs")
+async def get_mafia42_jobs():
+    """Get all Mafia42 jobs for debugging."""
+    jobs = supabase_service.fetch_mafia42_jobs()
+    return {"jobs": jobs}
+
 @app.get("/admin/fixed-roles")
 async def get_fixed_roles(user: SessionUser = Depends(get_current_user)):
     """Get all profiles with their fixed roles for admin management."""
@@ -558,6 +564,19 @@ MAFIA42_ROLES = {
     "교주팀": ["교주", "광신도"],
 }
 
+TEAM_NAME_MAP = {
+    "citizen": "시민팀",
+    "mafia": "마피아팀",
+    "cult": "교주팀",
+    "시민": "시민팀",
+    "마피아": "마피아팀",
+    "교주": "교주팀",
+}
+
+def _convert_team_name(team: str) -> str:
+    """Convert English team name to Korean team name."""
+    return TEAM_NAME_MAP.get(team, team if "팀" in team else f"{team}팀")
+
 
 class RoleAssignmentPayload(BaseModel):
     name: str = ""
@@ -600,7 +619,7 @@ async def assign_mafia_role(
         
         if job_data:
             job_name = job_data.get("name", fixed_role)
-            job_team = job_data.get("team", "시민팀")
+            job_team = _convert_team_name(job_data.get("team", "citizen"))
             job_story = job_data.get("story", "")
             job_code = str(job_data.get("code", ""))
             
@@ -665,14 +684,14 @@ async def assign_mafia_role(
     job_metadata = best_match.get("metadata", {})
     
     job_name = job_metadata.get("name", "시민")
-    job_team = job_metadata.get("team", "시민팀")
+    job_team = _convert_team_name(job_metadata.get("team", "citizen"))
     job_story = job_metadata.get("story", "")
     
     if not job_story:
         job_data = supabase_service.fetch_job_by_code(job_code)
         if job_data:
             job_name = job_data.get("name", job_name)
-            job_team = job_data.get("team", job_team)
+            job_team = _convert_team_name(job_data.get("team", "citizen"))
             job_story = job_data.get("story", "")
     
     system_prompt = f"""당신은 마피아42 게임의 직업 배정 전문가입니다.
