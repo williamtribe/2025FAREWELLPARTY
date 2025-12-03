@@ -12,6 +12,7 @@ import EventInfo from "./pages/EventInfo";
 import AIIntroPage from "./pages/AIIntroPage";
 import OthersProfilePage from "./pages/OthersProfilePage";
 import OnboardingPage from "./pages/OnboardingPage";
+import LandingPage from "./pages/LandingPage";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
@@ -116,12 +117,6 @@ function App() {
     fetchHostProfile();
   }, []);
 
-  useEffect(() => {
-    const seen = localStorage.getItem(LANDING_SEEN_KEY);
-    if (!seen && location.pathname === "/") {
-      navigate("/intro", { replace: true });
-    }
-  }, [location.pathname, navigate]);
 
   useEffect(() => {
     const handleMessage = async (event) => {
@@ -733,6 +728,16 @@ function App() {
           />
         } 
       />
+      <Route 
+        path="/" 
+        element={
+          <LandingPage 
+            session={session} 
+            onLogin={handleKakaoLogin}
+          />
+        } 
+      />
+      <Route path="/my-profile" element={mainPage} />
       <Route path="*" element={mainPage} />
     </Routes>
   );
