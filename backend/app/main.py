@@ -591,6 +591,61 @@ async def assign_mafia_role(
 특기: {', '.join(payload.strengths)}
 """
 
+    user_profile = supabase_service.fetch_profile(user.kakao_id)
+    fixed_role = user_profile.get("fixed_role") if user_profile else None
+    
+    if fixed_role:
+        jobs = supabase_service.fetch_mafia42_jobs()
+        job_data = next((j for j in jobs if j.get("name") == fixed_role), None)
+        
+        if job_data:
+            job_name = job_data.get("name", fixed_role)
+            job_team = job_data.get("team", "시민팀")
+            job_story = job_data.get("story", "")
+            job_code = str(job_data.get("code", ""))
+            
+            system_prompt = f"""당신은 마피아42 게임의 직업 배정 전문가입니다.
+사용자의 프로필과 배정된 직업의 스토리를 바탕으로, 왜 이 직업이 어울리는지 재미있고 친근하게 설명해주세요.
+
+배정된 직업: {job_name} ({job_team})
+직업 스토리: {job_story}
+
+2-3문장으로 왜 이 직업이 사용자에게 어울리는지 설명하세요.
+직업의 스토리와 사용자의 특징을 연결해서 작성하세요.
+"""
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"사용자 프로필:\n{profile_text}"},
+                    ],
+                    temperature=0.8,
+                    max_tokens=200,
+                )
+                reasoning = response.choices[0].message.content.strip()
+            except Exception as e:
+                logger.error(f"Fixed role reasoning error: {e}")
+                reasoning = f"당신에게 특별히 배정된 직업이에요. {job_name}으로서 멋진 활약을 기대해요!"
+            
+            return {
+                "team": job_team,
+                "role": job_name,
+                "code": job_code,
+                "reasoning": reasoning,
+                "similarity_score": 1.0,
+                "fixed": True,
+            }
+        else:
+            return {
+                "team": "시민팀",
+                "role": fixed_role,
+                "code": "",
+                "reasoning": f"관리자가 특별히 배정한 직업: {fixed_role}",
+                "similarity_score": 1.0,
+                "fixed": True,
+            }
+
     user_vector = embedding_service.embed_member(profile_text)
     
     if not user_vector:
