@@ -735,6 +735,7 @@ function App() {
           <LandingPage 
             session={session} 
             onLogin={handleKakaoLogin}
+            onShare={shareToKakao}
           />
         } 
       />

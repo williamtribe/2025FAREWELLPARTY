@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-export default function LandingPage({ session, onLogin }) {
-  const navigate = useNavigate();
+export default function LandingPage({ session, onLogin, onShare }) {
   const [profileCount, setProfileCount] = useState(0);
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -111,16 +110,26 @@ export default function LandingPage({ session, onLogin }) {
     }
   };
 
-  const handleJoin = () => {
-    if (isLoggedIn) {
-      navigate('/my-profile');
-    } else {
-      onLogin();
-    }
-  };
-
   return (
     <div className="landing-page">
+      {isLoggedIn ? (
+        <>
+          <button className="floating-cta share" onClick={onShare}>
+            카톡 공유
+          </button>
+          <Link className="floating-cta ai-intro" to="/my-profile">
+            내 프로필
+          </Link>
+        </>
+      ) : (
+        <button className="floating-cta login-btn" onClick={onLogin}>
+          카톡 로그인 먼저!
+        </button>
+      )}
+      <Link className="floating-cta info" to="/info">
+        행사 정보
+      </Link>
+
       <div className="landing-header">
         <p className="eyebrow">2025 송년회</p>
         <h1>누가 오나요?</h1>
@@ -200,25 +209,6 @@ export default function LandingPage({ session, onLogin }) {
           <p className="muted">첫 번째로 등록해보세요!</p>
         </div>
       )}
-
-      <div className="landing-actions">
-        <button className="btn-primary" onClick={handleJoin}>
-          {isLoggedIn ? "내 프로필 보기" : "나도 참여하기"}
-        </button>
-        
-        {isLoggedIn && (
-          <Link className="btn-secondary" to="/others">
-            나와 비슷한 사람 찾기
-          </Link>
-        )}
-        
-        <Link className="btn-tertiary" to="/intro">
-          호스트 소개
-        </Link>
-        <Link className="btn-tertiary" to="/info">
-          행사 정보
-        </Link>
-      </div>
     </div>
   );
 }
