@@ -1,0 +1,125 @@
+2025-12-03 19:12:12.65
+3437bf18
+User
+2025-12-03 10:12:12,659 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:12.94
+3437bf18
+User
+2025-12-03 10:12:12,941 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id "HTTP/2 200 OK"
+2025-12-03 19:12:13.24
+3437bf18
+User
+2025-12-03 10:12:13,240 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id%2Cname%2Ctagline%2Cintro%2Cinterests%2Cstrengths%2Cvisibility%2Cupdated_at&visibility=eq.public&order=updated_at.desc&limit=50 "HTTP/2 200 OK"
+2025-12-03 19:12:13.50
+3437bf18
+User
+2025-12-03 10:12:13,506 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:13.79
+3437bf18
+User
+2025-12-03 10:12:13,790 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id "HTTP/2 200 OK"
+2025-12-03 19:12:14.05
+3437bf18
+User
+2025-12-03 10:12:14,053 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:14.33
+3437bf18
+User
+2025-12-03 10:12:14,332 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id%2Cname%2Ctagline%2Cintro%2Cinterests%2Cstrengths%2Cvisibility%2Cupdated_at&visibility=eq.public&order=updated_at.desc&limit=50 "HTTP/2 200 OK"
+2025-12-03 19:12:14.59
+3437bf18
+User
+2025-12-03 10:12:14,599 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:33.04
+3437bf18
+User
+2025-12-03 10:12:33,044 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:33.49
+3437bf18
+User
+2025-12-03 10:12:33,491 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:42.27
+3437bf18
+User
+2025-12-03 10:12:42,278 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:42.76
+3437bf18
+User
+2025-12-03 10:12:42,760 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:45.22
+3437bf18
+User
+2025-12-03 10:12:45,219 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:45.72
+3437bf18
+User
+2025-12-03 10:12:45,726 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:49.62
+3437bf18
+User
+2025-12-03 10:12:49,620 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:49.89
+3437bf18
+User
+2025-12-03 10:12:49,899 | INFO | httpx | HTTP Request: POST https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno "HTTP/2 201 Created"
+2025-12-03 19:12:51.15
+3437bf18
+User
+2025-12-03 10:12:51,158 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4621047465&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:51.80
+3437bf18
+User
+2025-12-03 10:12:51,802 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id "HTTP/2 200 OK"
+2025-12-03 19:12:52.06
+3437bf18
+User
+2025-12-03 10:12:52,066 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id%2Cname%2Ctagline%2Cintro%2Cinterests%2Cstrengths%2Cvisibility%2Cupdated_at&visibility=eq.public&order=updated_at.desc&limit=50 "HTTP/2 200 OK"
+2025-12-03 19:12:52.33
+3437bf18
+User
+2025-12-03 10:12:52,331 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4621047465&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:52.60
+3437bf18
+User
+2025-12-03 10:12:52,601 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id "HTTP/2 200 OK"
+2025-12-03 19:12:52.86
+3437bf18
+User
+2025-12-03 10:12:52,865 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id%2Cname%2Ctagline%2Cintro%2Cinterests%2Cstrengths%2Cvisibility%2Cupdated_at&visibility=eq.public&order=updated_at.desc&limit=50 "HTTP/2 200 OK"
+2025-12-03 19:12:55.47
+3437bf18
+User
+2025-12-03 10:12:55,475 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:12:55.74
+3437bf18
+User
+2025-12-03 10:12:55,743 | INFO | httpx | HTTP Request: PATCH https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?kakao_id=eq.4621095525 "HTTP/2 200 OK"
+2025-12-03 19:13:03.99
+3437bf18
+User
+2025-12-03 10:13:03,993 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:13:04.24
+3437bf18
+User
+2025-12-03 10:13:04,248 | INFO | httpx | HTTP Request: PATCH https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?kakao_id=eq.4621095525 "HTTP/2 200 OK"
+2025-12-03 19:13:08.23
+3437bf18
+User
+2025-12-03 10:13:08,230 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:13:08.48
+3437bf18
+User
+2025-12-03 10:13:08,482 | INFO | httpx | HTTP Request: PATCH https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?kakao_id=eq.4621095525 "HTTP/2 200 OK"
+2025-12-03 19:13:14.71
+3437bf18
+User
+2025-12-03 10:13:14,717 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?select=%2A&kakao_id=eq.4621095525&limit=1 "HTTP/2 200 OK"
+2025-12-03 19:13:14.97
+3437bf18
+User
+2025-12-03 10:13:14,975 | INFO | httpx | HTTP Request: PATCH https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?kakao_id=eq.4621095525 "HTTP/2 200 OK"
+
+2025-12-03 19:13:14.97
+3437bf18
+User
+2025-12-03 10:13:14,975 | INFO | httpx | HTTP Request: PATCH https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/intro_yesorno?kakao_id=eq.4621095525 "HTTP/2 200 OK"
