@@ -152,7 +152,9 @@ class SupabaseService:
             }).eq("kakao_id", kakao_id).execute()
             return {"data": result.data}
         except Exception as e:
-            if "profile_image" in str(e) and "does not exist" in str(e):
+            error_str = str(e).lower()
+            if "profile_image" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                logger.warning(f"profile_image column not found, skipping update for {kakao_id}")
                 return {"skipped": True, "reason": "profile_image_column_not_exists"}
             raise
 

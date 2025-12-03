@@ -1,0 +1,74 @@
+12-04 00:16:18
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12-04 00:16:18
+await self.middleware_stack(scope, receive, send)
+12-04 00:16:18
+raise exc
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/routing.py", line 111, in app
+12-04 00:16:18
+await route.handle(scope, receive, send)
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/applications.py", line 1134, in __call__
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/routing.py", line 290, in run_endpoint_function
+12-04 00:16:18
+raw_response = await run_endpoint_function(
+12-04 00:16:18
+supabase_service.update_profile_image(kakao_id, profile_image_url)
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+12-04 00:16:18
+await self.app(scope, receive, _send)
+12-04 00:16:18
+ERROR: Exception in ASGI application
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/routing.py", line 125, in app
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/postgrest/_sync/request_builder.py", line 53, in execute
+12-04 00:16:18
+^^^^^^^^^^^^^^^^
+12-04 00:16:18
+await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+12-04 00:16:18
+raise exc
+12-04 00:16:18
+Traceback (most recent call last):
+12-04 00:16:18
+postgrest.exceptions.APIError: {'message': "Could not find the 'profile_image' column of 'member_profiles' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+12-04 00:16:18
+raise APIError(dict(json_obj))
+12-04 00:16:18
+File "/home/runner/workspace/backend/app/main.py", line 139, in kakao_callback
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+12-04 00:16:18
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12-04 00:16:18
+await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+12-04 00:16:18
+await self.app(scope, receive, send)
+12-04 00:16:18
+await super().__call__(scope, receive, send)
+12-04 00:16:18
+File "/home/runner/workspace/backend/app/services.py", line 152, in update_profile_image
+12-04 00:16:18
+result = await app( # type: ignore[func-returns-value]
+12-04 00:16:18
+raise exc
+12-04 00:16:18
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+12-04 00:16:18
+return await self.app(scope, receive, send)
+12-04 00:16:18
+await app(scope, receive, sender)
+12-04 00:16:18
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12-04 00:16:18
+await self.app(scope, receive, send)
