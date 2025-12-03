@@ -12,9 +12,13 @@ Korean farewell party website with:
   - Browse public profiles with carousel navigation
   - Cleaner UX before login - no long form visible
 - Profile editing moved to /my-profile (accessible after login)
-- Fixed Mafia42 role assignment to use only valid game roles
-  - Added validation to prevent AI from making up non-existent roles
-  - Roles: 마피아, 스파이, 짐승인간, 경찰, 의사, 해커, 판사, etc.
+- **Mafia42 role assignment overhaul - now uses vector similarity search**:
+  - Job stories stored in Supabase `mafia42_jobs` table with code, name, team, story columns
+  - Stories embedded into Pinecone (namespace: "mafia42_jobs") via admin panel
+  - User profile text is embedded and matched against job stories for best fit
+  - OpenAI generates personalized reasoning explaining why the job fits the user
+  - Job images displayed from `/job_images/` folder with code-based mapping
+  - Admin button "🎭 직업 스토리 임베딩" to re-embed all job stories
 - Admin "온보딩 다시하기" button for testing onboarding flow
 - **Kakao profile image support**: Profile images auto-update on login (new + existing users)
 - **Developer comment styling**: Text starting with `*` displays in gray italic font

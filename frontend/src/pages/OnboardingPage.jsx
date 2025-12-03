@@ -500,15 +500,14 @@ export default function OnboardingPage({ session, onComplete }) {
               </div>
             ) : roleResult ? (
               <div className="role-result">
-                {roleResult.code && JOB_IMAGE_MAP[roleResult.code] && (
-                  <div className="role-image-container">
-                    <img 
-                      src={JOB_IMAGE_MAP[roleResult.code]} 
-                      alt={roleResult.role}
-                      className="role-image"
-                    />
-                  </div>
-                )}
+                <div className="role-image-container">
+                  <img 
+                    src={JOB_IMAGE_MAP[roleResult.code] || "/job_images/이레귤러_시민_시민 스킨.png"} 
+                    alt={roleResult.role}
+                    className="role-image"
+                    onError={(e) => { e.target.src = "/job_images/이레귤러_시민_시민 스킨.png"; }}
+                  />
+                </div>
                 <div className={`role-badge team-${roleResult.team}`}>
                   <span className="role-team">{roleResult.team}</span>
                   <span className="role-name">{roleResult.role}</span>
