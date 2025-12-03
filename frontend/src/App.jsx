@@ -70,6 +70,7 @@ function App() {
   const [isEditing, setIsEditing] = useState(true);
   const [hostProfile, setHostProfile] = useState(defaultHostProfile);
   const [reembedStatus, setReembedStatus] = useState("");
+  const [jobEmbedStatus, setJobEmbedStatus] = useState("");
   const [roleResult, setRoleResult] = useState(null);
   const [roleLoading, setRoleLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -379,6 +380,24 @@ function App() {
       );
     } catch (err) {
       setReembedStatus(`오류: ${err.message}`);
+    }
+  };
+
+  const handleEmbedJobs = async () => {
+    if (!session?.is_admin) return;
+    setJobEmbedStatus("직업 스토리 임베딩 중...");
+    try {
+      const res = await fetch(`${API_BASE}/admin/embed-jobs`, {
+        method: "POST",
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "실패");
+      setJobEmbedStatus(
+        `완료! 총 ${data.total_jobs}개 중 ${data.embedded_count}개 직업 스토리 임베딩됨`
+      );
+    } catch (err) {
+      setJobEmbedStatus(`오류: ${err.message}`);
     }
   };
 
@@ -741,7 +760,11 @@ function App() {
             >
               {orderLoading ? "불러오는 중..." : "📋 프로필 순서 관리"}
             </button>
+            <button className="admin-btn" onClick={handleEmbedJobs}>
+              🎭 직업 스토리 임베딩
+            </button>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
+            {jobEmbedStatus && <p className="admin-status">{jobEmbedStatus}</p>}
             {orderStatus && <p className="admin-status">{orderStatus}</p>}
           </div>
         </section>
