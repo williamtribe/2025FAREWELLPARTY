@@ -534,7 +534,6 @@ async def assign_mafia_role(
     user: SessionUser = Depends(get_current_user)
 ):
     from openai import OpenAI
-    import json
     
     openai_key = settings.openai_api_key
     if not openai_key:
@@ -545,11 +544,6 @@ async def assign_mafia_role(
     
     client = OpenAI(api_key=openai_key)
     
-    all_roles = []
-    for team, roles in MAFIA42_ROLES.items():
-        for role in roles:
-            all_roles.append(f"{team}: {role}")
-    
     profile_text = f"""
 이름: {payload.name}
 한 줄 소개: {payload.tagline}
@@ -557,21 +551,44 @@ async def assign_mafia_role(
 관심사: {', '.join(payload.interests)}
 특기: {', '.join(payload.strengths)}
 """
+
+    user_vector = embedding_service.embed_member(profile_text)
+    
+    if not user_vector:
+        return _fallback_role_assignment()
+    
+    matches = pinecone_service.query_by_vector(
+        vector=user_vector,
+        top_k=3,
+        namespace="mafia42_jobs"
+    )
+    
+    if not matches:
+        return _fallback_role_assignment()
+    
+    best_match = matches[0]
+    job_code = best_match.get("id", "")
+    job_metadata = best_match.get("metadata", {})
+    
+    job_name = job_metadata.get("name", "시민")
+    job_team = job_metadata.get("team", "시민팀")
+    job_story = job_metadata.get("story", "")
+    
+    if not job_story:
+        job_data = supabase_service.fetch_job_by_code(job_code)
+        if job_data:
+            job_name = job_data.get("name", job_name)
+            job_team = job_data.get("team", job_team)
+            job_story = job_data.get("story", "")
     
     system_prompt = f"""당신은 마피아42 게임의 직업 배정 전문가입니다.
-사용자의 프로필을 분석해서 가장 어울리는 마피아42 직업을 배정해주세요.
+사용자의 프로필과 배정된 직업의 스토리를 바탕으로, 왜 이 직업이 어울리는지 재미있고 친근하게 설명해주세요.
 
-⚠️ 중요: 아래 목록에 있는 직업만 사용하세요! 목록에 없는 직업(변호사, 교사, 의사 등 현실 직업)은 절대 사용하지 마세요!
+배정된 직업: {job_name} ({job_team})
+직업 스토리: {job_story}
 
-【마피아팀】 마피아, 스파이, 짐승인간, 마담, 도둑, 마녀, 과학자, 사기꾼, 청부업자, 악인
-【시민팀】 경찰, 자경단원, 요원, 의사, 군인, 정치인, 영매, 연인, 건달, 기자, 사립탐정, 도굴꾼, 테러리스트, 성직자, 예언자, 판사, 간호사, 마술사, 해커, 심리학자, 용병, 공무원, 비밀결사, 파파라치, 최면술사, 점쟁이, 시민
-【교주팀】 교주, 광신도
-
-반드시 위 목록에서만 선택하고, 다음 JSON 형식으로만 응답하세요:
-{{"team": "마피아팀/시민팀/교주팀 중 하나", "role": "위 목록의 직업명", "reasoning": "왜 이 직업이 어울리는지 2-3문장으로 재미있게 설명"}}
-
-예시:
-{{"team": "시민팀", "role": "해커", "reasoning": "AI와 프로그래밍에 관심이 많고 데이터를 다루는 당신! 디지털 세계에서 정보를 캐내는 해커가 딱이에요."}}
+2-3문장으로 왜 이 직업이 사용자에게 어울리는지 설명하세요.
+직업의 스토리와 사용자의 특징을 연결해서 작성하세요.
 """
 
     try:
@@ -579,51 +596,45 @@ async def assign_mafia_role(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 프로필을 분석해서 마피아42 직업을 배정해주세요:\n{profile_text}"},
+                {"role": "user", "content": f"사용자 프로필:\n{profile_text}"},
             ],
             temperature=0.8,
-            max_tokens=300,
+            max_tokens=200,
         )
         
-        result_text = response.choices[0].message.content.strip()
-        if result_text.startswith("```"):
-            result_text = result_text.split("```")[1]
-            if result_text.startswith("json"):
-                result_text = result_text[4:]
-        result_text = result_text.strip()
-        
-        result = json.loads(result_text)
-        team = result.get("team", "시민팀")
-        role = result.get("role", "시민")
-        reasoning = result.get("reasoning", "당신은 평범하지만 특별한 시민입니다!")
-        
-        valid_role = False
-        for t, roles in MAFIA42_ROLES.items():
-            if role in roles:
-                team = t
-                valid_role = True
-                break
-        
-        if not valid_role:
-            import random
-            team = random.choice(list(MAFIA42_ROLES.keys()))
-            role = random.choice(MAFIA42_ROLES[team])
-            reasoning = f"AI가 살짝 헷갈렸지만, 당신에게 어울리는 {role}(으)로 배정했어요!"
+        reasoning = response.choices[0].message.content.strip()
         
         return {
-            "team": team,
-            "role": role,
+            "team": job_team,
+            "role": job_name,
+            "code": job_code,
             "reasoning": reasoning,
-        }
-    except json.JSONDecodeError:
-        return {
-            "team": "시민팀",
-            "role": "시민",
-            "reasoning": "분석 중 오류가 있었지만, 당신은 분명 멋진 시민이에요!",
+            "similarity_score": best_match.get("score", 0),
         }
     except Exception as e:
-        logger.error(f"Role assignment error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"role_assignment_error: {str(e)}"
-        )
+        logger.error(f"Role reasoning generation error: {e}")
+        return {
+            "team": job_team,
+            "role": job_name,
+            "code": job_code,
+            "reasoning": f"당신의 특성이 {job_name}과(와) 잘 어울려요!",
+            "similarity_score": best_match.get("score", 0),
+        }
+
+
+def _fallback_role_assignment():
+    """Fallback when vector search fails."""
+    import random
+    fallback_roles = [
+        {"team": "시민팀", "role": "시민", "code": "citizen"},
+        {"team": "시민팀", "role": "경찰", "code": "police"},
+        {"team": "시민팀", "role": "의사", "code": "doctor"},
+    ]
+    chosen = random.choice(fallback_roles)
+    return {
+        "team": chosen["team"],
+        "role": chosen["role"],
+        "code": chosen["code"],
+        "reasoning": "직업 매칭 서비스를 준비 중이에요. 일단 멋진 역할을 배정해드렸어요!",
+        "similarity_score": 0,
+    }
