@@ -38,6 +38,47 @@ const EXAMPLE_STRENGTHS = [
   "긍정적",
 ];
 
+const JOB_IMAGE_MAP = {
+  "gangster": "/job_images/기본_구버전_건달_스킨_완성.png",
+  "scientist": "/job_images/기본_구버전_과학자_스킨_완료.png",
+  "fanatic": "/job_images/기본_구버전_광신도_광신도_최종.png",
+  "cult_leader": "/job_images/기본_구버전_교주_스킨완성.png",
+  "reporter": "/job_images/기본_구버전_기자_기자_완성.png",
+  "grave_robber": "/job_images/기본_구버전_도굴꾼_완료.png",
+  "thief": "/job_images/기본_구버전_도둑_도둑_완성.png",
+  "magician": "/job_images/기본_구버전_마술사_마술사_완.png",
+  "mafia": "/job_images/기본_구버전_마피아_마피아_완료.png",
+  "priest": "/job_images/기본_구버전_성직자_성직자_완성2.png",
+  "spy": "/job_images/기본_구버전_스파이_스파이_완성.png",
+  "lover": "/job_images/기본_구버전_연인_완료.png",
+  "medium": "/job_images/기본_구버전_영매_영매_완성.png",
+  "mercenary": "/job_images/기본_구버전_용병_용병 기본 스킨_최종.png",
+  "terrorist": "/job_images/기본_구버전_테러리스트_테러_완성.png",
+  "hacker": "/job_images/기본_구버전_해커_해커 스킨_로고추가.png",
+  "official": "/job_images/기본_기본스킨_ 공무원_공무원_최종.png",
+  "police": "/job_images/기본_기본스킨_경찰_경찰 리뉴얼_최종2.png",
+  "soldier": "/job_images/기본_기본스킨_군인_군인 리뉴얼.png",
+  "madam": "/job_images/기본_기본스킨_마담_마담 리뉴얼.png",
+  "secret_society": "/job_images/기본_기본스킨_비밀결사_비밀결사 최종.png",
+  "swindler": "/job_images/기본_기본스킨_사기꾼_사기꾼.png",
+  "agent": "/job_images/기본_기본스킨_요원_요원_최종.png",
+  "doctor": "/job_images/기본_기본스킨_의사_의사 리뉴얼.png",
+  "fortune_teller": "/job_images/기본_기본스킨_점쟁이_점쟁이_기본_최종_오오라.png",
+  "politician": "/job_images/기본_기본스킨_정치인_정치 전신_최종2.png",
+  "werewolf": "/job_images/기본_기본스킨_짐승인간_psd (작업중)_짐승인간 리터칭2.png",
+  "hitman": "/job_images/기본_기본스킨_청부업자_청부업자_완.png",
+  "hypnotist": "/job_images/기본_기본스킨_최면술사_마케팅_최면술사_마케팅용_수정이미지.png",
+  "paparazzi": "/job_images/기본_기본스킨_파파라치_파파라치_오오라.png",
+  "nurse": "/job_images/듀얼_간호사_psd_간호사_완료.png",
+  "witch": "/job_images/듀얼_마녀_5.png",
+  "psychologist": "/job_images/듀얼_심리학자_심리학자.png",
+  "prophet": "/job_images/듀얼_예언가_psd_예언가.png",
+  "vigilante": "/job_images/듀얼_자경단_psd_스킨_완료.png",
+  "judge": "/job_images/듀얼_판사_psd_판사.png",
+  "citizen": "/job_images/이레귤러_시민_시민 스킨.png",
+  "villain": "/job_images/저택_저택_악인_악인 스킨.png",
+};
+
 export default function OnboardingPage({ session, onComplete }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -459,6 +500,15 @@ export default function OnboardingPage({ session, onComplete }) {
               </div>
             ) : roleResult ? (
               <div className="role-result">
+                {roleResult.code && JOB_IMAGE_MAP[roleResult.code] && (
+                  <div className="role-image-container">
+                    <img 
+                      src={JOB_IMAGE_MAP[roleResult.code]} 
+                      alt={roleResult.role}
+                      className="role-image"
+                    />
+                  </div>
+                )}
                 <div className={`role-badge team-${roleResult.team}`}>
                   <span className="role-team">{roleResult.team}</span>
                   <span className="role-name">{roleResult.role}</span>

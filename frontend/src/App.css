@@ -1851,6 +1851,23 @@ button.secondary:disabled {
   font-weight: 700;
 }
 
+.role-image-container {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.role-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
 .role-reasoning {
   font-size: 1rem;
   color: #555;
