@@ -43,6 +43,7 @@ app.add_middleware(
 class SessionUser(BaseModel):
     kakao_id: str
     nickname: Optional[str] = None
+    profile_image_url: Optional[str] = None
     is_admin: bool = False
 
 
@@ -53,6 +54,7 @@ class ProfilePayload(BaseModel):
     interests: List[str] = Field(default_factory=list)
     strengths: List[str] = Field(default_factory=list)
     contact: Optional[str] = None
+    profile_image: Optional[str] = None
     visibility: Literal["public", "private", "members"] = "public"
 
 
@@ -125,14 +127,15 @@ async def kakao_callback(code: str, state: Optional[str] = None):
         ) from exc
 
     kakao_id = str(user_info["id"])
-    nickname = (
-        user_info.get("kakao_account", {})
-        .get("profile", {})
-        .get("nickname", "친구")
-    )
+    kakao_account = user_info.get("kakao_account", {})
+    profile_data = kakao_account.get("profile", {})
+    nickname = profile_data.get("nickname", "친구")
+    profile_image_url = profile_data.get("profile_image_url", "")
+    
     payload = {
         "kakao_id": kakao_id,
         "nickname": nickname,
+        "profile_image_url": profile_image_url,
         "is_admin": kakao_id in settings.admin_ids,
     }
     session_token = session_signer.sign(payload)

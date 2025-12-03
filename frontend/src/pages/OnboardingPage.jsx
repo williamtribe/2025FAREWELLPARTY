@@ -220,6 +220,7 @@ export default function OnboardingPage({ session, onComplete }) {
         headers: authHeaders,
         body: JSON.stringify({
           ...profile,
+          profile_image: session?.profile_image_url || "",
           mafia_role: roleResult?.role,
           mafia_team: roleResult?.team,
         }),

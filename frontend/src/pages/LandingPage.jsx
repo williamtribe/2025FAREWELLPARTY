@@ -170,6 +170,15 @@ export default function LandingPage({ session, onLogin, onShare }) {
                 transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
               }}
             >
+              {currentProfile?.profile_image && (
+                <div className="card-avatar">
+                  <img 
+                    src={currentProfile.profile_image} 
+                    alt={currentProfile?.name || "프로필"} 
+                    onError={(e) => e.target.style.display = 'none'}
+                  />
+                </div>
+              )}
               <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
               <p className="card-tagline">{currentProfile?.tagline || ""}</p>
               <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>

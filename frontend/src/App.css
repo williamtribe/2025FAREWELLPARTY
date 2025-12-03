@@ -98,6 +98,21 @@ body {
   min-height: 200px;
 }
 
+.card-avatar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.card-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(31, 122, 77, 0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .card-name {
   font-size: 1.4rem;
   margin: 0 0 0.25rem;
