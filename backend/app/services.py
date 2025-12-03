@@ -584,16 +584,20 @@ class PineconeService:
                          metadata: Dict[str, Any], namespace: str = "") -> Dict[str, Any]:
         if not self.index:
             return {"skipped": True, "reason": "pinecone_not_configured"}
-        upsert_result = self.index.upsert(
-            vectors=[{
-                "id": member_id,
-                "values": vector,
-                "metadata": metadata
-            }],
-            namespace=namespace
-        )
-        upserted_count = getattr(upsert_result, "upserted_count", None)
-        return {"upserted_count": upserted_count, "namespace": namespace}
+        try:
+            upsert_result = self.index.upsert(
+                vectors=[{
+                    "id": member_id,
+                    "values": vector,
+                    "metadata": metadata
+                }],
+                namespace=namespace
+            )
+            upserted_count = getattr(upsert_result, "upserted_count", None)
+            return {"upserted_count": upserted_count, "namespace": namespace}
+        except Exception as e:
+            logger.error(f"Pinecone upsert error for {member_id}: {e}")
+            return {"skipped": True, "reason": f"upsert_error: {str(e)[:100]}"}
 
     def fetch_vector(self, member_id: str, namespace: str = "") -> Optional[List[float]]:
         if not self.index:

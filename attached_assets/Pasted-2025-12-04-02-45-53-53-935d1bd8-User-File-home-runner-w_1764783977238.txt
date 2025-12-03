@@ -1,0 +1,86 @@
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+
+2025-12-04 02:45:53.53
+935d1bd8
+User
+await app(scope, receive, sender)
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/backend/app/services.py", line 587, in upsert_embedding
+2025-12-04 02:45:53.53
+935d1bd8
+User
+await super().__call__(scope, receive, send)
+2025-12-04 02:45:53.53
+935d1bd8
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-04 02:45:53.53
+935d1bd8
+User
+await self.middleware_stack(scope, receive, send)
+2025-12-04 02:45:53.53
+935d1bd8
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-04 02:45:53.53
+935d1bd8
+User
+result = await app( # type: ignore[func-returns-value]
+2025-12-04 02:45:53.53
+935d1bd8
+User
+await self.app(scope, receive, send)
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+2025-12-04 02:45:53.53
+935d1bd8
+User
+raw_response = await run_endpoint_function(
+2025-12-04 02:45:53.53
+935d1bd8
+User
+return await self.app(scope, receive, send)
+2025-12-04 02:45:53.53
+935d1bd8
+User
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+2025-12-04 02:45:53.53
+935d1bd8
+User
+result = pinecone_service.upsert_embedding(
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/backend/app/main.py", line 426, in embed_mafia42_jobs
+2025-12-04 02:45:53.53
+935d1bd8
+User
+Traceback (most recent call last):
+2025-12-04 02:45:53.53
+935d1bd8
+User
+^^^^^^^^^^^^^^^^^^
+2025-12-04 02:45:53.53
+935d1bd8
+User
+raise exc
+2025-12-04 02:45:53.53
+935d1bd8
+User
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+

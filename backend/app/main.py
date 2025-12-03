@@ -417,23 +417,30 @@ async def embed_mafia42_jobs(user: SessionUser = Depends(get_current_user)):
             continue
         
         text_to_embed = f"{name}: {story}"
-        vector = embedding_service.embed_member(text_to_embed)
         
-        if not vector:
-            failed_jobs.append({"code": code, "reason": "embedding_failed"})
-            continue
-        
-        result = pinecone_service.upsert_embedding(
-            member_id=code,
-            vector=vector,
-            metadata={"code": code, "name": name, "team": team, "story": story},
-            namespace="mafia42_jobs"
-        )
-        
-        if result.get("skipped"):
-            failed_jobs.append({"code": code, "reason": result.get("reason")})
-        else:
-            embedded_count += 1
+        try:
+            vector = embedding_service.embed_member(text_to_embed)
+            
+            if not vector:
+                failed_jobs.append({"code": code, "reason": "embedding_failed"})
+                continue
+            
+            story_truncated = story[:2000] if len(story) > 2000 else story
+            
+            result = pinecone_service.upsert_embedding(
+                member_id=code,
+                vector=vector,
+                metadata={"code": code, "name": name, "team": team, "story": story_truncated},
+                namespace="mafia42_jobs"
+            )
+            
+            if result.get("skipped"):
+                failed_jobs.append({"code": code, "reason": result.get("reason")})
+            else:
+                embedded_count += 1
+        except Exception as e:
+            logger.error(f"Error embedding job {code}: {e}")
+            failed_jobs.append({"code": code, "reason": str(e)[:100]})
     
     return {
         "message": "jobs_embedded",
