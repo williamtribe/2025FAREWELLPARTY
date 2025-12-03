@@ -137,31 +137,54 @@ body {
   color: #5a7a60;
 }
 
-.carousel-nav {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+.carousel-card-wrapper {
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
 }
 
-.nav-btn {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: 1px solid rgba(31, 122, 77, 0.2);
-  background: white;
-  border-radius: 10px;
-  font-size: 0.9rem;
+.carousel-card-wrapper:active {
+  cursor: grabbing;
+}
+
+.swipe-hint {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #8a9a8c;
+  margin-top: 0.75rem;
+  opacity: 0.8;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(31, 122, 77, 0.2);
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.nav-btn:hover:not(:disabled) {
-  background: rgba(31, 122, 77, 0.08);
-  border-color: #1f7a4d;
+.dot.active {
+  background: #1f7a4d;
+  transform: scale(1.2);
 }
 
-.nav-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.dot:hover:not(.active) {
+  background: rgba(31, 122, 77, 0.4);
+}
+
+.dot-more {
+  font-size: 0.75rem;
+  color: #8a9a8c;
+  margin-left: 0.25rem;
 }
 
 .landing-actions {

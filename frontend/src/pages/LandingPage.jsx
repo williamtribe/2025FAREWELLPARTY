@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -8,6 +8,11 @@ export default function LandingPage({ session, onLogin }) {
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,14 +38,75 @@ export default function LandingPage({ session, onLogin }) {
   const currentProfile = publicProfiles[currentIndex];
 
   const goNext = () => {
-    if (currentIndex < publicProfiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    if (currentIndex < publicProfiles.length - 1 && !isAnimating) {
+      setIsAnimating(true);
+      setSwipeOffset(-100);
+      setTimeout(() => {
+        setCurrentIndex(currentIndex + 1);
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }, 200);
     }
   };
 
   const goPrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+    if (currentIndex > 0 && !isAnimating) {
+      setIsAnimating(true);
+      setSwipeOffset(100);
+      setTimeout(() => {
+        setCurrentIndex(currentIndex - 1);
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }, 200);
+    }
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+    const diff = touchEndX.current - touchStartX.current;
+    if (Math.abs(diff) < 150) {
+      setSwipeOffset(diff * 0.3);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchEndX.current - touchStartX.current;
+    setSwipeOffset(0);
+    
+    if (diff > 50) {
+      goPrev();
+    } else if (diff < -50) {
+      goNext();
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    touchStartX.current = e.clientX;
+    touchEndX.current = e.clientX;
+  };
+
+  const handleMouseMove = (e) => {
+    if (e.buttons !== 1) return;
+    touchEndX.current = e.clientX;
+    const diff = touchEndX.current - touchStartX.current;
+    if (Math.abs(diff) < 150) {
+      setSwipeOffset(diff * 0.3);
+    }
+  };
+
+  const handleMouseUp = () => {
+    const diff = touchEndX.current - touchStartX.current;
+    setSwipeOffset(0);
+    
+    if (diff > 50) {
+      goPrev();
+    } else if (diff < -50) {
+      goNext();
     }
   };
 
@@ -63,37 +129,54 @@ export default function LandingPage({ session, onLogin }) {
             {currentIndex + 1} / {publicProfiles.length}
           </div>
           
-          <div className="carousel-card">
-            <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
-            <p className="card-tagline">{currentProfile?.tagline || ""}</p>
-            <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
-            {currentProfile?.interests?.length > 0 && (
-              <div className="card-chips">
-                {currentProfile.interests.slice(0, 5).map((interest, idx) => (
-                  <span key={idx} className="chip">{interest}</span>
-                ))}
-                {currentProfile.interests.length > 5 && (
-                  <span className="chip more">+{currentProfile.interests.length - 5}</span>
-                )}
-              </div>
-            )}
+          <div 
+            className="carousel-card-wrapper"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <div 
+              className="carousel-card"
+              style={{
+                transform: `translateX(${swipeOffset}px)`,
+                transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
+              }}
+            >
+              <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
+              <p className="card-tagline">{currentProfile?.tagline || ""}</p>
+              <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
+              {currentProfile?.interests?.length > 0 && (
+                <div className="card-chips">
+                  {currentProfile.interests.slice(0, 5).map((interest, idx) => (
+                    <span key={idx} className="chip">{interest}</span>
+                  ))}
+                  {currentProfile.interests.length > 5 && (
+                    <span className="chip more">+{currentProfile.interests.length - 5}</span>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="swipe-hint">
+              ← 슥슥 넘겨보세요 →
+            </div>
           </div>
 
-          <div className="carousel-nav">
-            <button 
-              className="nav-btn prev" 
-              onClick={goPrev}
-              disabled={currentIndex === 0}
-            >
-              ← 이전
-            </button>
-            <button 
-              className="nav-btn next" 
-              onClick={goNext}
-              disabled={currentIndex === publicProfiles.length - 1}
-            >
-              다음 →
-            </button>
+          <div className="carousel-dots">
+            {publicProfiles.slice(0, 10).map((_, idx) => (
+              <span 
+                key={idx} 
+                className={`dot ${idx === currentIndex ? 'active' : ''}`}
+                onClick={() => !isAnimating && setCurrentIndex(idx)}
+              />
+            ))}
+            {publicProfiles.length > 10 && (
+              <span className="dot-more">...</span>
+            )}
           </div>
         </div>
       ) : (
