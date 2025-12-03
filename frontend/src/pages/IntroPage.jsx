@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import TinderCard from 'react-tinder-card'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ""
 
-function IntroPage({ onLogin, onSeenIntro }) {
+function IntroPage({ hostProfile, onLogin, onSeenIntro }) {
   const navigate = useNavigate()
+  const [showProfiles, setShowProfiles] = useState(false)
   const [publicProfiles, setPublicProfiles] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -111,6 +113,15 @@ function IntroPage({ onLogin, onSeenIntro }) {
     }
   }
 
+  const handleTinderSwipe = (dir) => {
+    if (dir === 'right') {
+      setShowProfiles(true)
+    } else if (dir === 'left') {
+      onSeenIntro?.()
+      navigate('/info')
+    }
+  }
+
   const handleJoin = () => {
     onSeenIntro?.()
     onLogin()
@@ -118,83 +129,125 @@ function IntroPage({ onLogin, onSeenIntro }) {
 
   return (
     <div className="landing-page intro-page">
-      <div className="intro-header">
-        <button className="back-btn" onClick={() => navigate('/')}>
-          ← 돌아가기
-        </button>
-        <h2>참가자들</h2>
-      </div>
-
-      {loading ? (
-        <div className="loading-state">프로필 불러오는 중...</div>
-      ) : publicProfiles.length > 0 ? (
-        <div className="profile-carousel">
-          <div className="carousel-counter">
-            {currentIndex + 1} / {publicProfiles.length}
-          </div>
-          
-          <div 
-            className="carousel-card-wrapper"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            <div 
-              className="carousel-card"
-              style={{
-                transform: `translateX(${swipeOffset}px)`,
-                transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
-              }}
+      {!showProfiles ? (
+        <div className="landing-copy">
+          <div className="tinder-stage">
+            <span className="swipe-side-label left">이놈을 모른다 <br/> 왼쪽으로 스윽</span>
+            <TinderCard
+              preventSwipe={['up', 'down']}
+              onSwipe={handleTinderSwipe}
             >
-              <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
-              <p className="card-tagline">{currentProfile?.tagline || ""}</p>
-              <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
-              {currentProfile?.interests?.length > 0 && (
-                <div className="card-chips">
-                  {currentProfile.interests.slice(0, 5).map((interest, idx) => (
-                    <span key={idx} className="chip">{interest}</span>
-                  ))}
-                  {currentProfile.interests.length > 5 && (
-                    <span className="chip more">+{currentProfile.interests.length - 5}</span>
-                  )}
+              <div className="swipe-card preview-card">
+                <div className="preview-photo-wrap">
+                  <img src="/dance.png" alt="호스트 사진" className="preview-photo" />
+                  <div className="image-overlay preview-overlay">
+                    *저희 모임은 술을 강제하지 않습니다* <br /> *주최자의 주량은 소주 한병입니다*
+                  </div>
                 </div>
-              )}
-            </div>
-            
-            <div className="swipe-hint">
-              ← 슥슥 넘겨보세요 →
-            </div>
+                <div className="preview-body">
+                  <p className="eyebrow">HOST</p>
+                  <h3>{hostProfile.name}</h3>
+                  <p className="tagline">{hostProfile.tagline}</p>
+                  <p className="intro">{hostProfile.intro}</p>
+                  <div className="chips">
+                    {(hostProfile.interests || []).slice(0, 4).map((chip) => (
+                      <span key={chip} className="chip">
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </TinderCard>
+            <span className="swipe-side-label right">이놈을 안다 <br/> 오른쪽으로 스윽</span>
           </div>
 
-          <div className="carousel-dots">
-            {publicProfiles.slice(0, 10).map((_, idx) => (
-              <span 
-                key={idx} 
-                className={`dot ${idx === currentIndex ? 'active' : ''}`}
-                onClick={() => !isAnimating && setCurrentIndex(idx)}
-              />
-            ))}
-            {publicProfiles.length > 10 && (
-              <span className="dot-more">...</span>
-            )}
-          </div>
+          <p className="swipe-hint-inline outside">
+            *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서* <br /> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사
+            테이블이 배정됩니다.*
+          </p>
         </div>
       ) : (
-        <div className="empty-state">
-          <p>아직 공개된 프로필이 없어요</p>
-          <p className="muted">첫 번째로 등록해보세요!</p>
-        </div>
-      )}
+        <>
+          <div className="intro-header">
+            <button className="back-btn" onClick={() => setShowProfiles(false)}>
+              ← 돌아가기
+            </button>
+            <h2>참가자들</h2>
+          </div>
 
-      <div className="intro-actions">
-        <button className="btn-primary" onClick={handleJoin}>
-          나도 참여하기
-        </button>
-      </div>
+          {loading ? (
+            <div className="loading-state">프로필 불러오는 중...</div>
+          ) : publicProfiles.length > 0 ? (
+            <div className="profile-carousel">
+              <div className="carousel-counter">
+                {currentIndex + 1} / {publicProfiles.length}
+              </div>
+              
+              <div 
+                className="carousel-card-wrapper"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              >
+                <div 
+                  className="carousel-card"
+                  style={{
+                    transform: `translateX(${swipeOffset}px)`,
+                    transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
+                  }}
+                >
+                  <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
+                  <p className="card-tagline">{currentProfile?.tagline || ""}</p>
+                  <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
+                  {currentProfile?.interests?.length > 0 && (
+                    <div className="card-chips">
+                      {currentProfile.interests.slice(0, 5).map((interest, idx) => (
+                        <span key={idx} className="chip">{interest}</span>
+                      ))}
+                      {currentProfile.interests.length > 5 && (
+                        <span className="chip more">+{currentProfile.interests.length - 5}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="swipe-hint">
+                  ← 슥슥 넘겨보세요 →
+                </div>
+              </div>
+
+              <div className="carousel-dots">
+                {publicProfiles.slice(0, 10).map((_, idx) => (
+                  <span 
+                    key={idx} 
+                    className={`dot ${idx === currentIndex ? 'active' : ''}`}
+                    onClick={() => !isAnimating && setCurrentIndex(idx)}
+                  />
+                ))}
+                {publicProfiles.length > 10 && (
+                  <span className="dot-more">...</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="empty-state">
+              <p>아직 공개된 프로필이 없어요</p>
+              <p className="muted">첫 번째로 등록해보세요!</p>
+            </div>
+          )}
+
+          <div className="intro-actions">
+            <button className="btn-primary" onClick={handleJoin}>
+              나도 참여하기
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
