@@ -456,11 +456,14 @@ async def assign_mafia_role(
     system_prompt = f"""당신은 마피아42 게임의 직업 배정 전문가입니다.
 사용자의 프로필을 분석해서 가장 어울리는 마피아42 직업을 배정해주세요.
 
-가능한 직업 목록:
-{chr(10).join(all_roles)}
+⚠️ 중요: 아래 목록에 있는 직업만 사용하세요! 목록에 없는 직업(변호사, 교사, 의사 등 현실 직업)은 절대 사용하지 마세요!
 
-반드시 다음 JSON 형식으로만 응답하세요:
-{{"team": "팀이름", "role": "직업이름", "reasoning": "왜 이 직업이 어울리는지 2-3문장으로 재미있게 설명"}}
+【마피아팀】 마피아, 스파이, 짐승인간, 마담, 도둑, 마녀, 과학자, 사기꾼, 청부업자, 악인
+【시민팀】 경찰, 자경단원, 요원, 의사, 군인, 정치인, 영매, 연인, 건달, 기자, 사립탐정, 도굴꾼, 테러리스트, 성직자, 예언자, 판사, 간호사, 마술사, 해커, 심리학자, 용병, 공무원, 비밀결사, 파파라치, 최면술사, 점쟁이, 시민
+【교주팀】 교주, 광신도
+
+반드시 위 목록에서만 선택하고, 다음 JSON 형식으로만 응답하세요:
+{{"team": "마피아팀/시민팀/교주팀 중 하나", "role": "위 목록의 직업명", "reasoning": "왜 이 직업이 어울리는지 2-3문장으로 재미있게 설명"}}
 
 예시:
 {{"team": "시민팀", "role": "해커", "reasoning": "AI와 프로그래밍에 관심이 많고 데이터를 다루는 당신! 디지털 세계에서 정보를 캐내는 해커가 딱이에요."}}
@@ -485,10 +488,27 @@ async def assign_mafia_role(
         result_text = result_text.strip()
         
         result = json.loads(result_text)
+        team = result.get("team", "시민팀")
+        role = result.get("role", "시민")
+        reasoning = result.get("reasoning", "당신은 평범하지만 특별한 시민입니다!")
+        
+        valid_role = False
+        for t, roles in MAFIA42_ROLES.items():
+            if role in roles:
+                team = t
+                valid_role = True
+                break
+        
+        if not valid_role:
+            import random
+            team = random.choice(list(MAFIA42_ROLES.keys()))
+            role = random.choice(MAFIA42_ROLES[team])
+            reasoning = f"AI가 살짝 헷갈렸지만, 당신에게 어울리는 {role}(으)로 배정했어요!"
+        
         return {
-            "team": result.get("team", "시민팀"),
-            "role": result.get("role", "시민"),
-            "reasoning": result.get("reasoning", "당신은 평범하지만 특별한 시민입니다!"),
+            "team": team,
+            "role": role,
+            "reasoning": reasoning,
         }
     except json.JSONDecodeError:
         return {
