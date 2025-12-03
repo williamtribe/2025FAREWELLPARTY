@@ -146,7 +146,7 @@ class SupabaseService:
         if not self.client:
             return []
         result = (self.client.table("member_profiles").select(
-            "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
+            "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,updated_at"
         ).eq("visibility", "public").order("updated_at",
                                            desc=True).limit(limit).execute())
         return result.data or []
