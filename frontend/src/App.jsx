@@ -764,6 +764,14 @@ function App() {
               <button className="close-btn" onClick={() => setShowRoleModal(false)}>×</button>
             </div>
             <div className="role-modal-body">
+              <div className="role-image-container">
+                <img 
+                  src={`/job_images/${roleResult.role}.png`}
+                  alt={roleResult.role}
+                  className="role-image"
+                  onError={(e) => { e.target.src = "/job_images/이레귤러_시민_시민 스킨.png"; }}
+                />
+              </div>
               <div className="role-reveal">
                 <p className="role-team">{roleResult.team}</p>
                 <h3 className="role-name">{roleResult.role}</h3>
