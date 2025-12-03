@@ -229,6 +229,40 @@ class SupabaseService:
                 return {"skipped": True, "reason": "display_order_column_not_exists"}
             raise
 
+    def update_fixed_role(self, kakao_id: str, fixed_role: Optional[str]) -> Dict[str, Any]:
+        """Set or clear a fixed role for a user. fixed_role=None to clear."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            result = self.client.table("member_profiles").update({
+                "fixed_role": fixed_role
+            }).eq("kakao_id", kakao_id).execute()
+            return {"data": result.data, "updated": True}
+        except Exception as e:
+            error_str = str(e).lower()
+            if "fixed_role" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                logger.warning("fixed_role column not found")
+                return {"skipped": True, "reason": "fixed_role_column_not_exists"}
+            raise
+
+    def fetch_all_profiles_with_roles(self) -> list[Dict[str, Any]]:
+        """Fetch all profiles with fixed_role info for admin."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("member_profiles").select(
+                "kakao_id,name,tagline,visibility,fixed_role"
+            ).order("name", desc=False).execute()
+            return result.data or []
+        except Exception as e:
+            error_str = str(e).lower()
+            if "fixed_role" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                result = self.client.table("member_profiles").select(
+                    "kakao_id,name,tagline,visibility"
+                ).order("name", desc=False).execute()
+                return [{"fixed_role": None, **p} for p in (result.data or [])]
+            raise
+
     def upsert_preferences(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.client:
             return {"skipped": True, "reason": "supabase_not_configured"}

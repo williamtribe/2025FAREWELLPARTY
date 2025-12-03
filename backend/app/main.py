@@ -450,6 +450,38 @@ async def embed_mafia42_jobs(user: SessionUser = Depends(get_current_user)):
     }
 
 
+class FixedRolePayload(BaseModel):
+    kakao_id: str
+    fixed_role: Optional[str] = None
+
+
+@app.get("/admin/fixed-roles")
+async def get_fixed_roles(user: SessionUser = Depends(get_current_user)):
+    """Get all profiles with their fixed roles for admin management."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
+    profiles = supabase_service.fetch_all_profiles_with_roles()
+    jobs = supabase_service.fetch_mafia42_jobs()
+    job_list = [{"code": str(j.get("code")), "name": j.get("name"), "team": j.get("team")} for j in jobs]
+    return {"profiles": profiles, "jobs": job_list}
+
+
+@app.post("/admin/fixed-roles")
+async def set_fixed_role(payload: FixedRolePayload, user: SessionUser = Depends(get_current_user)):
+    """Set or clear a fixed role for a user (admin only). Pass fixed_role=null to clear."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
+    result = supabase_service.update_fixed_role(payload.kakao_id, payload.fixed_role)
+    if result.get("skipped"):
+        if result.get("reason") == "fixed_role_column_not_exists":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="fixed_role 컬럼이 없습니다. Supabase에서 추가해주세요: ALTER TABLE member_profiles ADD COLUMN fixed_role TEXT;"
+            )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result.get("reason"))
+    return {"message": "fixed_role_updated", "kakao_id": payload.kakao_id, "fixed_role": payload.fixed_role}
+
+
 @app.get("/kakao/friends")
 async def kakao_friends(access_token: str, user: SessionUser = Depends(get_current_user)):
     try:
