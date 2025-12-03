@@ -407,7 +407,7 @@ async def embed_mafia42_jobs(user: SessionUser = Depends(get_current_user)):
     failed_jobs = []
     
     for job in jobs:
-        code = job.get("code", "")
+        code = str(job.get("code", ""))
         name = job.get("name", "")
         story = job.get("story", "")
         team = job.get("team", "")
