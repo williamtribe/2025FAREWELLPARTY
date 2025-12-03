@@ -197,7 +197,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
                 </div>
               )}
               <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
-              <p className="card-tagline">{currentProfile?.tagline || ""}</p>
+              <p className="card-tagline">{renderWithDevComment(currentProfile?.tagline) || ""}</p>
               <p className="card-intro">{renderWithDevComment(currentProfile?.intro) || "자기소개가 없어요"}</p>
               {currentProfile?.interests?.length > 0 && (
                 <div className="card-chips">
