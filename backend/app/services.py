@@ -145,11 +145,20 @@ class SupabaseService:
     def fetch_public_profiles(self, limit: int = 6) -> list[Dict[str, Any]]:
         if not self.client:
             return []
-        result = (self.client.table("member_profiles").select(
-            "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,updated_at"
-        ).eq("visibility", "public").order("updated_at",
-                                           desc=True).limit(limit).execute())
-        return result.data or []
+        try:
+            result = (self.client.table("member_profiles").select(
+                "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,updated_at"
+            ).eq("visibility", "public").order("updated_at",
+                                               desc=True).limit(limit).execute())
+            return result.data or []
+        except Exception as e:
+            if "profile_image does not exist" in str(e):
+                result = (self.client.table("member_profiles").select(
+                    "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
+                ).eq("visibility", "public").order("updated_at",
+                                                   desc=True).limit(limit).execute())
+                return result.data or []
+            raise
 
     def upsert_preferences(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.client:
