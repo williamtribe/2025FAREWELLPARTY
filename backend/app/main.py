@@ -393,6 +393,56 @@ async def update_profiles_order(payload: UpdateOrderPayload, user: SessionUser =
     return {"message": "order_updated", "result": result}
 
 
+@app.post("/admin/embed-jobs")
+async def embed_mafia42_jobs(user: SessionUser = Depends(get_current_user)):
+    """Embed all mafia42_jobs into Pinecone with namespace 'mafia42_jobs'."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
+    
+    jobs = supabase_service.fetch_mafia42_jobs()
+    if not jobs:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="mafia42_jobs 테이블이 비어있거나 접근할 수 없습니다.")
+    
+    embedded_count = 0
+    failed_jobs = []
+    
+    for job in jobs:
+        code = job.get("code", "")
+        name = job.get("name", "")
+        story = job.get("story", "")
+        team = job.get("team", "")
+        
+        if not story:
+            failed_jobs.append({"code": code, "reason": "no_story"})
+            continue
+        
+        text_to_embed = f"{name}: {story}"
+        vector = embedding_service.embed_member(text_to_embed)
+        
+        if not vector:
+            failed_jobs.append({"code": code, "reason": "embedding_failed"})
+            continue
+        
+        result = pinecone_service.upsert_embedding(
+            member_id=code,
+            vector=vector,
+            metadata={"code": code, "name": name, "team": team, "story": story},
+            namespace="mafia42_jobs"
+        )
+        
+        if result.get("skipped"):
+            failed_jobs.append({"code": code, "reason": result.get("reason")})
+        else:
+            embedded_count += 1
+    
+    return {
+        "message": "jobs_embedded",
+        "total_jobs": len(jobs),
+        "embedded_count": embedded_count,
+        "failed_jobs": failed_jobs
+    }
+
+
 @app.get("/kakao/friends")
 async def kakao_friends(access_token: str, user: SessionUser = Depends(get_current_user)):
     try:
