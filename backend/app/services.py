@@ -142,6 +142,20 @@ class SupabaseService:
             return None
         return result.data[0]
 
+    def update_profile_image(self, kakao_id: str, profile_image_url: str) -> Dict[str, Any]:
+        """Update only the profile_image field for an existing user."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            result = self.client.table("member_profiles").update({
+                "profile_image": profile_image_url
+            }).eq("kakao_id", kakao_id).execute()
+            return {"data": result.data}
+        except Exception as e:
+            if "profile_image" in str(e) and "does not exist" in str(e):
+                return {"skipped": True, "reason": "profile_image_column_not_exists"}
+            raise
+
     def fetch_public_profiles(self, limit: int = 6) -> list[Dict[str, Any]]:
         if not self.client:
             return []
