@@ -1,0 +1,74 @@
+12-04 00:58:48
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12-04 00:58:48
+raise exc
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+12-04 00:58:48
+raise APIError(dict(json_obj))
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/applications.py", line 1134, in __call__
+12-04 00:58:48
+await app(scope, receive, sender)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/routing.py", line 125, in app
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/routing.py", line 391, in app
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+12-04 00:58:48
+Traceback (most recent call last):
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+12-04 00:58:48
+await self.app(scope, receive, _send)
+12-04 00:58:48
+await self.app(scope, receive, send)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+12-04 00:58:48
+await self.simple_response(scope, receive, send, request_headers=headers)
+12-04 00:58:48
+ERROR: Exception in ASGI application
+12-04 00:58:48
+raise exc
+12-04 00:58:48
+await self.middleware_stack(scope, receive, send)
+12-04 00:58:48
+await super().__call__(scope, receive, send)
+12-04 00:58:48
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12-04 00:58:48
+await self.app(scope, receive, send)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+12-04 00:58:48
+await route.handle(scope, receive, send)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+12-04 00:58:48
+^^^^^^^^^^^^^^^^
+12-04 00:58:48
+^^^^^^^^^
+12-04 00:58:48
+File "/home/runner/workspace/backend/app/services.py", line 217, in update_display_order
+12-04 00:58:48
+return await self.app(scope, receive, send)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/postgrest/_sync/request_builder.py", line 53, in execute
+12-04 00:58:48
+await app(scope, receive, sender)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+12-04 00:58:48
+await self.middleware_stack(scope, receive, send)
+12-04 00:58:48
+response = await f(request)
+12-04 00:58:48
+await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+12-04 00:58:48
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__

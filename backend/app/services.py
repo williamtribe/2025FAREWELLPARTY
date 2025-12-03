@@ -161,29 +161,31 @@ class SupabaseService:
     def fetch_public_profiles(self, limit: int = 50) -> list[Dict[str, Any]]:
         if not self.client:
             return []
+        
+        def is_column_missing(err: Exception, col_name: str) -> bool:
+            err_str = str(err).lower()
+            return col_name in err_str and ("not exist" in err_str or "not find" in err_str or "could not find" in err_str or "pgrst204" in err_str)
+        
         try:
-            # Try with display_order first (ascending - lower number = higher priority)
             result = (self.client.table("member_profiles").select(
                 "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,display_order,updated_at"
             ).eq("visibility", "public").order("display_order", desc=False).order("updated_at", desc=True).limit(limit).execute())
             return result.data or []
         except Exception as e:
-            error_str = str(e)
-            # Fallback for missing columns
-            if "display_order" in error_str and "does not exist" in error_str:
+            if is_column_missing(e, "display_order"):
                 try:
                     result = (self.client.table("member_profiles").select(
                         "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,updated_at"
                     ).eq("visibility", "public").order("updated_at", desc=True).limit(limit).execute())
                     return result.data or []
                 except Exception as e2:
-                    if "profile_image" in str(e2) and "does not exist" in str(e2):
+                    if is_column_missing(e2, "profile_image"):
                         result = (self.client.table("member_profiles").select(
                             "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
                         ).eq("visibility", "public").order("updated_at", desc=True).limit(limit).execute())
                         return result.data or []
                     raise
-            elif "profile_image" in error_str and "does not exist" in error_str:
+            elif is_column_missing(e, "profile_image"):
                 result = (self.client.table("member_profiles").select(
                     "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
                 ).eq("visibility", "public").order("updated_at", desc=True).limit(limit).execute())
@@ -200,7 +202,8 @@ class SupabaseService:
             ).order("display_order", desc=False).order("updated_at", desc=True).execute())
             return result.data or []
         except Exception as e:
-            if "display_order" in str(e) and "does not exist" in str(e):
+            error_str = str(e).lower()
+            if "display_order" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
                 result = (self.client.table("member_profiles").select(
                     "kakao_id,name,tagline,visibility,updated_at"
                 ).order("updated_at", desc=True).execute())
@@ -220,7 +223,9 @@ class SupabaseService:
                 results.append(result.data)
             return {"data": results, "updated": len(results)}
         except Exception as e:
-            if "display_order" in str(e) and "does not exist" in str(e):
+            error_str = str(e).lower()
+            if "display_order" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                logger.warning("display_order column not found, skipping order update")
                 return {"skipped": True, "reason": "display_order_column_not_exists"}
             raise
 
