@@ -2217,3 +2217,47 @@ button.secondary:disabled {
   font-size: 0.85rem;
   color: #1f7a4d;
 }
+
+.fixed-role-modal {
+  max-width: 600px;
+}
+
+.fixed-role-list {
+  max-height: 400px;
+}
+
+.fixed-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.fixed-role-item .order-name {
+  flex: 1;
+  min-width: 80px;
+}
+
+.fixed-role-select {
+  flex: 2;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+}
+
+.fixed-role-select:focus {
+  outline: none;
+  border-color: #1f7a4d;
+}
+
+.fixed-role-badge {
+  background: #1f7a4d;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}

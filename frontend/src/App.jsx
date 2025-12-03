@@ -79,6 +79,11 @@ function App() {
   const [orderStatus, setOrderStatus] = useState("");
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [draggedIdx, setDraggedIdx] = useState(null);
+  const [fixedRoleProfiles, setFixedRoleProfiles] = useState([]);
+  const [availableJobs, setAvailableJobs] = useState([]);
+  const [fixedRoleLoading, setFixedRoleLoading] = useState(false);
+  const [fixedRoleStatus, setFixedRoleStatus] = useState("");
+  const [showFixedRoleModal, setShowFixedRoleModal] = useState(false);
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -471,6 +476,49 @@ function App() {
     setOrderProfiles(newProfiles);
   };
 
+  const loadFixedRoles = async () => {
+    if (!session?.is_admin) return;
+    setFixedRoleLoading(true);
+    setFixedRoleStatus("");
+    try {
+      const res = await fetch(`${API_BASE}/admin/fixed-roles`, {
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "불러오기 실패");
+      setFixedRoleProfiles(data.profiles || []);
+      setAvailableJobs(data.jobs || []);
+      setShowFixedRoleModal(true);
+    } catch (err) {
+      setFixedRoleStatus(`오류: ${err.message}`);
+    } finally {
+      setFixedRoleLoading(false);
+    }
+  };
+
+  const saveFixedRole = async (kakaoId, fixedRole) => {
+    if (!session?.is_admin) return;
+    setFixedRoleLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/fixed-roles`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({ kakao_id: kakaoId, fixed_role: fixedRole || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "저장 실패");
+      setFixedRoleProfiles(prev => 
+        prev.map(p => p.kakao_id === kakaoId ? { ...p, fixed_role: fixedRole || null } : p)
+      );
+      setFixedRoleStatus(`${fixedRole ? fixedRole + ' 배정 완료!' : '직업 배정 해제됨'}`);
+      setTimeout(() => setFixedRoleStatus(""), 2000);
+    } catch (err) {
+      setFixedRoleStatus(`오류: ${err.message}`);
+    } finally {
+      setFixedRoleLoading(false);
+    }
+  };
+
   const fetchMyRole = async () => {
     if (!session?.session_token || !profile.intro) return;
     setRoleLoading(true);
@@ -763,9 +811,17 @@ function App() {
             <button className="admin-btn" onClick={handleEmbedJobs}>
               🎭 직업 스토리 임베딩
             </button>
+            <button 
+              className="admin-btn" 
+              onClick={loadFixedRoles}
+              disabled={fixedRoleLoading}
+            >
+              {fixedRoleLoading ? "불러오는 중..." : "🎯 직업 고정 배정"}
+            </button>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
             {jobEmbedStatus && <p className="admin-status">{jobEmbedStatus}</p>}
             {orderStatus && <p className="admin-status">{orderStatus}</p>}
+            {fixedRoleStatus && <p className="admin-status">{fixedRoleStatus}</p>}
           </div>
         </section>
       )}
@@ -806,6 +862,43 @@ function App() {
               </button>
             </div>
             {orderStatus && <p className="order-status">{orderStatus}</p>}
+          </div>
+        </div>
+      )}
+
+      {showFixedRoleModal && (
+        <div className="order-modal-overlay" onClick={() => setShowFixedRoleModal(false)}>
+          <div className="order-modal fixed-role-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h2>🎯 직업 고정 배정</h2>
+              <button className="close-btn" onClick={() => setShowFixedRoleModal(false)}>×</button>
+            </div>
+            <p className="order-hint">각 사용자에게 고정 직업을 배정하면 RAG 검색을 생략하고 해당 직업을 바로 보여줍니다.</p>
+            <div className="order-list fixed-role-list">
+              {fixedRoleProfiles.map((p) => (
+                <div key={p.kakao_id} className="order-item fixed-role-item">
+                  <span className="order-name">{p.name || '익명'}</span>
+                  <select
+                    value={p.fixed_role || ""}
+                    onChange={(e) => saveFixedRole(p.kakao_id, e.target.value)}
+                    disabled={fixedRoleLoading}
+                    className="fixed-role-select"
+                  >
+                    <option value="">자동 (RAG)</option>
+                    {availableJobs.map((job) => (
+                      <option key={job.code} value={job.name}>
+                        [{job.team}] {job.name}
+                      </option>
+                    ))}
+                  </select>
+                  {p.fixed_role && <span className="fixed-role-badge">고정</span>}
+                </div>
+              ))}
+            </div>
+            <div className="order-modal-footer">
+              <button className="cancel-btn" onClick={() => setShowFixedRoleModal(false)}>닫기</button>
+            </div>
+            {fixedRoleStatus && <p className="order-status">{fixedRoleStatus}</p>}
           </div>
         </div>
       )}
