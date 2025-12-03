@@ -2,252 +2,104 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TinderCard from 'react-tinder-card'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ""
-
-function IntroPage({ hostProfile, onLogin, onSeenIntro }) {
+function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
   const navigate = useNavigate()
-  const [showProfiles, setShowProfiles] = useState(false)
-  const [publicProfiles, setPublicProfiles] = useState([])
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [swipeOffset, setSwipeOffset] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
-  
-  const touchStartX = useRef(0)
-  const touchEndX = useRef(0)
+  const redirectTimer = useRef(null)
+  const [transitionMessage, setTransitionMessage] = useState('')
+  const [transitionNeedsAction, setTransitionNeedsAction] = useState(false)
+
+  const isLoggedIn = Boolean(session?.session_token)
 
   useEffect(() => {
     document.body.classList.add('intro-open')
     return () => {
       document.body.classList.remove('intro-open')
+      if (redirectTimer.current) clearTimeout(redirectTimer.current)
     }
   }, [])
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/profiles/public?limit=50`)
-        const data = await res.json()
-        setPublicProfiles(data.profiles || [])
-      } catch (err) {
-        console.error("Failed to fetch profiles:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchProfiles()
-  }, [])
-
-  const currentProfile = publicProfiles[currentIndex]
-
-  const goNext = () => {
-    if (currentIndex < publicProfiles.length - 1 && !isAnimating) {
-      setIsAnimating(true)
-      setSwipeOffset(-100)
-      setTimeout(() => {
-        setCurrentIndex(currentIndex + 1)
-        setSwipeOffset(0)
-        setIsAnimating(false)
-      }, 200)
-    }
-  }
-
-  const goPrev = () => {
-    if (currentIndex > 0 && !isAnimating) {
-      setIsAnimating(true)
-      setSwipeOffset(100)
-      setTimeout(() => {
-        setCurrentIndex(currentIndex - 1)
-        setSwipeOffset(0)
-        setIsAnimating(false)
-      }, 200)
-    }
-  }
-
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX
-    touchEndX.current = e.touches[0].clientX
-  }
-
-  const handleTouchMove = (e) => {
-    touchEndX.current = e.touches[0].clientX
-    const diff = touchEndX.current - touchStartX.current
-    if (Math.abs(diff) < 150) {
-      setSwipeOffset(diff * 0.3)
-    }
-  }
-
-  const handleTouchEnd = () => {
-    const diff = touchEndX.current - touchStartX.current
-    setSwipeOffset(0)
-    
-    if (diff > 50) {
-      goPrev()
-    } else if (diff < -50) {
-      goNext()
-    }
-  }
-
-  const handleMouseDown = (e) => {
-    touchStartX.current = e.clientX
-    touchEndX.current = e.clientX
-  }
-
-  const handleMouseMove = (e) => {
-    if (e.buttons !== 1) return
-    touchEndX.current = e.clientX
-    const diff = touchEndX.current - touchStartX.current
-    if (Math.abs(diff) < 150) {
-      setSwipeOffset(diff * 0.3)
-    }
-  }
-
-  const handleMouseUp = () => {
-    const diff = touchEndX.current - touchStartX.current
-    setSwipeOffset(0)
-    
-    if (diff > 50) {
-      goPrev()
-    } else if (diff < -50) {
-      goNext()
-    }
-  }
-
-  const handleTinderSwipe = (dir) => {
+  const handleSwipe = (dir) => {
     if (dir === 'right') {
-      setShowProfiles(true)
+      onSeenIntro?.()
+      if (isLoggedIn) {
+        navigate('/my-profile')
+      } else {
+        setTransitionMessage('그러면 빨리 로그인 해')
+        redirectTimer.current = setTimeout(() => {
+          onLogin()
+        }, 900)
+      }
     } else if (dir === 'left') {
       onSeenIntro?.()
       navigate('/info')
     }
   }
 
-  const handleJoin = () => {
-    onSeenIntro?.()
-    onLogin()
-  }
-
   return (
-    <div className="landing-page intro-page">
-      {!showProfiles ? (
-        <div className="landing-copy">
-          <div className="tinder-stage">
-            <span className="swipe-side-label left">이놈을 모른다 <br/> 왼쪽으로 스윽</span>
-            <TinderCard
-              preventSwipe={['up', 'down']}
-              onSwipe={handleTinderSwipe}
-            >
-              <div className="swipe-card preview-card">
-                <div className="preview-photo-wrap">
-                  <img src="/dance.png" alt="호스트 사진" className="preview-photo" />
-                  <div className="image-overlay preview-overlay">
-                    *저희 모임은 술을 강제하지 않습니다* <br /> *주최자의 주량은 소주 한병입니다*
-                  </div>
-                </div>
-                <div className="preview-body">
-                  <p className="eyebrow">HOST</p>
-                  <h3>{hostProfile.name}</h3>
-                  <p className="tagline">{hostProfile.tagline}</p>
-                  <p className="intro">{hostProfile.intro}</p>
-                  <div className="chips">
-                    {(hostProfile.interests || []).slice(0, 4).map((chip) => (
-                      <span key={chip} className="chip">
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
+    <div className="landing-page">
+      <div className="intro-header">
+        <button className="back-btn" onClick={() => navigate('/')}>
+          ← 돌아가기
+        </button>
+        <h2>호스트 소개</h2>
+      </div>
+
+      <div className="landing-copy">
+        <div className="tinder-stage">
+          <span className="swipe-side-label left">이놈을 모른다 <br/> 왼쪽으로 스윽</span>
+          <TinderCard
+            preventSwipe={['up', 'down']}
+            onSwipe={handleSwipe}
+          >
+            <div className="swipe-card preview-card">
+              <div className="preview-photo-wrap">
+                <img src="/dance.png" alt="호스트 사진" className="preview-photo" />
+                <div className="image-overlay preview-overlay">
+                  *저희 모임은 술을 강제하지 않습니다* <br /> *주최자의 주량은 소주 한병입니다*
                 </div>
               </div>
-            </TinderCard>
-            <span className="swipe-side-label right">이놈을 안다 <br/> 오른쪽으로 스윽</span>
-          </div>
-
-          <p className="swipe-hint-inline outside">
-            *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서* <br /> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사
-            테이블이 배정됩니다.*
-          </p>
+              <div className="preview-body">
+                <p className="eyebrow">HOST</p>
+                <h3>{hostProfile.name}</h3>
+                <p className="tagline">{hostProfile.tagline}</p>
+                <p className="intro">{hostProfile.intro}</p>
+                <div className="chips">
+                  {(hostProfile.interests || []).slice(0, 4).map((chip) => (
+                    <span key={chip} className="chip">
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </TinderCard>
+          <span className="swipe-side-label right">이놈을 안다 <br/> 오른쪽으로 스윽</span>
         </div>
-      ) : (
-        <>
-          <div className="intro-header">
-            <button className="back-btn" onClick={() => setShowProfiles(false)}>
-              ← 돌아가기
-            </button>
-            <h2>참가자들</h2>
-          </div>
 
-          {loading ? (
-            <div className="loading-state">프로필 불러오는 중...</div>
-          ) : publicProfiles.length > 0 ? (
-            <div className="profile-carousel">
-              <div className="carousel-counter">
-                {currentIndex + 1} / {publicProfiles.length}
-              </div>
-              
-              <div 
-                className="carousel-card-wrapper"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
+        <p className="swipe-hint-inline outside">
+          *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서* <br /> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사
+          테이블이 배정됩니다.*
+        </p>
+
+        {transitionMessage && (
+          <div className="transition-message">
+            <p className="lede">{transitionMessage}</p>
+            {transitionNeedsAction ? (
+              <button
+                className="primary"
+                onClick={() => {
+                  onSeenIntro?.()
+                  onLogin()
+                }}
               >
-                <div 
-                  className="carousel-card"
-                  style={{
-                    transform: `translateX(${swipeOffset}px)`,
-                    transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
-                  }}
-                >
-                  <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
-                  <p className="card-tagline">{currentProfile?.tagline || ""}</p>
-                  <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
-                  {currentProfile?.interests?.length > 0 && (
-                    <div className="card-chips">
-                      {currentProfile.interests.slice(0, 5).map((interest, idx) => (
-                        <span key={idx} className="chip">{interest}</span>
-                      ))}
-                      {currentProfile.interests.length > 5 && (
-                        <span className="chip more">+{currentProfile.interests.length - 5}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-                
-                <div className="swipe-hint">
-                  ← 슥슥 넘겨보세요 →
-                </div>
-              </div>
-
-              <div className="carousel-dots">
-                {publicProfiles.slice(0, 10).map((_, idx) => (
-                  <span 
-                    key={idx} 
-                    className={`dot ${idx === currentIndex ? 'active' : ''}`}
-                    onClick={() => !isAnimating && setCurrentIndex(idx)}
-                  />
-                ))}
-                {publicProfiles.length > 10 && (
-                  <span className="dot-more">...</span>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <p>아직 공개된 프로필이 없어요</p>
-              <p className="muted">첫 번째로 등록해보세요!</p>
-            </div>
-          )}
-
-          <div className="intro-actions">
-            <button className="btn-primary" onClick={handleJoin}>
-              나도 참여하기
-            </button>
+                로그인 화면으로 이동
+              </button>
+            ) : (
+              <p className="muted">로그인 화면으로 이동합니다.</p>
+            )}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   )
 }

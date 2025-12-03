@@ -1,20 +1,33 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export default function LandingPage({ session, onLogin }) {
+  const navigate = useNavigate();
   const [profileCount, setProfileCount] = useState(0);
+  const [publicProfiles, setPublicProfiles] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${API_BASE}/profiles/count`);
-        const data = await res.json();
-        setProfileCount(data.count || 0);
+        const [countRes, profilesRes] = await Promise.all([
+          fetch(`${API_BASE}/profiles/count`),
+          fetch(`${API_BASE}/profiles/public?limit=50`),
+        ]);
+        const countData = await countRes.json();
+        const profilesData = await profilesRes.json();
+        setProfileCount(countData.count || 0);
+        setPublicProfiles(profilesData.profiles || []);
       } catch (err) {
-        console.error("Failed to fetch count:", err);
+        console.error("Failed to fetch landing data:", err);
       } finally {
         setLoading(false);
       }
@@ -23,6 +36,88 @@ export default function LandingPage({ session, onLogin }) {
   }, []);
 
   const isLoggedIn = Boolean(session?.session_token);
+  const currentProfile = publicProfiles[currentIndex];
+
+  const goNext = () => {
+    if (currentIndex < publicProfiles.length - 1 && !isAnimating) {
+      setIsAnimating(true);
+      setSwipeOffset(-100);
+      setTimeout(() => {
+        setCurrentIndex(currentIndex + 1);
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }, 200);
+    }
+  };
+
+  const goPrev = () => {
+    if (currentIndex > 0 && !isAnimating) {
+      setIsAnimating(true);
+      setSwipeOffset(100);
+      setTimeout(() => {
+        setCurrentIndex(currentIndex - 1);
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }, 200);
+    }
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+    const diff = touchEndX.current - touchStartX.current;
+    if (Math.abs(diff) < 150) {
+      setSwipeOffset(diff * 0.3);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchEndX.current - touchStartX.current;
+    setSwipeOffset(0);
+    
+    if (diff > 50) {
+      goPrev();
+    } else if (diff < -50) {
+      goNext();
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    touchStartX.current = e.clientX;
+    touchEndX.current = e.clientX;
+  };
+
+  const handleMouseMove = (e) => {
+    if (e.buttons !== 1) return;
+    touchEndX.current = e.clientX;
+    const diff = touchEndX.current - touchStartX.current;
+    if (Math.abs(diff) < 150) {
+      setSwipeOffset(diff * 0.3);
+    }
+  };
+
+  const handleMouseUp = () => {
+    const diff = touchEndX.current - touchStartX.current;
+    setSwipeOffset(0);
+    
+    if (diff > 50) {
+      goPrev();
+    } else if (diff < -50) {
+      goNext();
+    }
+  };
+
+  const handleJoin = () => {
+    if (isLoggedIn) {
+      navigate('/my-profile');
+    } else {
+      onLogin();
+    }
+  };
 
   return (
     <div className="landing-page">
@@ -41,25 +136,85 @@ export default function LandingPage({ session, onLogin }) {
         </div>
       </div>
 
+      {loading ? (
+        <div className="loading-state">프로필 불러오는 중...</div>
+      ) : publicProfiles.length > 0 ? (
+        <div className="profile-carousel">
+          <div className="carousel-counter">
+            {currentIndex + 1} / {publicProfiles.length}
+          </div>
+          
+          <div 
+            className="carousel-card-wrapper"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <div 
+              className="carousel-card"
+              style={{
+                transform: `translateX(${swipeOffset}px)`,
+                transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
+              }}
+            >
+              <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
+              <p className="card-tagline">{currentProfile?.tagline || ""}</p>
+              <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
+              {currentProfile?.interests?.length > 0 && (
+                <div className="card-chips">
+                  {currentProfile.interests.slice(0, 5).map((interest, idx) => (
+                    <span key={idx} className="chip">{interest}</span>
+                  ))}
+                  {currentProfile.interests.length > 5 && (
+                    <span className="chip more">+{currentProfile.interests.length - 5}</span>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="swipe-hint">
+              ← 슥슥 넘겨보세요 →
+            </div>
+          </div>
+
+          <div className="carousel-dots">
+            {publicProfiles.slice(0, 10).map((_, idx) => (
+              <span 
+                key={idx} 
+                className={`dot ${idx === currentIndex ? 'active' : ''}`}
+                onClick={() => !isAnimating && setCurrentIndex(idx)}
+              />
+            ))}
+            {publicProfiles.length > 10 && (
+              <span className="dot-more">...</span>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="empty-state">
+          <p>아직 공개된 프로필이 없어요</p>
+          <p className="muted">첫 번째로 등록해보세요!</p>
+        </div>
+      )}
+
       <div className="landing-actions">
-        <Link className="btn-primary" to="/intro">
-          참가자 둘러보기
-        </Link>
+        <button className="btn-primary" onClick={handleJoin}>
+          {isLoggedIn ? "내 프로필 보기" : "나도 참여하기"}
+        </button>
         
-        {isLoggedIn ? (
-          <>
-            <Link className="btn-secondary" to="/my-profile">
-              내 프로필 보기
-            </Link>
-            <Link className="btn-tertiary" to="/others">
-              나와 비슷한 사람 찾기
-            </Link>
-          </>
-        ) : (
-          <button className="btn-secondary" onClick={onLogin}>
-            카카오로 참여하기
-          </button>
+        {isLoggedIn && (
+          <Link className="btn-secondary" to="/others">
+            나와 비슷한 사람 찾기
+          </Link>
         )}
+        
+        <Link className="btn-tertiary" to="/intro">
+          호스트 소개
+        </Link>
         <Link className="btn-tertiary" to="/info">
           행사 정보
         </Link>

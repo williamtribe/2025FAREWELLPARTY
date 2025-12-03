@@ -702,6 +702,7 @@ function App() {
         element={
           <IntroPage
             hostProfile={hostProfile}
+            session={session}
             onLogin={handleKakaoLogin}
             onSeenIntro={markIntroSeen}
           />
