@@ -262,6 +262,30 @@ class SupabaseService:
             return None
         return result.data[0]
 
+    def fetch_mafia42_jobs(self) -> list[Dict[str, Any]]:
+        """Fetch all jobs from mafia42_jobs table."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("mafia42_jobs").select("*").execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Error fetching mafia42_jobs: {e}")
+            return []
+
+    def fetch_job_by_code(self, code: str) -> Optional[Dict[str, Any]]:
+        """Fetch a single job by its code."""
+        if not self.client:
+            return None
+        try:
+            result = self.client.table("mafia42_jobs").select("*").eq("code", code).limit(1).execute()
+            if not result.data:
+                return None
+            return result.data[0]
+        except Exception as e:
+            logger.error(f"Error fetching job by code {code}: {e}")
+            return None
+
 
 class EmbeddingService:
 
