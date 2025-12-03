@@ -646,6 +646,30 @@ class PineconeService:
         different = sorted(similar, key=lambda x: x["score"])
         return different[:top_k]
 
+    def query_by_vector(self, vector: List[float], top_k: int = 5, 
+                        namespace: str = "") -> List[Dict[str, Any]]:
+        """Query Pinecone directly with a vector (not by member_id)."""
+        if not self.index:
+            return []
+        try:
+            result = self.index.query(
+                vector=vector,
+                top_k=top_k,
+                include_metadata=True,
+                namespace=namespace,
+            )
+            matches = []
+            for match in result.get("matches", []):
+                matches.append({
+                    "id": match["id"],
+                    "score": match["score"],
+                    "metadata": match.get("metadata", {}),
+                })
+            return matches
+        except Exception as e:
+            logger.error(f"Pinecone query_by_vector error: {e}")
+            return []
+
 
 session_signer = SessionSigner()
 kakao_client = KakaoClient()
