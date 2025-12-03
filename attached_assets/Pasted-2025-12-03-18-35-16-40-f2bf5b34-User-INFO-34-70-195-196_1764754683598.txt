@@ -1,0 +1,128 @@
+2025-12-03 18:35:16.40
+f2bf5b34
+User
+INFO: 34.70.195.196:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:35:17.28
+f2bf5b34
+User
+2025-12-03 09:35:17,283 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:35:17.28
+f2bf5b34
+User
+INFO: 34.171.54.117:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:35:56.73
+f2bf5b34
+User
+2025-12-03 09:35:56,731 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:35:56.73
+f2bf5b34
+User
+INFO: 104.154.217.247:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:35:57.00
+f2bf5b34
+User
+2025-12-03 09:35:57,004 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:35:57.00
+f2bf5b34
+User
+INFO: 136.114.181.216:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:35:57.27
+f2bf5b34
+User
+2025-12-03 09:35:57,277 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:35:57.27
+f2bf5b34
+User
+INFO: 35.222.136.131:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:35:57.56
+f2bf5b34
+User
+2025-12-03 09:35:57,561 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:35:57.56
+f2bf5b34
+User
+INFO: 34.57.68.123:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:36:02.91
+f2bf5b34
+User
+INFO: 104.154.182.220:0 - "POST /role-assignment HTTP/1.1" 401 Unauthorized
+2025-12-03 18:36:13.05
+f2bf5b34
+User
+INFO: 34.70.195.196:0 - "PUT /me HTTP/1.1" 401 Unauthorized
+2025-12-03 18:36:16.27
+f2bf5b34
+User
+INFO: 104.154.217.247:0 - "PUT /me HTTP/1.1" 401 Unauthorized
+2025-12-03 18:36:16.93
+f2bf5b34
+User
+INFO: 34.70.195.196:0 - "PUT /me HTTP/1.1" 401 Unauthorized
+2025-12-03 18:36:23.41
+f2bf5b34
+User
+2025-12-03 09:36:23,412 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:36:23.41
+f2bf5b34
+User
+INFO: 35.222.136.131:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:36:23.68
+f2bf5b34
+User
+2025-12-03 09:36:23,687 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id%2Cname%2Ctagline%2Cintro%2Cinterests%2Cstrengths%2Cvisibility%2Cupdated_at&visibility=eq.public&order=updated_at.desc&limit=50 "HTTP/2 200 OK"
+2025-12-03 18:36:23.69
+f2bf5b34
+User
+INFO: 34.57.68.123:0 - "GET /profiles/public?limit=50 HTTP/1.1" 200 OK
+2025-12-03 18:36:23.96
+f2bf5b34
+User
+2025-12-03 09:36:23,961 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id "HTTP/2 200 OK"
+2025-12-03 18:36:23.96
+f2bf5b34
+User
+INFO: 35.222.136.131:0 - "GET /profiles/count HTTP/1.1" 200 OK
+2025-12-03 18:36:24.20
+f2bf5b34
+User
+2025-12-03 09:36:24,209 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:36:24.21
+f2bf5b34
+User
+INFO: 34.172.232.11:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:36:24.48
+f2bf5b34
+User
+2025-12-03 09:36:24,489 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id%2Cname%2Ctagline%2Cintro%2Cinterests%2Cstrengths%2Cvisibility%2Cupdated_at&visibility=eq.public&order=updated_at.desc&limit=50 "HTTP/2 200 OK"
+2025-12-03 18:36:24.49
+f2bf5b34
+User
+INFO: 35.222.136.131:0 - "GET /profiles/public?limit=50 HTTP/1.1" 200 OK
+2025-12-03 18:36:24.75
+f2bf5b34
+User
+2025-12-03 09:36:24,750 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=kakao_id "HTTP/2 200 OK"
+2025-12-03 18:36:24.75
+f2bf5b34
+User
+INFO: 35.222.136.131:0 - "GET /profiles/count HTTP/1.1" 200 OK
+2025-12-03 18:36:34.99
+f2bf5b34
+User
+INFO: 34.70.195.196:0 - "POST /role-assignment HTTP/1.1" 401 Unauthorized
+2025-12-03 18:36:39.92
+f2bf5b34
+User
+2025-12-03 09:36:39,921 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:36:39.92
+f2bf5b34
+User
+INFO: 104.154.182.220:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK
+2025-12-03 18:36:40.60
+f2bf5b34
+User
+2025-12-03 09:36:40,601 | INFO | httpx | HTTP Request: GET https://bzqaoqvzfmexopjpywkj.supabase.co/rest/v1/member_profiles?select=%2A&kakao_id=eq.4609921299&limit=1 "HTTP/2 200 OK"
+2025-12-03 18:36:40.60
+f2bf5b34
+User
+INFO: 104.154.182.220:0 - "GET /profiles/4609921299 HTTP/1.1" 200 OK

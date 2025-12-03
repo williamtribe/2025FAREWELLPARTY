@@ -724,7 +724,6 @@ function App() {
         element={
           <OnboardingPage 
             session={session} 
-            authHeaders={authHeaders}
             onComplete={handleOnboardingComplete}
           />
         } 

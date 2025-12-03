@@ -38,7 +38,7 @@ const EXAMPLE_STRENGTHS = [
   "긍정적",
 ];
 
-export default function OnboardingPage({ session, authHeaders, onComplete }) {
+export default function OnboardingPage({ session, onComplete }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState(0);
@@ -47,6 +47,13 @@ export default function OnboardingPage({ session, authHeaders, onComplete }) {
   const [customInterest, setCustomInterest] = useState("");
   const [customStrength, setCustomStrength] = useState("");
   const [roleResult, setRoleResult] = useState(null);
+
+  const authHeaders = session?.session_token
+    ? {
+        Authorization: `Bearer ${session.session_token}`,
+        "Content-Type": "application/json",
+      }
+    : { "Content-Type": "application/json" };
   
   const [draft, setDraft] = useState(() => {
     const saved = localStorage.getItem("onboarding-draft");
@@ -172,15 +179,24 @@ export default function OnboardingPage({ session, authHeaders, onComplete }) {
   };
 
   const fetchRoleAssignment = async () => {
+    if (!session?.session_token) {
+      console.error("No session token for role assignment");
+      setRoleResult({ error: "로그인이 필요합니다. 다시 로그인해주세요." });
+      return;
+    }
     setLoading(true);
     try {
+      console.log("Fetching role assignment with auth:", !!session?.session_token);
       const res = await fetch(`${API_BASE}/role-assignment`, {
         method: "POST",
         headers: authHeaders,
         body: JSON.stringify(profile),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "역할 배정 실패");
+      if (!res.ok) {
+        console.error("Role assignment failed:", res.status, data);
+        throw new Error(data.detail || "역할 배정 실패");
+      }
       setRoleResult(data);
     } catch (err) {
       console.error("Role assignment error:", err);
@@ -191,8 +207,14 @@ export default function OnboardingPage({ session, authHeaders, onComplete }) {
   };
 
   const saveAndFinish = async () => {
+    if (!session?.session_token) {
+      console.error("No session token for save");
+      alert("로그인이 필요합니다. 다시 로그인해주세요.");
+      return;
+    }
     setLoading(true);
     try {
+      console.log("Saving profile with auth:", !!session?.session_token);
       const res = await fetch(`${API_BASE}/me`, {
         method: "PUT",
         headers: authHeaders,
@@ -202,12 +224,17 @@ export default function OnboardingPage({ session, authHeaders, onComplete }) {
           mafia_team: roleResult?.team,
         }),
       });
-      if (!res.ok) throw new Error("저장 실패");
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("Save failed:", res.status, data);
+        throw new Error(data.detail || "저장 실패");
+      }
       localStorage.removeItem("onboarding-draft");
       if (onComplete) onComplete(profile);
       navigate("/");
     } catch (err) {
       console.error("Save error:", err);
+      alert(`저장 실패: ${err.message}`);
     } finally {
       setLoading(false);
     }
