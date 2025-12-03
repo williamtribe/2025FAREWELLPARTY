@@ -2007,3 +2007,196 @@ button.secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Order Modal */
+.order-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.order-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalSlideIn 0.3s ease;
+}
+
+.order-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.order-modal-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.order-modal-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.order-hint {
+  padding: 0.5rem 1.5rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+  background: #f8f9fa;
+}
+
+.order-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  max-height: 50vh;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.order-item:hover {
+  background: #e9ecef;
+}
+
+.order-item.dragging {
+  opacity: 0.5;
+  border-color: #1f7a4d;
+  background: #e8f5e9;
+}
+
+.order-item.private {
+  opacity: 0.6;
+}
+
+.order-num {
+  background: #1f7a4d;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.order-name {
+  font-weight: 600;
+  color: #1c2f1f;
+  min-width: 60px;
+}
+
+.order-tagline {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-private {
+  font-size: 0.7rem;
+  background: #ffebee;
+  color: #c62828;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.order-arrows {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.order-arrows button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.order-arrows button:hover:not(:disabled) {
+  background: #1f7a4d;
+  color: white;
+  border-color: #1f7a4d;
+}
+
+.order-arrows button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.order-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
+  justify-content: flex-end;
+}
+
+.order-modal-footer .cancel-btn {
+  padding: 0.6rem 1.2rem;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.order-modal-footer .save-btn {
+  padding: 0.6rem 1.5rem;
+  background: #1f7a4d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.order-modal-footer .save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.order-status {
+  text-align: center;
+  padding: 0.5rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #1f7a4d;
+}

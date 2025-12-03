@@ -73,6 +73,11 @@ function App() {
   const [roleResult, setRoleResult] = useState(null);
   const [roleLoading, setRoleLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [orderProfiles, setOrderProfiles] = useState([]);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderStatus, setOrderStatus] = useState("");
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [draggedIdx, setDraggedIdx] = useState(null);
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -377,6 +382,76 @@ function App() {
     }
   };
 
+  const loadProfileOrder = async () => {
+    if (!session?.is_admin) return;
+    setOrderLoading(true);
+    setOrderStatus("");
+    try {
+      const res = await fetch(`${API_BASE}/admin/profiles-order`, {
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "불러오기 실패");
+      setOrderProfiles(data.profiles || []);
+      setShowOrderModal(true);
+    } catch (err) {
+      setOrderStatus(`오류: ${err.message}`);
+    } finally {
+      setOrderLoading(false);
+    }
+  };
+
+  const saveProfileOrder = async () => {
+    if (!session?.is_admin || orderProfiles.length === 0) return;
+    setOrderLoading(true);
+    setOrderStatus("");
+    try {
+      const orders = orderProfiles.map((p, idx) => ({
+        kakao_id: p.kakao_id,
+        display_order: idx + 1,
+      }));
+      const res = await fetch(`${API_BASE}/admin/profiles-order`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({ orders }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "저장 실패");
+      setOrderStatus("순서 저장 완료!");
+      setTimeout(() => setShowOrderModal(false), 1000);
+    } catch (err) {
+      setOrderStatus(`오류: ${err.message}`);
+    } finally {
+      setOrderLoading(false);
+    }
+  };
+
+  const handleDragStart = (idx) => {
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e, idx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+    const newProfiles = [...orderProfiles];
+    const [dragged] = newProfiles.splice(draggedIdx, 1);
+    newProfiles.splice(idx, 0, dragged);
+    setOrderProfiles(newProfiles);
+    setDraggedIdx(idx);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+  };
+
+  const moveProfile = (idx, direction) => {
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= orderProfiles.length) return;
+    const newProfiles = [...orderProfiles];
+    [newProfiles[idx], newProfiles[newIdx]] = [newProfiles[newIdx], newProfiles[idx]];
+    setOrderProfiles(newProfiles);
+  };
+
   const fetchMyRole = async () => {
     if (!session?.session_token || !profile.intro) return;
     setRoleLoading(true);
@@ -659,9 +734,57 @@ function App() {
             >
               🔄 온보딩 다시하기 (테스트용)
             </button>
+            <button 
+              className="admin-btn" 
+              onClick={loadProfileOrder}
+              disabled={orderLoading}
+            >
+              {orderLoading ? "불러오는 중..." : "📋 프로필 순서 관리"}
+            </button>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
+            {orderStatus && <p className="admin-status">{orderStatus}</p>}
           </div>
         </section>
+      )}
+
+      {showOrderModal && (
+        <div className="order-modal-overlay" onClick={() => setShowOrderModal(false)}>
+          <div className="order-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h2>프로필 순서 관리</h2>
+              <button className="close-btn" onClick={() => setShowOrderModal(false)}>×</button>
+            </div>
+            <p className="order-hint">드래그하거나 화살표로 순서를 변경하세요</p>
+            <div className="order-list">
+              {orderProfiles.map((p, idx) => (
+                <div
+                  key={p.kakao_id}
+                  className={`order-item ${draggedIdx === idx ? 'dragging' : ''} ${p.visibility === 'private' ? 'private' : ''}`}
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragEnd={handleDragEnd}
+                >
+                  <span className="order-num">{idx + 1}</span>
+                  <span className="order-name">{p.name || '익명'}</span>
+                  <span className="order-tagline">{p.tagline || ''}</span>
+                  {p.visibility === 'private' && <span className="order-private">비공개</span>}
+                  <div className="order-arrows">
+                    <button onClick={() => moveProfile(idx, -1)} disabled={idx === 0}>↑</button>
+                    <button onClick={() => moveProfile(idx, 1)} disabled={idx === orderProfiles.length - 1}>↓</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="order-modal-footer">
+              <button className="cancel-btn" onClick={() => setShowOrderModal(false)}>취소</button>
+              <button className="save-btn" onClick={saveProfileOrder} disabled={orderLoading}>
+                {orderLoading ? "저장 중..." : "순서 저장"}
+              </button>
+            </div>
+            {orderStatus && <p className="order-status">{orderStatus}</p>}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -156,22 +156,70 @@ class SupabaseService:
                 return {"skipped": True, "reason": "profile_image_column_not_exists"}
             raise
 
-    def fetch_public_profiles(self, limit: int = 6) -> list[Dict[str, Any]]:
+    def fetch_public_profiles(self, limit: int = 50) -> list[Dict[str, Any]]:
+        if not self.client:
+            return []
+        try:
+            # Try with display_order first (ascending - lower number = higher priority)
+            result = (self.client.table("member_profiles").select(
+                "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,display_order,updated_at"
+            ).eq("visibility", "public").order("display_order", desc=False).order("updated_at", desc=True).limit(limit).execute())
+            return result.data or []
+        except Exception as e:
+            error_str = str(e)
+            # Fallback for missing columns
+            if "display_order" in error_str and "does not exist" in error_str:
+                try:
+                    result = (self.client.table("member_profiles").select(
+                        "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,updated_at"
+                    ).eq("visibility", "public").order("updated_at", desc=True).limit(limit).execute())
+                    return result.data or []
+                except Exception as e2:
+                    if "profile_image" in str(e2) and "does not exist" in str(e2):
+                        result = (self.client.table("member_profiles").select(
+                            "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
+                        ).eq("visibility", "public").order("updated_at", desc=True).limit(limit).execute())
+                        return result.data or []
+                    raise
+            elif "profile_image" in error_str and "does not exist" in error_str:
+                result = (self.client.table("member_profiles").select(
+                    "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
+                ).eq("visibility", "public").order("updated_at", desc=True).limit(limit).execute())
+                return result.data or []
+            raise
+
+    def fetch_all_profiles_for_admin(self) -> list[Dict[str, Any]]:
+        """Fetch all profiles for admin ordering (includes private)."""
         if not self.client:
             return []
         try:
             result = (self.client.table("member_profiles").select(
-                "kakao_id,name,tagline,intro,interests,strengths,visibility,profile_image,updated_at"
-            ).eq("visibility", "public").order("updated_at",
-                                               desc=True).limit(limit).execute())
+                "kakao_id,name,tagline,visibility,display_order,updated_at"
+            ).order("display_order", desc=False).order("updated_at", desc=True).execute())
             return result.data or []
         except Exception as e:
-            if "profile_image does not exist" in str(e):
+            if "display_order" in str(e) and "does not exist" in str(e):
                 result = (self.client.table("member_profiles").select(
-                    "kakao_id,name,tagline,intro,interests,strengths,visibility,updated_at"
-                ).eq("visibility", "public").order("updated_at",
-                                                   desc=True).limit(limit).execute())
+                    "kakao_id,name,tagline,visibility,updated_at"
+                ).order("updated_at", desc=True).execute())
                 return result.data or []
+            raise
+
+    def update_display_order(self, orders: list[Dict[str, Any]]) -> Dict[str, Any]:
+        """Update display_order for multiple profiles. orders = [{"kakao_id": "...", "display_order": 1}, ...]"""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            results = []
+            for item in orders:
+                result = self.client.table("member_profiles").update({
+                    "display_order": item["display_order"]
+                }).eq("kakao_id", item["kakao_id"]).execute()
+                results.append(result.data)
+            return {"data": results, "updated": len(results)}
+        except Exception as e:
+            if "display_order" in str(e) and "does not exist" in str(e):
+                return {"skipped": True, "reason": "display_order_column_not_exists"}
             raise
 
     def upsert_preferences(self, data: Dict[str, Any]) -> Dict[str, Any]:

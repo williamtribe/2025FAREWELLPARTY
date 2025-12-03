@@ -358,6 +358,41 @@ async def reembed_all_profiles(user: SessionUser = Depends(get_current_user)):
     return {"message": "reembedding_complete", "stats": stats}
 
 
+@app.get("/admin/profiles-order")
+async def get_profiles_order(user: SessionUser = Depends(get_current_user)):
+    """Get all profiles for admin to manage display order."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
+    profiles = supabase_service.fetch_all_profiles_for_admin()
+    return {"profiles": profiles}
+
+
+class OrderItem(BaseModel):
+    kakao_id: str
+    display_order: int
+
+
+class UpdateOrderPayload(BaseModel):
+    orders: list[OrderItem]
+
+
+@app.post("/admin/profiles-order")
+async def update_profiles_order(payload: UpdateOrderPayload, user: SessionUser = Depends(get_current_user)):
+    """Update display order for profiles (admin only)."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
+    orders = [{"kakao_id": item.kakao_id, "display_order": item.display_order} for item in payload.orders]
+    result = supabase_service.update_display_order(orders)
+    if result.get("skipped"):
+        if result.get("reason") == "display_order_column_not_exists":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="display_order 컬럼이 없습니다. Supabase에서 추가해주세요: ALTER TABLE member_profiles ADD COLUMN display_order INTEGER DEFAULT 999;"
+            )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result.get("reason"))
+    return {"message": "order_updated", "result": result}
+
+
 @app.get("/kakao/friends")
 async def kakao_friends(access_token: str, user: SessionUser = Depends(get_current_user)):
     try:
