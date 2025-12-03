@@ -133,6 +133,12 @@ body {
   margin: 0 0 1rem;
 }
 
+.dev-comment {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.85em;
+}
+
 .card-chips {
   display: flex;
   flex-wrap: wrap;

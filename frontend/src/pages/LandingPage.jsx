@@ -3,6 +3,23 @@ import { Link } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
+// Render text with *comment styled differently
+function renderWithDevComment(text) {
+  if (!text) return null;
+  const starIndex = text.indexOf('*');
+  if (starIndex === -1) {
+    return <>{text}</>;
+  }
+  const mainPart = text.slice(0, starIndex);
+  const commentPart = text.slice(starIndex);
+  return (
+    <>
+      {mainPart}
+      <span className="dev-comment">{commentPart}</span>
+    </>
+  );
+}
+
 export default function LandingPage({ session, onLogin, onShare }) {
   const [profileCount, setProfileCount] = useState(0);
   const [publicProfiles, setPublicProfiles] = useState([]);
@@ -181,7 +198,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
               )}
               <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
               <p className="card-tagline">{currentProfile?.tagline || ""}</p>
-              <p className="card-intro">{currentProfile?.intro || "자기소개가 없어요"}</p>
+              <p className="card-intro">{renderWithDevComment(currentProfile?.intro) || "자기소개가 없어요"}</p>
               {currentProfile?.interests?.length > 0 && (
                 <div className="card-chips">
                   {currentProfile.interests.slice(0, 5).map((interest, idx) => (
