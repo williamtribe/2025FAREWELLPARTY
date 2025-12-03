@@ -248,8 +248,19 @@ async def generate_intro_from_yesorno(user: SessionUser = Depends(get_current_us
     return result
 
 
+@app.get("/profiles/count")
+async def get_profiles_count():
+    if not supabase_service.client:
+        return {"count": 0}
+    try:
+        result = supabase_service.client.table("member_profiles").select("kakao_id", count="exact").execute()
+        return {"count": result.count or 0}
+    except Exception:
+        return {"count": 0}
+
+
 @app.get("/profiles/public")
-async def list_public_profiles(limit: int = 6):
+async def list_public_profiles(limit: int = 50):
     profiles = supabase_service.fetch_public_profiles(limit=limit)
     return {"profiles": profiles}
 
