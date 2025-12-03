@@ -16,6 +16,12 @@ Korean farewell party website with:
   - Added validation to prevent AI from making up non-existent roles
   - Roles: 마피아, 스파이, 짐승인간, 경찰, 의사, 해커, 판사, etc.
 - Admin "온보딩 다시하기" button for testing onboarding flow
+- **Kakao profile image support**: Profile images auto-update on login (new + existing users)
+- **Developer comment styling**: Text starting with `*` displays in gray italic font
+- **Admin profile order management**: 
+  - Drag-and-drop UI to reorder landing page profile cards
+  - Arrow buttons for fine-tuned ordering
+  - Saves display_order to Supabase (with fallback to updated_at if column missing)
 
 ## Previous Changes (December 2, 2025)
 - Imported from GitHub repository
