@@ -26,7 +26,7 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
       if (isLoggedIn) {
         navigate('/my-profile')
       } else {
-        setTransitionMessage('그러면 빨리 로그인 해')
+        setTransitionMessage('자기소개 생략')
         setTransitionNeedsAction(true)
       }
     } else if (dir === 'left') {
