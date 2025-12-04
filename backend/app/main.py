@@ -109,6 +109,9 @@ async def kakao_login():
 
 @app.get("/auth/kakao/callback")
 async def kakao_callback(code: str, state: Optional[str] = None):
+    from fastapi.responses import HTMLResponse
+    import json
+    
     if not code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="missing_code")
     try:
@@ -145,7 +148,79 @@ async def kakao_callback(code: str, state: Optional[str] = None):
         "is_admin": kakao_id in settings.admin_ids,
     }
     session_token = session_signer.sign(payload)
-    return {"session_token": session_token, "profile": payload, "state": state}
+    
+    session_data = {
+        "session_token": session_token,
+        "profile": payload,
+        "state": state
+    }
+    session_json = json.dumps(session_data)
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>로그인 처리 중...</title>
+        <style>
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }}
+            .container {{
+                text-align: center;
+                padding: 2rem;
+            }}
+            .spinner {{
+                width: 50px;
+                height: 50px;
+                border: 4px solid rgba(255,255,255,0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 1rem;
+            }}
+            @keyframes spin {{
+                to {{ transform: rotate(360deg); }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="spinner"></div>
+            <p>로그인 처리 중...</p>
+        </div>
+        <script>
+            const sessionData = {session_json};
+            const sessionPayload = {{
+                ...sessionData.profile,
+                session_token: sessionData.session_token
+            }};
+            
+            localStorage.setItem("farewell-session", JSON.stringify(sessionPayload));
+            localStorage.removeItem("kakao-state");
+            localStorage.setItem("farewell-landing-seen", "1");
+            
+            if (window.opener) {{
+                window.opener.postMessage(
+                    {{ type: "kakao-login-success", session: sessionPayload }},
+                    "*"
+                );
+                window.close();
+            }} else {{
+                window.location.href = "/";
+            }}
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 
 @app.get("/me")
