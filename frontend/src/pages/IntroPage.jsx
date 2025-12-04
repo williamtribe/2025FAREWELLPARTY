@@ -25,9 +25,7 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
         navigate('/my-profile')
       } else {
         setTransitionMessage('그러면 빨리 로그인 해')
-        redirectTimer.current = setTimeout(() => {
-          onLogin()
-        }, 900)
+        setTransitionNeedsAction(true)
       }
     } else if (dir === 'left') {
       onSeenIntro?.()
