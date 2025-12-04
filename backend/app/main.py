@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import os
 import secrets
+from pathlib import Path
 from typing import Annotated, Dict, List, Literal, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from .config import logger, settings
@@ -22,6 +26,9 @@ from .services import (
 )
 
 app = FastAPI(title="2025 Farewell Party API", version="0.1.0")
+api_router = APIRouter(prefix="/api")
+
+FRONTEND_BUILD_DIR = Path(__file__).parent.parent.parent / "frontend" / "dist"
 
 app.add_middleware(
     CORSMiddleware,
@@ -100,14 +107,14 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/auth/kakao/login")
+@api_router.get("/auth/kakao/login")
 async def kakao_login():
     state = secrets.token_urlsafe(16)
     auth_url = await kakao_client.build_login_url(state)
     return {"auth_url": str(auth_url), "state": state}
 
 
-@app.get("/auth/kakao/callback")
+@api_router.get("/auth/kakao/callback")
 async def kakao_callback(code: str, state: Optional[str] = None):
     from fastapi.responses import HTMLResponse
     import json
@@ -223,13 +230,13 @@ async def kakao_callback(code: str, state: Optional[str] = None):
     return HTMLResponse(content=html_content)
 
 
-@app.get("/me")
+@api_router.get("/me")
 async def get_my_profile(user: SessionUser = Depends(get_current_user)):
     profile = supabase_service.fetch_profile(user.kakao_id)
     return {"profile": profile}
 
 
-@app.put("/me")
+@api_router.put("/me")
 async def upsert_profile(payload: ProfilePayload, user: SessionUser = Depends(get_current_user)):
     record = assemble_profile_record(user.kakao_id, payload.model_dump())
     supabase_result = supabase_service.upsert_profile(record)
@@ -266,7 +273,7 @@ async def upsert_profile(payload: ProfilePayload, user: SessionUser = Depends(ge
     }
 
 
-@app.post("/preferences")
+@api_router.post("/preferences")
 async def save_preferences(payload: PreferencePayload, user: SessionUser = Depends(get_current_user)):
     data = {
         "kakao_id": user.kakao_id,
@@ -281,7 +288,7 @@ class IntroGenerationPayload(BaseModel):
     answers: Dict[str, str]
 
 
-@app.post("/generate-intro")
+@api_router.post("/generate-intro")
 async def generate_intro(payload: IntroGenerationPayload, user: SessionUser = Depends(get_current_user)):
     result = intro_generation_service.generate_intro(payload.answers)
     if not result:
@@ -297,7 +304,7 @@ class YesOrNoPayload(BaseModel):
     response: int = Field(..., ge=-1, le=1)
 
 
-@app.post("/intro-yesorno")
+@api_router.post("/intro-yesorno")
 async def save_yesorno(payload: YesOrNoPayload, user: SessionUser = Depends(get_current_user)):
     if payload.response not in (-1, 1):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="response must be -1 or 1")
@@ -307,13 +314,13 @@ async def save_yesorno(payload: YesOrNoPayload, user: SessionUser = Depends(get_
     return {"saved": True, "result": result}
 
 
-@app.get("/intro-yesorno")
+@api_router.get("/intro-yesorno")
 async def get_yesorno(user: SessionUser = Depends(get_current_user)):
     row = supabase_service.fetch_yesorno(user.kakao_id)
     return {"responses": row}
 
 
-@app.post("/generate-intro-from-yesorno")
+@api_router.post("/generate-intro-from-yesorno")
 async def generate_intro_from_yesorno(user: SessionUser = Depends(get_current_user)):
     yesorno_data = supabase_service.fetch_yesorno(user.kakao_id)
     if not yesorno_data:
@@ -332,7 +339,7 @@ async def generate_intro_from_yesorno(user: SessionUser = Depends(get_current_us
     return result
 
 
-@app.get("/profiles/count")
+@api_router.get("/profiles/count")
 async def get_profiles_count():
     if not supabase_service.client:
         return {"count": 0}
@@ -343,13 +350,13 @@ async def get_profiles_count():
         return {"count": 0}
 
 
-@app.get("/profiles/public")
+@api_router.get("/profiles/public")
 async def list_public_profiles(limit: int = 50):
     profiles = supabase_service.fetch_public_profiles(limit=limit)
     return {"profiles": profiles}
 
 
-@app.get("/profiles/{kakao_id}")
+@api_router.get("/profiles/{kakao_id}")
 async def view_profile(
     kakao_id: str,
     user: SessionUser | None = Depends(optional_user),
@@ -365,7 +372,7 @@ async def view_profile(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="forbidden")
     return {"profile": profile}
 
-@app.get("/admin/profiles")
+@api_router.get("/admin/profiles")
 async def admin_profiles(user: SessionUser = Depends(get_current_user)):
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
@@ -378,7 +385,7 @@ async def admin_profiles(user: SessionUser = Depends(get_current_user)):
     return {"profiles": result.data}
 
 
-@app.post("/admin/reembed-all")
+@api_router.post("/admin/reembed-all")
 async def reembed_all_profiles(user: SessionUser = Depends(get_current_user)):
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin_only")
@@ -433,7 +440,7 @@ async def reembed_all_profiles(user: SessionUser = Depends(get_current_user)):
     return {"message": "reembedding_complete", "stats": stats}
 
 
-@app.get("/admin/profiles-order")
+@api_router.get("/admin/profiles-order")
 async def get_profiles_order(user: SessionUser = Depends(get_current_user)):
     """Get all profiles for admin to manage display order."""
     if not user.is_admin:
@@ -451,7 +458,7 @@ class UpdateOrderPayload(BaseModel):
     orders: list[OrderItem]
 
 
-@app.post("/admin/profiles-order")
+@api_router.post("/admin/profiles-order")
 async def update_profiles_order(payload: UpdateOrderPayload, user: SessionUser = Depends(get_current_user)):
     """Update display order for profiles (admin only)."""
     if not user.is_admin:
@@ -468,7 +475,7 @@ async def update_profiles_order(payload: UpdateOrderPayload, user: SessionUser =
     return {"message": "order_updated", "result": result}
 
 
-@app.post("/admin/embed-jobs")
+@api_router.post("/admin/embed-jobs")
 async def embed_mafia42_jobs(user: SessionUser = Depends(get_current_user)):
     """Embed all mafia42_jobs into Pinecone with namespace 'mafia42_jobs'."""
     if not user.is_admin:
@@ -530,13 +537,13 @@ class FixedRolePayload(BaseModel):
     fixed_role: Optional[str] = None
 
 
-@app.get("/admin/jobs")
+@api_router.get("/admin/jobs")
 async def get_mafia42_jobs():
     """Get all Mafia42 jobs for debugging."""
     jobs = supabase_service.fetch_mafia42_jobs()
     return {"jobs": jobs}
 
-@app.get("/admin/fixed-roles")
+@api_router.get("/admin/fixed-roles")
 async def get_fixed_roles(user: SessionUser = Depends(get_current_user)):
     """Get all profiles with their fixed roles for admin management."""
     if not user.is_admin:
@@ -547,7 +554,7 @@ async def get_fixed_roles(user: SessionUser = Depends(get_current_user)):
     return {"profiles": profiles, "jobs": job_list}
 
 
-@app.post("/admin/fixed-roles")
+@api_router.post("/admin/fixed-roles")
 async def set_fixed_role(payload: FixedRolePayload, user: SessionUser = Depends(get_current_user)):
     """Set or clear a fixed role for a user (admin only). Pass fixed_role=null to clear."""
     if not user.is_admin:
@@ -563,7 +570,7 @@ async def set_fixed_role(payload: FixedRolePayload, user: SessionUser = Depends(
     return {"message": "fixed_role_updated", "kakao_id": payload.kakao_id, "fixed_role": payload.fixed_role}
 
 
-@app.get("/kakao/friends")
+@api_router.get("/kakao/friends")
 async def kakao_friends(access_token: str, user: SessionUser = Depends(get_current_user)):
     try:
         friends = await kakao_client.fetch_friends(access_token)
@@ -572,7 +579,7 @@ async def kakao_friends(access_token: str, user: SessionUser = Depends(get_curre
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"kakao_friends_error: {exc}") from exc
 
 
-@app.post("/kakao/message")
+@api_router.post("/kakao/message")
 async def kakao_message(payload: KakaoMessagePayload, user: SessionUser = Depends(get_current_user)):
     if not payload.receiver_uuids:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="receiver_uuids_required")
@@ -589,7 +596,7 @@ async def kakao_message(payload: KakaoMessagePayload, user: SessionUser = Depend
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"kakao_message_error: {exc}") from exc
 
 
-@app.get("/similar-profiles")
+@api_router.get("/similar-profiles")
 async def get_similar_profiles(
     user: SessionUser = Depends(get_current_user), 
     limit: int = 10,
@@ -610,7 +617,7 @@ async def get_similar_profiles(
     return {"profiles": profiles, "criteria": criteria}
 
 
-@app.get("/different-profiles")
+@api_router.get("/different-profiles")
 async def get_different_profiles(
     user: SessionUser = Depends(get_current_user), 
     limit: int = 10,
@@ -661,7 +668,7 @@ class RoleAssignmentPayload(BaseModel):
     strengths: List[str] = Field(default_factory=list)
 
 
-@app.post("/role-assignment")
+@api_router.post("/role-assignment")
 async def assign_mafia_role(
     payload: RoleAssignmentPayload, 
     user: SessionUser = Depends(get_current_user)
@@ -832,7 +839,7 @@ class MafBTIPayload(BaseModel):
     intro: str
 
 
-@app.post("/mafbti")
+@api_router.post("/mafbti")
 async def mafbti_role_assignment(payload: MafBTIPayload):
     """Public MafBTI endpoint - no authentication required."""
     from openai import OpenAI
@@ -917,3 +924,31 @@ async def mafbti_role_assignment(payload: MafBTIPayload):
             "reasoning": f"당신의 특성이 {job_name}과(와) 잘 어울려!",
             "similarity_score": best_match.get("score", 0),
         }
+
+
+# Include API router with /api prefix
+app.include_router(api_router)
+
+# Serve static frontend files in production
+if FRONTEND_BUILD_DIR.exists():
+    # Mount static assets (js, css, images)
+    if (FRONTEND_BUILD_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=FRONTEND_BUILD_DIR / "assets"), name="assets")
+    
+    # Serve job_images folder
+    job_images_dir = FRONTEND_BUILD_DIR / "job_images"
+    if job_images_dir.exists():
+        app.mount("/job_images", StaticFiles(directory=job_images_dir), name="job_images")
+    
+    # Catch-all route for SPA - serve index.html for any unmatched routes
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # Check if it's a file request (has extension)
+        file_path = FRONTEND_BUILD_DIR / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        # For all other routes, return index.html (SPA routing)
+        index_path = FRONTEND_BUILD_DIR / "index.html"
+        if index_path.exists():
+            return FileResponse(index_path)
+        raise HTTPException(status_code=404, detail="Not found")

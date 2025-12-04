@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_BASE = "/api";
 
 const DEFAULT_INTEREST_CATEGORIES = {
   "🎬 애니": ["체인소맨", "귀멸의 칼날", "주술회전", "진격의 거인", "그 비스크 돌은 사랑을 한다"],

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TinderCard from 'react-tinder-card'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_BASE = "/api";
 
 function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
   const navigate = useNavigate()
