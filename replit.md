@@ -11,7 +11,7 @@ Korean farewell party website with:
   - No login required - anyone can take the test
   - Simple self-intro input → AI job assignment via vector similarity
   - Beautiful result page with job image, team badge, and personalized reasoning
-  - Link button on landing page (bottom left)
+  - URL 직접 접근만 가능 (메인 페이지 버튼 없음)
   - Public endpoint `/mafbti` in backend (no auth)
 - **Custom interest addition**: /my-profile now has custom interest input field
   - Users can add their own interests beyond predefined categories
