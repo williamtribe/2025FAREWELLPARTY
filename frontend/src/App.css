@@ -406,6 +406,30 @@ body {
   border-radius: 14px;
 }
 
+.transition-message-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(31, 122, 77, 0.08);
+  border: 1px dashed rgba(31, 122, 77, 0.35);
+  padding: 1.5rem 2rem;
+  border-radius: 14px;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.transition-message-overlay .lede {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f7a4d;
+}
+
 .host-card {
   display: grid;
   grid-template-columns: 120px 1fr;

@@ -58,6 +58,22 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
       <div className="landing-copy">
         <div className="tinder-stage">
           <span className="swipe-side-label left">이놈을 모른다 <br/> 왼쪽으로 스윽</span>
+          
+          {transitionMessage && (
+            <div className="transition-message-overlay">
+              <p className="lede">{transitionMessage}</p>
+              <button
+                className="primary"
+                onClick={() => {
+                  onSeenIntro?.()
+                  handleDirectLogin()
+                }}
+              >
+                카카오 로그인
+              </button>
+            </div>
+          )}
+          
           <TinderCard
             preventSwipe={['up', 'down']}
             onSwipe={handleSwipe}
@@ -86,21 +102,6 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
           </TinderCard>
           <span className="swipe-side-label right">이놈을 안다 <br/> 오른쪽으로 스윽</span>
         </div>
-
-        {transitionMessage && (
-          <div className="transition-message">
-            <p className="lede">{transitionMessage}</p>
-            <button
-              className="primary"
-              onClick={() => {
-                onSeenIntro?.()
-                handleDirectLogin()
-              }}
-            >
-              카카오 로그인
-            </button>
-          </div>
-        )}
 
         <p className="swipe-hint-inline outside">
           *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서* <br /> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사
