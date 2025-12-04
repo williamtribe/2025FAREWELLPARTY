@@ -716,16 +716,26 @@ function App() {
                             placeholder="항목 추가..."
                             className="custom-input"
                             autoFocus
-                            onKeyPress={(e) => {
+                            onKeyDown={(e) => {
                               if (e.key === 'Enter') {
+                                e.preventDefault();
                                 addNewItemToCategory(category);
                                 setShowAddItemInput(null);
                               }
                             }}
-                            onBlur={() => setShowAddItemInput(null)}
                             disabled={!isLoggedIn}
                           />
-                          <button className="add-btn" onClick={() => { addNewItemToCategory(category); setShowAddItemInput(null); }} disabled={!isLoggedIn}>✓</button>
+                          <button 
+                            className="add-btn" 
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => { addNewItemToCategory(category); setShowAddItemInput(null); }} 
+                            disabled={!isLoggedIn}
+                          >✓</button>
+                          <button 
+                            className="cancel-btn-small" 
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => setShowAddItemInput(null)}
+                          >✕</button>
                         </div>
                       ) : (
                         <button className="add-btn-placeholder" onClick={() => setShowAddItemInput(category)} disabled={!isLoggedIn}>+</button>

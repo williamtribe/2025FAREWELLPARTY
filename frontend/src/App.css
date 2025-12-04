@@ -1815,6 +1815,54 @@ button.secondary:disabled {
   background: #2a8a5a;
 }
 
+.custom-add-inline {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.custom-add-inline .custom-input {
+  width: 100px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.custom-add-inline .add-btn {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.cancel-btn-small {
+  padding: 0.4rem 0.6rem;
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cancel-btn-small:hover {
+  background: #e0e0e0;
+}
+
+.add-btn-placeholder {
+  padding: 0.4rem 0.8rem;
+  background: rgba(31, 122, 77, 0.1);
+  color: #1f7a4d;
+  border: 2px dashed rgba(31, 122, 77, 0.3);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-btn-placeholder:hover {
+  background: rgba(31, 122, 77, 0.2);
+  border-color: #1f7a4d;
+}
+
 .example-chips {
   display: flex;
   flex-wrap: wrap;
