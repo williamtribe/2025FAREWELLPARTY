@@ -84,6 +84,17 @@ function App() {
   const [fixedRoleLoading, setFixedRoleLoading] = useState(false);
   const [fixedRoleStatus, setFixedRoleStatus] = useState("");
   const [showFixedRoleModal, setShowFixedRoleModal] = useState(false);
+  const [customInterest, setCustomInterest] = useState("");
+
+  const addCustomInterest = () => {
+    if (customInterest.trim() && !profile.interests.includes(customInterest.trim())) {
+      setProfile((prev) => ({
+        ...prev,
+        interests: [...prev.interests, customInterest.trim()],
+      }));
+      setCustomInterest("");
+    }
+  };
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -673,6 +684,24 @@ function App() {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="custom-add-section">
+                <input
+                  type="text"
+                  value={customInterest}
+                  onChange={(e) => setCustomInterest(e.target.value)}
+                  placeholder="직접 입력..."
+                  className="custom-input"
+                  onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
+                  disabled={!isLoggedIn}
+                />
+                <button 
+                  className="add-btn" 
+                  onClick={addCustomInterest}
+                  disabled={!isLoggedIn}
+                >
+                  추가
+                </button>
               </div>
               {profile.interests.length > 0 && (
                 <p className="selected-count">선택됨: {profile.interests.join(", ")}</p>
