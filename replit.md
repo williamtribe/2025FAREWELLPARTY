@@ -6,7 +6,19 @@ Korean farewell party website with:
 - **Backend**: FastAPI (Python) on port 8000
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
-## Recent Changes (December 3, 2025)
+## Recent Changes (December 4, 2025)
+- **MafBTI (/mafbti)**: Standalone Mafia42 personality test page
+  - No login required - anyone can take the test
+  - Simple self-intro input → AI job assignment via vector similarity
+  - Beautiful result page with job image, team badge, and personalized reasoning
+  - Link button on landing page (bottom left)
+  - Public endpoint `/mafbti` in backend (no auth)
+- **Custom interest addition**: /my-profile now has custom interest input field
+  - Users can add their own interests beyond predefined categories
+  - Input field with "추가" button, Enter key support
+- **Role modal improvements**: Larger job image (240px), smaller text
+
+## Previous Changes (December 3, 2025)
 - **New simplified landing page at /**: Shows member count + swipeable public profile cards
   - Displays "X명이 참여 중" with real-time count from database
   - Browse public profiles with carousel navigation
