@@ -1847,13 +1847,13 @@ button.secondary:disabled {
 }
 
 .role-name {
-  font-size: 2rem;
+  font-size: 1.4rem;
   font-weight: 700;
 }
 
 .role-image-container {
-  width: 180px;
-  height: 180px;
+  width: 240px;
+  height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1987,7 +1987,7 @@ button.secondary:disabled {
 }
 
 .role-reveal .role-name {
-  font-size: 2.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   margin: 0;
 }
