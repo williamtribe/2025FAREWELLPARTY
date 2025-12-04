@@ -751,3 +751,94 @@ def _fallback_role_assignment():
         "reasoning": "직업 매칭 서비스를 준비 중이에요. 일단 멋진 역할을 배정해드렸어요!",
         "similarity_score": 0,
     }
+
+
+class MafBTIPayload(BaseModel):
+    intro: str
+
+
+@app.post("/mafbti")
+async def mafbti_role_assignment(payload: MafBTIPayload):
+    """Public MafBTI endpoint - no authentication required."""
+    from openai import OpenAI
+    
+    openai_key = settings.openai_api_key
+    if not openai_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="openai_not_configured"
+        )
+    
+    client = OpenAI(api_key=openai_key)
+    
+    profile_text = f"자기소개: {payload.intro}"
+    
+    user_vector = embedding_service.embed_member(profile_text)
+    
+    if not user_vector:
+        return _fallback_role_assignment()
+    
+    matches = pinecone_service.query_by_vector(
+        vector=user_vector,
+        top_k=3,
+        namespace="mafia42_jobs"
+    )
+    
+    if not matches:
+        return _fallback_role_assignment()
+    
+    best_match = matches[0]
+    job_code = best_match.get("id", "")
+    job_metadata = best_match.get("metadata", {})
+    
+    job_name = job_metadata.get("name", "시민")
+    job_team = _convert_team_name(job_metadata.get("team", "citizen"))
+    job_story = job_metadata.get("story", "")
+    
+    if not job_story:
+        job_data = supabase_service.fetch_job_by_code(job_code)
+        if job_data:
+            job_name = job_data.get("name", job_name)
+            job_team = _convert_team_name(job_data.get("team", "citizen"))
+            job_story = job_data.get("story", "")
+    
+    system_prompt = f"""당신은 마피아42 게임의 직업 배정 전문가입니다.
+사용자의 자기소개와 배정된 직업의 스토리를 바탕으로, 왜 이 직업이 어울리는지 재미있고 친근하게 설명해주세요.
+
+배정된 직업: {job_name} ({job_team})
+직업 스토리: {job_story}
+
+2-3문장으로 왜 이 직업이 사용자에게 어울리는지 설명하세요.
+직업의 스토리와 사용자의 특징을 연결해서 작성하세요.
+반말로 친근하게 작성하세요.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"사용자 자기소개:\n{payload.intro}"},
+            ],
+            temperature=0.8,
+            max_tokens=200,
+        )
+        
+        reasoning = response.choices[0].message.content.strip()
+        
+        return {
+            "team": job_team,
+            "role": job_name,
+            "code": job_code,
+            "reasoning": reasoning,
+            "similarity_score": best_match.get("score", 0),
+        }
+    except Exception as e:
+        logger.error(f"MafBTI reasoning generation error: {e}")
+        return {
+            "team": job_team,
+            "role": job_name,
+            "code": job_code,
+            "reasoning": f"당신의 특성이 {job_name}과(와) 잘 어울려!",
+            "similarity_score": best_match.get("score", 0),
+        }
