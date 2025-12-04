@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TinderCard from 'react-tinder-card'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+
 function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
   const navigate = useNavigate()
   const redirectTimer = useRef(null)
@@ -30,6 +32,17 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
     } else if (dir === 'left') {
       onSeenIntro?.()
       navigate('/info')
+    }
+  }
+  
+  const handleDirectLogin = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/kakao/login`);
+      const data = await res.json();
+      localStorage.setItem("kakao-state", data.state);
+      window.location.href = data.auth_url;
+    } catch (err) {
+      console.error("Login redirect error:", err);
     }
   }
 
@@ -74,29 +87,25 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
           <span className="swipe-side-label right">이놈을 안다 <br/> 오른쪽으로 스윽</span>
         </div>
 
+        {transitionMessage && (
+          <div className="transition-message">
+            <p className="lede">{transitionMessage}</p>
+            <button
+              className="primary"
+              onClick={() => {
+                onSeenIntro?.()
+                handleDirectLogin()
+              }}
+            >
+              카카오 로그인
+            </button>
+          </div>
+        )}
+
         <p className="swipe-hint-inline outside">
           *이렇게 뜨는건 저밖에 없습니다. 틴더냐고 자꾸 놀려서* <br /> *송년회 당일에 제시되는 여러 주제에 안다/모른다로 답한 것을 바탕으로 저녁식사
           테이블이 배정됩니다.*
         </p>
-
-        {transitionMessage && (
-          <div className="transition-message">
-            <p className="lede">{transitionMessage}</p>
-            {transitionNeedsAction ? (
-              <button
-                className="primary"
-                onClick={() => {
-                  onSeenIntro?.()
-                  onLogin()
-                }}
-              >
-                로그인 화면으로 이동
-              </button>
-            ) : (
-              <p className="muted">로그인 화면으로 이동합니다.</p>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
