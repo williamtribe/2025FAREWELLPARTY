@@ -273,6 +273,36 @@
   margin: 0;
 }
 
+/* 로그인 프롬프트 및 버튼 스타일 */
+.mafbti-login-prompt {
+  text-align: center;
+  color: #e74c3c;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 0.8rem;
+  border-radius: 8px;
+}
+
+.mafbti-login-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 돌아가기 링크 */
+.mafbti-back-link {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  color: #aaa;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.mafbti-back-link:hover {
+  color: white;
+}
+}
+
 @media (max-width: 520px) {
   .mafbti-page {
     padding: 1rem;

@@ -1,65 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    port: 5000,
+    port: 3000,
     allowedHosts: true,
     proxy: {
-      '/auth': {
+      '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-      },
-      '/me': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/profiles': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/preferences': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/admin': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/kakao': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/health': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/generate-intro': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/intro-yesorno': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/generate-intro-from-yesorno': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/similar-profiles': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/different-profiles': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/role-assignment': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-const INTEREST_CATEGORIES = {
+const DEFAULT_INTEREST_CATEGORIES = {
   "🎬 애니": ["체인소맨", "귀멸의 칼날", "주술회전", "진격의 거인", "그 비스크 돌은 사랑을 한다"],
   "🏋️ 운동": ["레슬링", "테니스", "MMA", "배드민턴", "축구", "헬스", "수영"],
   "🎮 게임": ["롤", "마피아42", "오버워치", "발로란트"],
@@ -51,9 +51,12 @@ export default function OnboardingPage({ session, onComplete }) {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(null);
-  const [customInterest, setCustomInterest] = useState("");
   const [customStrength, setCustomStrength] = useState("");
   const [roleResult, setRoleResult] = useState(null);
+  const [interestCategories, setInterestCategories] = useState(DEFAULT_INTEREST_CATEGORIES);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newItemInputs, setNewItemInputs] = useState({});
+  const [showAddItemInput, setShowAddItemInput] = useState(null); // null or category name
 
   const authHeaders = session?.session_token
     ? {
@@ -153,16 +156,6 @@ export default function OnboardingPage({ session, onComplete }) {
     }));
   };
 
-  const addCustomInterest = () => {
-    if (customInterest.trim() && !profile.interests.includes(customInterest.trim())) {
-      setProfile(prev => ({
-        ...prev,
-        interests: [...prev.interests, customInterest.trim()],
-      }));
-      setCustomInterest("");
-    }
-  };
-
   const addCustomStrength = () => {
     if (customStrength.trim() && !profile.strengths.includes(customStrength.trim())) {
       setProfile(prev => ({
@@ -170,6 +163,36 @@ export default function OnboardingPage({ session, onComplete }) {
         strengths: [...prev.strengths, customStrength.trim()],
       }));
       setCustomStrength("");
+    }
+  };
+
+  const handleNewCategoryChange = (e) => {
+    setNewCategoryName(e.target.value);
+  };
+
+  const addNewCategory = () => {
+    if (newCategoryName.trim() && !interestCategories[newCategoryName.trim()]) {
+      setInterestCategories(prev => ({
+        ...prev,
+        [newCategoryName.trim()]: []
+      }));
+      setNewCategoryName("");
+    }
+  };
+
+  const handleNewItemInputChange = (category, value) => {
+    setNewItemInputs(prev => ({ ...prev, [category]: value }));
+  };
+
+  const addNewItemToCategory = (category) => {
+    const newItem = newItemInputs[category]?.trim();
+    if (newItem && !interestCategories[category].includes(newItem)) {
+      setInterestCategories(prev => ({
+        ...prev,
+        [category]: [...prev[category], newItem]
+      }));
+      toggleInterest(newItem); // 추가: 항목을 추가함과 동시에 선택 상태로 만듭니다.
+      handleNewItemInputChange(category, "");
     }
   };
 
@@ -347,7 +370,7 @@ export default function OnboardingPage({ session, onComplete }) {
             <p className="step-desc">관심 있는 것들을 선택하세요. 직접 추가도 가능해요!</p>
             
             <div className="interest-selector">
-              {Object.entries(INTEREST_CATEGORIES).map(([category, items]) => (
+              {Object.entries(interestCategories).map(([category, items]) => (
                 <div key={category} className="interest-category">
                   <div className="category-title">{category}</div>
                   <div className="interest-chips">
@@ -362,20 +385,41 @@ export default function OnboardingPage({ session, onComplete }) {
                       </button>
                     ))}
                   </div>
+                  {showAddItemInput === category ? (
+                    <div className="custom-add-section inline">
+                      <input
+                        type="text"
+                        value={newItemInputs[category] || ""}
+                        onChange={(e) => handleNewItemInputChange(category, e.target.value)}
+                        placeholder="항목 추가..."
+                        className="custom-input"
+                        autoFocus
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            addNewItemToCategory(category);
+                            setShowAddItemInput(null);
+                          }
+                        }}
+                        onBlur={() => setShowAddItemInput(null)}
+                      />
+                      <button className="add-btn" onClick={() => { addNewItemToCategory(category); setShowAddItemInput(null); }}>✓</button>
+                    </div>
+                  ) : (
+                    <button className="add-btn-placeholder" onClick={() => setShowAddItemInput(category)}>+</button>
+                  )}
                 </div>
               ))}
             </div>
 
             <div className="custom-add-section">
               <input
-                type="text"
-                value={customInterest}
-                onChange={(e) => setCustomInterest(e.target.value)}
-                placeholder="직접 입력..."
+                value={newCategoryName}
+                onChange={handleNewCategoryChange}
+                placeholder="새 카테고리 추가..."
                 className="custom-input"
-                onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
+                onKeyPress={(e) => e.key === 'Enter' && addNewCategory()}
               />
-              <button className="add-btn" onClick={addCustomInterest}>추가</button>
+              <button className="add-btn" onClick={addNewCategory}>카테고리 추가</button>
             </div>
 
             {profile.interests.length > 0 && (

@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./MafBTIPage.css";
 
 const DEFAULT_JOB_IMAGE = "/job_images/이레귤러_시민_시민 스킨.png";
 
-export default function MafBTIPage() {
+export default function MafBTIPage({ session, onLogin }) {
+  const navigate = useNavigate();
   const [intro, setIntro] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+
+  const isLoggedIn = Boolean(session?.session_token);
 
   const handleSubmit = async () => {
     if (!intro.trim()) {
@@ -20,13 +23,22 @@ export default function MafBTIPage() {
       return;
     }
 
+    if (!isLoggedIn) {
+      setError("결과를 보려면 로그인이 필요해요!");
+      onLogin();
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/mafbti", {
+      const res = await fetch("/api/mafbti", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.session_token}`,
+        },
         body: JSON.stringify({ intro: intro.trim() }),
       });
 
@@ -52,10 +64,17 @@ export default function MafBTIPage() {
   return (
     <div className="mafbti-page">
       <div className="mafbti-container">
+        <Link to="/" className="mafbti-back-link">← 돌아가기</Link>
         <div className="mafbti-header">
           <h1>🎭 맢BTI</h1>
           <p className="mafbti-subtitle">마피아42 직업 테스트</p>
         </div>
+
+        {!isLoggedIn && (
+          <p className="mafbti-login-prompt">
+            결과를 저장하고 확인하려면 로그인이 필요해요!
+          </p>
+        )}
 
         {!result ? (
           <div className="mafbti-form">
@@ -72,6 +91,7 @@ export default function MafBTIPage() {
               onChange={(e) => setIntro(e.target.value)}
               placeholder="예: 저는 정의감이 강하고 추리를 좋아해요. 게임할 때 전략적으로 플레이하는 편이고, 사람들의 심리를 읽는 걸 잘해요. 취미는 독서와 영화 감상이에요..."
               rows={6}
+              disabled={!isLoggedIn}
               maxLength={500}
             />
             <div className="char-count">{intro.length} / 500</div>
@@ -81,7 +101,7 @@ export default function MafBTIPage() {
             <button
               className="mafbti-submit"
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || !isLoggedIn}
             >
               {loading ? (
                 <>
@@ -117,8 +137,8 @@ export default function MafBTIPage() {
               <button className="retry-btn" onClick={handleRetry}>
                 🔄 다시 하기
               </button>
-              <Link to="/" className="home-link">
-                🏠 송년회 구경하기
+              <Link to="/onboarding" className="home-link">
+                🎉 행사 등록하기
               </Link>
             </div>
 
@@ -132,6 +152,12 @@ export default function MafBTIPage() {
           <p>마피아42 직업 스토리 기반 AI 매칭</p>
         </div>
       </div>
+
+      {!isLoggedIn && (
+        <button className="floating-cta login-btn mafbti-login-btn" onClick={onLogin}>
+          카톡 로그인 먼저!
+        </button>
+      )}
     </div>
   );
 }

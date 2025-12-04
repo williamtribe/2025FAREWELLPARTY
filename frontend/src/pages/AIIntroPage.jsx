@@ -398,6 +398,15 @@ function AIIntroPage({ session, onIntroGenerated }) {
         </span>
       </div>
 
+      <div className="swipe-buttons">
+        <button className="swipe-btn left" onClick={() => handleSwipe('left')} disabled={saving}>
+          {currentCard?.leftLabel}
+        </button>
+        <button className="swipe-btn right" onClick={() => handleSwipe('right')} disabled={saving}>
+          {currentCard?.rightLabel}
+        </button>
+      </div>
+
       <div className="progress-bar">
         {cards.map((card) => (
           <div

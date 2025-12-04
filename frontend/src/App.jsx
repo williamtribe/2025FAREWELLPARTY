@@ -15,7 +15,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import LandingPage from "./pages/LandingPage";
 import MafBTIPage from "./pages/MafBTIPage";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_BASE = "/api";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
 const KAKAO_JS_KEY =
   import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY ||
@@ -25,7 +25,7 @@ const KAKAO_TEMPLATE_ID = 126447; // 사용자 정의 템플릿 ID
 const HOST_ID = "4609921299";
 const LANDING_SEEN_KEY = "farewell-landing-seen";
 
-const INTEREST_CATEGORIES = {
+const DEFAULT_INTEREST_CATEGORIES = {
   "🎬 애니": ["체인소맨", "귀멸의 칼날", "주술회전", "진격의 거인", "그 비스크 돌은 사랑을 한다"],
   "🏋️ 운동": ["레슬링", "테니스", "MMA", "배드민턴", "축구", "헬스", "수영"],
   "🎮 게임": ["롤", "마피아42", "오버워치", "발로란트"],
@@ -85,17 +85,10 @@ function App() {
   const [fixedRoleLoading, setFixedRoleLoading] = useState(false);
   const [fixedRoleStatus, setFixedRoleStatus] = useState("");
   const [showFixedRoleModal, setShowFixedRoleModal] = useState(false);
-  const [customInterest, setCustomInterest] = useState("");
-
-  const addCustomInterest = () => {
-    if (customInterest.trim() && !profile.interests.includes(customInterest.trim())) {
-      setProfile((prev) => ({
-        ...prev,
-        interests: [...prev.interests, customInterest.trim()],
-      }));
-      setCustomInterest("");
-    }
-  };
+  const [interestCategories, setInterestCategories] = useState(DEFAULT_INTEREST_CATEGORIES);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newItemInputs, setNewItemInputs] = useState({});
+  const [showAddItemInput, setShowAddItemInput] = useState(null); // null or category name
 
   const authHeaders = useMemo(() => {
     return session?.session_token
@@ -106,8 +99,48 @@ function App() {
       : { "Content-Type": "application/json" };
   }, [session]);
 
+  const toggleInterest = (item) => {
+    if (!isLoggedIn) return;
+    setProfile((prev) => ({
+      ...prev,
+      interests: prev.interests.includes(item)
+        ? prev.interests.filter((i) => i !== item)
+        : [...prev.interests, item],
+    }));
+  };
+
+  const handleNewCategoryChange = (e) => {
+    setNewCategoryName(e.target.value);
+  };
+
+  const addNewCategory = () => {
+    if (newCategoryName.trim() && !interestCategories[newCategoryName.trim()]) {
+      setInterestCategories(prev => ({
+        ...prev,
+        [newCategoryName.trim()]: []
+      }));
+      setNewCategoryName("");
+    }
+  };
+
+  const handleNewItemInputChange = (category, value) => {
+    setNewItemInputs(prev => ({ ...prev, [category]: value }));
+  };
+
+  const addNewItemToCategory = (category) => {
+    const newItem = newItemInputs[category]?.trim();
+    if (newItem && !interestCategories[category].includes(newItem)) {
+      setInterestCategories(prev => ({
+        ...prev,
+        [category]: [...prev[category], newItem]
+      }));
+      toggleInterest(newItem);
+      handleNewItemInputChange(category, "");
+    }
+  };
+
   useEffect(() => {
-    if (location.pathname !== "/api/auth/kakao/callback") return;
+    if (location.pathname !== "/auth/kakao/callback") return;
     // React StrictMode에서 useEffect가 두 번 실행되어 Kakao code가 재사용되는 것을 방지.
     if (sessionStorage.getItem(CALLBACK_PROCESSED_KEY)) return;
     sessionStorage.setItem(CALLBACK_PROCESSED_KEY, "1");
@@ -659,7 +692,7 @@ function App() {
 
               <label>관심사 선택</label>
               <div className="interest-selector">
-                {Object.entries(INTEREST_CATEGORIES).map(([category, items]) => (
+                {Object.entries(interestCategories).map(([category, items]) => (
                   <div key={category} className="interest-category">
                     <div className="category-title">{category}</div>
                     <div className="interest-chips">
@@ -668,47 +701,55 @@ function App() {
                           key={item}
                           type="button"
                           className={`interest-chip ${profile.interests.includes(item) ? "selected" : ""}`}
-                          onClick={() => {
-                            if (!isLoggedIn) return;
-                            setProfile((prev) => ({
-                              ...prev,
-                              interests: prev.interests.includes(item)
-                                ? prev.interests.filter((i) => i !== item)
-                                : [...prev.interests, item],
-                            }));
-                          }}
+                          onClick={() => toggleInterest(item)}
                           disabled={!isLoggedIn}
                         >
                           {item}
                         </button>
                       ))}
+                      {showAddItemInput === category ? (
+                        <div className="custom-add-inline">
+                          <input
+                            type="text"
+                            value={newItemInputs[category] || ""}
+                            onChange={(e) => handleNewItemInputChange(category, e.target.value)}
+                            placeholder="항목 추가..."
+                            className="custom-input"
+                            autoFocus
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                addNewItemToCategory(category);
+                                setShowAddItemInput(null);
+                              }
+                            }}
+                            onBlur={() => setShowAddItemInput(null)}
+                            disabled={!isLoggedIn}
+                          />
+                          <button className="add-btn" onClick={() => { addNewItemToCategory(category); setShowAddItemInput(null); }} disabled={!isLoggedIn}>✓</button>
+                        </div>
+                      ) : (
+                        <button className="add-btn-placeholder" onClick={() => setShowAddItemInput(category)} disabled={!isLoggedIn}>+</button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
               <div className="custom-add-section">
                 <input
-                  type="text"
-                  value={customInterest}
-                  onChange={(e) => setCustomInterest(e.target.value)}
-                  placeholder="직접 입력..."
+                  value={newCategoryName}
+                  onChange={handleNewCategoryChange}
+                  placeholder="새 카테고리 추가..."
                   className="custom-input"
-                  onKeyPress={(e) => e.key === "Enter" && addCustomInterest()}
+                  onKeyPress={(e) => e.key === 'Enter' && addNewCategory()}
                   disabled={!isLoggedIn}
                 />
-                <button 
-                  className="add-btn" 
-                  onClick={addCustomInterest}
-                  disabled={!isLoggedIn}
-                >
-                  추가
-                </button>
+                <button className="add-btn" onClick={addNewCategory} disabled={!isLoggedIn}>카테고리 추가</button>
               </div>
               {profile.interests.length > 0 && (
                 <p className="selected-count">선택됨: {profile.interests.join(", ")}</p>
               )}
 
-              <label>특기 (쉼표로 구분)</label>
+              <label>특기 (쉼표로 구분하여 입력)</label>
               <input
                 value={strengthsInput}
                 onChange={(e) =>
@@ -996,7 +1037,15 @@ function App() {
         }
       />
       <Route path="/others" element={<OthersProfilePage session={session} />} />
-      <Route path="/mafbti" element={<MafBTIPage />} />
+      <Route
+        path="/mafbti"
+        element={
+          <MafBTIPage
+            session={session}
+            onLogin={handleKakaoLogin}
+          />
+        }
+      />
       <Route 
         path="/onboarding" 
         element={
