@@ -880,6 +880,17 @@ input:disabled,
   box-shadow: 0 14px 36px rgba(101, 31, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+.floating-cta.mafbti {
+  left: 18px;
+  right: auto;
+  bottom: 20px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 .floating-cta,
 .floating-cta.share,
 .floating-cta.info,
