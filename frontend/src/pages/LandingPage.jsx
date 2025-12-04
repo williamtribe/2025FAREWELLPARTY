@@ -146,6 +146,9 @@ export default function LandingPage({ session, onLogin, onShare }) {
       <Link className="floating-cta info" to="/info">
         행사 정보
       </Link>
+      <Link className="floating-cta mafbti" to="/mafbti">
+        맢BTI
+      </Link>
 
       <div className="landing-header">
         <p className="eyebrow">2025 송년회</p>
