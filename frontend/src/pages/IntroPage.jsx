@@ -37,7 +37,7 @@ function IntroPage({ hostProfile, onLogin, onSeenIntro, session }) {
   
   const handleDirectLogin = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/kakao/login`);
+      const res = await fetch(`${API_BASE}/auth/kakao/login`);
       const data = await res.json();
       localStorage.setItem("kakao-state", data.state);
       window.location.href = data.auth_url;
