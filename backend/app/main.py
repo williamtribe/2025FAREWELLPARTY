@@ -238,7 +238,7 @@ async def get_my_profile(user: SessionUser = Depends(get_current_user)):
 
 @api_router.put("/me")
 async def upsert_profile(payload: ProfilePayload, user: SessionUser = Depends(get_current_user)):
-    record = assemble_profile_record(user.kakao_id, payload.model_dump())
+    record = assemble_profile_record(user.kakao_id, payload.model_dump(), user.profile_image_url)
     supabase_result = supabase_service.upsert_profile(record)
 
     metadata = {"visibility": record["visibility"], "name": record["name"]}

@@ -752,9 +752,10 @@ def normalize_interests_text(payload: Dict[str, Any]) -> str:
 
 
 def assemble_profile_record(kakao_id: str,
-                            profile: Dict[str, Any]) -> Dict[str, Any]:
+                            profile: Dict[str, Any],
+                            profile_image_url: Optional[str] = None) -> Dict[str, Any]:
     now = datetime.now(timezone.utc).isoformat()
-    return {
+    record = {
         "kakao_id": kakao_id,
         "name": profile.get("name"),
         "tagline": profile.get("tagline"),
@@ -765,3 +766,8 @@ def assemble_profile_record(kakao_id: str,
         "contact": profile.get("contact"),
         "updated_at": now,
     }
+    # Include profile_image if provided (from payload or session)
+    img = profile.get("profile_image") or profile_image_url
+    if img:
+        record["profile_image"] = img
+    return record
