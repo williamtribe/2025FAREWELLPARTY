@@ -13,7 +13,7 @@ function EventInfo() {
       <div className="header">
         <div>
           <p className="eyebrow">EVENT INFO</p>
-          <h1>2025 송년회 안내</h1>
+          <h1>Fare, Well 2025</h1>
           <p className="muted">
             {" "}
             안녕하세요, 김영진이라고 합니다. <br /> 현재 KAIST를 다니다 휴학해서
@@ -36,7 +36,10 @@ function EventInfo() {
               <tbody>
                 <tr>
                   <th>날짜</th>
-                  <td>2025년 12월 20일 (토) 오후 6시</td>
+                  <td>
+                    2025년 12월 20일 (토) 오후 6시부터 11시까지 <br /> (더 일찍
+                    혹은 더 늦게 오셔도 됩니다.)
+                  </td>
                 </tr>
                 <tr>
                   <th>장소</th>
@@ -89,11 +92,11 @@ function EventInfo() {
                 </tr>
                 <tr>
                   <td>03</td>
-                  <td>자유 네트워킹 (비생산적 대화 권장)</td>
+                  <td>자유 네트워킹 (비생산적 대화 적극권장)</td>
                 </tr>
                 <tr>
                   <td>04</td>
-                  <td>주최자 회사 (마피아42) 후원 감사인사</td>
+                  <td>후원자들 감사인사 및 홍보</td>
                 </tr>
                 <tr>
                   <td>05</td>

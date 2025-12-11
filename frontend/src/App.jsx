@@ -181,6 +181,35 @@ function App() {
         setSession(event.data.session);
         setStatus("로그인 완료! 프로필을 불러오는 중...");
         
+        const isSimpleRegister = sessionStorage.getItem("simple-register") === "1";
+        sessionStorage.removeItem("simple-register");
+        
+        if (isSimpleRegister) {
+          try {
+            await fetch(`${API_BASE}/me`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${event.data.session.session_token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: event.data.session.name || "미등록",
+                tagline: "",
+                intro: "",
+                interests: [],
+                strengths: [],
+                visibility: "private",
+                contact: "",
+              }),
+            });
+            console.log("Simple registration: minimal profile created");
+          } catch (err) {
+            console.warn("Simple registration profile creation failed:", err);
+          }
+          navigate("/", { replace: true });
+          return;
+        }
+        
         try {
           const res = await fetch(`${API_BASE}/me`, {
             headers: {
@@ -237,6 +266,36 @@ function App() {
     } catch (err) {
       console.error("Kakao login error:", err);
       setStatus(`로그인 오류: ${err.message}`);
+    }
+  };
+
+  const handleSimpleRegister = async () => {
+    sessionStorage.setItem("simple-register", "1");
+    sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
+    setStatus("간편등록: 카카오 로그인 페이지로 이동합니다...");
+    try {
+      const res = await fetch(`${API_BASE}/auth/kakao/login`);
+      if (!res.ok) {
+        throw new Error(`Login request failed: ${res.status}`);
+      }
+      const data = await res.json();
+      localStorage.setItem("kakao-state", data.state);
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      window.open(
+        data.auth_url,
+        "KakaoLogin",
+        `width=${width},height=${height},left=${left},top=${top},popup=yes`,
+      );
+      setStatus(
+        "카카오 로그인 창에서 로그인해주세요. 완료되면 자동으로 돌아옵니다.",
+      );
+    } catch (err) {
+      console.error("Simple register error:", err);
+      sessionStorage.removeItem("simple-register");
+      setStatus(`등록 오류: ${err.message}`);
     }
   };
 
@@ -906,6 +965,12 @@ function App() {
               disabled={fixedRoleLoading}
             >
               {fixedRoleLoading ? "불러오는 중..." : "🎯 직업 고정 배정"}
+            </button>
+            <button 
+              className="admin-btn simple-register-btn" 
+              onClick={handleSimpleRegister}
+            >
+              ⚡ 간편등록 (자기소개 생략)
             </button>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
             {jobEmbedStatus && <p className="admin-status">{jobEmbedStatus}</p>}
