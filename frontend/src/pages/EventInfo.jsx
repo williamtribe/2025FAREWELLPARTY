@@ -132,7 +132,7 @@ function EventInfo() {
         </div>
         <div className="card">
           <p className="muted">정산 안내</p>
-          <p>송년회 이후 인당 만 원씩 정산을 할 예정입니다.</p>
+          <p>송년회 이후 인당 2만 원씩 정산을 할 예정입니다.</p>
           <p>
             원래 무료로 해드리고 싶었는데, 운영비용이 많이 들어서 일부를 받기로
             했습니다. <br />
