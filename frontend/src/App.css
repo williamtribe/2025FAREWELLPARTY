@@ -874,7 +874,15 @@ input:disabled,
   width: auto;
 }
 
-.floating-cta.share,
+.floating-cta.share {
+  bottom: 130px;
+  right: 18px;
+  background: linear-gradient(135deg, #f48fb1, #ec407a) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(183, 28, 28, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 .floating-cta.login-btn {
   bottom: 130px;
   right: 18px;
@@ -894,8 +902,7 @@ input:disabled,
 }
 
 .floating-cta.info {
-  left: 18px;
-  right: auto;
+  right: 18px;
   bottom: 20px;
   text-decoration: none;
   background: linear-gradient(135deg, #81c784, #66bb6a) !important;
@@ -905,17 +912,13 @@ input:disabled,
 }
 
 .floating-cta.ai-intro {
-  bottom: 80px;
+  bottom: 130px;
   right: 18px;
   text-decoration: none;
   background: linear-gradient(135deg, #7c4dff, #651fff) !important;
   color: #ffffff;
   border: none;
   box-shadow: 0 14px 36px rgba(101, 31, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.floating-cta.share {
-  bottom: 80px;
 }
 
 .floating-cta.mafbti {
