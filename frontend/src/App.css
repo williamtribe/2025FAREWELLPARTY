@@ -876,12 +876,21 @@ input:disabled,
 
 .floating-cta.share,
 .floating-cta.login-btn {
-  bottom: 80px;
+  bottom: 130px;
   right: 18px;
   background: linear-gradient(135deg, #f48fb1, #ec407a) !important;
   color: #ffffff;
   border: none;
   box-shadow: 0 14px 36px rgba(183, 28, 28, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta.simple-register-btn {
+  bottom: 80px;
+  right: 18px;
+  background: linear-gradient(135deg, #90caf9, #42a5f5) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(33, 150, 243, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .floating-cta.info {

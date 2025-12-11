@@ -20,7 +20,7 @@ function renderWithDevComment(text) {
   );
 }
 
-export default function LandingPage({ session, onLogin, onShare }) {
+export default function LandingPage({ session, onLogin, onSimpleRegister, onShare }) {
   const [profileCount, setProfileCount] = useState(0);
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -139,9 +139,14 @@ export default function LandingPage({ session, onLogin, onShare }) {
           </Link>
         </>
       ) : (
-        <button className="floating-cta login-btn" onClick={onLogin}>
-          카톡 로그인 먼저!
-        </button>
+        <>
+          <button className="floating-cta login-btn" onClick={onLogin}>
+            카톡 로그인
+          </button>
+          <button className="floating-cta simple-register-btn" onClick={onSimpleRegister}>
+            간편등록
+          </button>
+        </>
       )}
       <Link className="floating-cta info" to="/info">
         행사 정보
