@@ -5,7 +5,9 @@ function EventInfo() {
         <a className="floating-cta info" href="/">
           내 프로필 보기
         </a>
-        <a className="floating-cta share" href="/">카톡 로그인 부터!</a>
+        <a className="floating-cta share" href="/">
+          카톡 로그인 부터!
+        </a>
       </div>
 
       <div className="header">
@@ -136,7 +138,9 @@ function EventInfo() {
           <p>
             원래 무료로 해드리고 싶었는데, 운영비용이 많이 들어서 일부를 받기로
             했습니다. <br />
-            정산 대신 행사준비를 돕거나 음료를 가져오셔도 됩니다.
+            또한, 공동계좌를 열어서 후원을 받고 있고, 주류의 형태로도 후원을
+            받고 있습니다. 후원을 해주신 분들에게는 자신의 서비스를 홍보할 수
+            있는 기회 또는 다른 특전이 주어지게 됩니다.
           </p>
           <p className="muted">운영비 사용 내역</p>
           <p>
