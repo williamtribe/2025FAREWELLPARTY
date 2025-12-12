@@ -1,0 +1,95 @@
+.floating-cta {
+  position: fixed;
+  left: auto;
+  right: 18px;
+  bottom: 18px;
+  transform: none;
+  background: linear-gradient(145deg, rgba(245, 89, 89, 0.08), rgba(50, 150, 100, 0.12)),
+    rgba(245, 251, 247, 0.95);
+  color: #1f3322;
+  border: 1px solid rgba(31, 122, 77, 0.12);
+  border-radius: 999px;
+  padding: 0.7rem 1.1rem;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 14px 36px rgba(20, 55, 32, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  z-index: 20;
+  cursor: pointer;
+  display: block;
+  width: auto;
+}
+
+.floating-cta.share {
+  bottom: 130px;
+  right: 18px;
+  background: linear-gradient(135deg, #f48fb1, #ec407a) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(183, 28, 28, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta.login-btn {
+  bottom: 80px;
+  right: 18px;
+  background: linear-gradient(135deg, #f48fb1, #ec407a) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(183, 28, 28, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta.simple-register-btn {
+  bottom: 130px;
+  right: 18px;
+  background: linear-gradient(135deg, #90caf9, #42a5f5) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(33, 150, 243, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta.info {
+  right: 18px;
+  bottom: 20px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #81c784, #66bb6a) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(27, 94, 32, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta.my-intro {
+  bottom: 80px;
+  right: 18px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #7c4dff, #651fff) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(101, 31, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta.mafbti {
+  left: 18px;
+  right: auto;
+  bottom: 20px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-cta,
+.floating-cta.share,
+.floating-cta.info,
+.floating-cta.login-btn {
+  padding: 0.7rem 1.1rem;
+  font-size: 14px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.floating-cta.login-cta {
+  display: block;
+}
