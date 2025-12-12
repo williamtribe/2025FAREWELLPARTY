@@ -1045,6 +1045,7 @@ app.include_router(api_router)
 # Bot User-Agent patterns for crawler detection
 BOT_USER_AGENTS = [
     "kakaotalk-scrap",
+    "kakaotalk",
     "facebookexternalhit",
     "twitterbot",
     "linkedinbot",
@@ -1054,6 +1055,8 @@ BOT_USER_AGENTS = [
     "whatsapp",
     "googlebot",
     "bingbot",
+    "yeti",  # Naver
+    "daumoa",  # Daum
 ]
 
 # Page-specific OG meta data
@@ -1104,8 +1107,8 @@ def generate_og_html(path: str, base_url: str) -> str:
     <meta property="og:title" content="{og_data['title']}" />
     <meta property="og:description" content="{og_data['description']}" />
     <meta property="og:image" content="{full_image_url}" />
-    <meta property="og:image:width" content="800" />
-    <meta property="og:image:height" content="400" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{og_data['title']}" />
     <meta name="twitter:description" content="{og_data['description']}" />
