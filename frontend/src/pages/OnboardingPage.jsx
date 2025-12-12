@@ -54,7 +54,29 @@ export default function OnboardingPage({ session, onComplete }) {
 
   const handleSimpleRegister = async () => {
     if (!session?.session_token) {
-      alert("로그인이 필요합니다.");
+      sessionStorage.setItem("simple-register", "1");
+      setSimpleRegisterLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/auth/kakao/login`);
+        if (!res.ok) throw new Error(`Login request failed: ${res.status}`);
+        const data = await res.json();
+        localStorage.setItem("kakao-state", data.state);
+        const width = 500;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        window.open(
+          data.auth_url,
+          "KakaoLogin",
+          `width=${width},height=${height},left=${left},top=${top},popup=yes`
+        );
+      } catch (err) {
+        console.error("Simple register login error:", err);
+        sessionStorage.removeItem("simple-register");
+        alert("로그인 오류: " + err.message);
+      } finally {
+        setSimpleRegisterLoading(false);
+      }
       return;
     }
     setSimpleRegisterLoading(true);
