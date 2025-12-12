@@ -76,6 +76,12 @@ class KakaoMessagePayload(BaseModel):
     text: Optional[str] = None
 
 
+class KakaoTemplatePayload(BaseModel):
+    access_token: str
+    receiver_uuids: List[str]
+    template_id: int = 126817
+
+
 async def optional_user(
     authorization: Annotated[Optional[str],
                              Header(alias="Authorization")] = None,
@@ -673,6 +679,27 @@ async def kakao_message(payload: KakaoMessagePayload,
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=f"kakao_message_error: {exc}") from exc
+
+
+@api_router.post("/kakao/template-message")
+async def kakao_template_message(payload: KakaoTemplatePayload,
+                                  user: SessionUser = Depends(get_current_user)):
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    if not payload.receiver_uuids:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="receiver_uuids_required")
+    try:
+        result = await kakao_client.send_template_message(
+            access_token=payload.access_token,
+            receiver_uuids=payload.receiver_uuids,
+            template_id=payload.template_id,
+        )
+        return {"sent": True, "result": result}
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"kakao_template_error: {exc}") from exc
 
 
 @api_router.get("/similar-profiles")

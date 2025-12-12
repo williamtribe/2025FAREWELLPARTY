@@ -114,6 +114,29 @@ class KakaoClient:
         resp.raise_for_status()
         return resp.json()
 
+    async def send_template_message(
+        self,
+        access_token: str,
+        receiver_uuids: list[str],
+        template_id: int,
+    ) -> Dict[str, Any]:
+        """Send a custom template message to friends."""
+        headers = {"Authorization": f"Bearer {access_token}"}
+        data = {
+            "receiver_uuids": receiver_uuids,
+            "template_id": template_id,
+        }
+        resp = await self.client.post(
+            f"{self.api_base}/v1/api/talk/friends/message/send",
+            headers=headers,
+            data=data,
+        )
+        if resp.is_client_error or resp.is_server_error:
+            logger.error("Kakao template message error %s: %s", resp.status_code,
+                         resp.text)
+        resp.raise_for_status()
+        return resp.json()
+
 
 class SupabaseService:
 
