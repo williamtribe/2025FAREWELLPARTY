@@ -91,7 +91,6 @@ function App() {
   const [fixedRoleLoading, setFixedRoleLoading] = useState(false);
   const [fixedRoleStatus, setFixedRoleStatus] = useState("");
   const [showFixedRoleModal, setShowFixedRoleModal] = useState(false);
-  const [shareEventLoading, setShareEventLoading] = useState(false);
   const [shareEventStatus, setShareEventStatus] = useState("");
   const [interestCategories, setInterestCategories] = useState(
     DEFAULT_INTEREST_CATEGORIES,
@@ -622,66 +621,36 @@ function App() {
     }
   };
 
-  const handleShareEvent = async () => {
+  const handleShareEvent = () => {
     if (!session?.is_admin) return;
-    setShareEventLoading(true);
-    setShareEventStatus("카카오 인증 중...");
 
-    try {
-      if (!window.Kakao?.isInitialized()) {
-        window.Kakao.init(KAKAO_JS_KEY);
-      }
-
-      const authRes = await new Promise((resolve, reject) => {
-        window.Kakao.Auth.login({
-          scope: "friends,talk_message",
-          success: resolve,
-          fail: reject,
-        });
-      });
-
-      const accessToken = authRes.access_token;
-      setShareEventStatus("친구 목록 가져오는 중...");
-
-      const friendsRes = await new Promise((resolve, reject) => {
-        window.Kakao.API.request({
-          url: "/v1/api/talk/friends",
-          success: resolve,
-          fail: reject,
-        });
-      });
-
-      const friends = friendsRes.elements || [];
-      if (friends.length === 0) {
-        setShareEventStatus("메시지를 보낼 친구가 없습니다.");
-        setShareEventLoading(false);
-        return;
-      }
-
-      const receiverUuids = friends.map((f) => f.uuid);
-      setShareEventStatus(`${friends.length}명에게 메시지 전송 중...`);
-
-      const res = await fetch(`${API_BASE}/kakao/template-message`, {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({
-          access_token: accessToken,
-          receiver_uuids: receiverUuids,
-          template_id: 126817,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "전송 실패");
-
-      const successCount = data.result?.successful_receiver_uuids?.length || 0;
-      setShareEventStatus(`전송 완료! ${successCount}명에게 메시지를 보냈습니다.`);
-    } catch (err) {
-      console.error("Share event error:", err);
-      setShareEventStatus(`오류: ${err.message || "메시지 전송 실패"}`);
-    } finally {
-      setShareEventLoading(false);
+    if (!window.Kakao?.isInitialized()) {
+      window.Kakao.init(KAKAO_JS_KEY);
     }
+
+    window.Kakao.Share.sendCustom(
+      {
+        templateId: 126817,
+        templateArgs: {
+          link_url: SHARE_URL,
+        },
+      },
+      {
+        success: () => {
+          setShareEventStatus("행사정보 공유 완료!");
+        },
+        fail: () => {
+          if (navigator?.clipboard?.writeText) {
+            navigator.clipboard.writeText(`${SHARE_URL}/info`).then(
+              () => setShareEventStatus("카카오톡이 없어 링크를 복사했습니다."),
+              () => setShareEventStatus("공유 실패. 링크를 직접 복사해 주세요."),
+            );
+          } else {
+            setShareEventStatus("공유 실패. 링크를 직접 복사해 주세요.");
+          }
+        },
+      },
+    );
   };
 
   const saveFixedRole = async (kakaoId, fixedRole) => {
@@ -1094,12 +1063,8 @@ function App() {
             >
               ⚡ 간편등록 (자기소개 생략)
             </button>
-            <button
-              className="admin-btn"
-              onClick={handleShareEvent}
-              disabled={shareEventLoading}
-            >
-              {shareEventLoading ? "전송 중..." : "📢 행사정보 공유"}
+            <button className="admin-btn" onClick={handleShareEvent}>
+              📢 행사정보 공유
             </button>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
             {jobEmbedStatus && <p className="admin-status">{jobEmbedStatus}</p>}
