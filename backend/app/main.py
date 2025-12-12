@@ -1061,22 +1061,22 @@ OG_META_BY_PATH = {
     "/": {
         "title": "Fare,Well 2025 - 전체 참가자",
         "description": "대화상대 정해주는 GOAT 테크놀로지와 함께하는 송년회",
-        "image": "/thumbnail.png",
+        "image": "frontend/public/thumbnail.png",
     },
     "/info": {
         "title": "Fare,Well 2025 - 행사 정보",
         "description": "Fare,Well 2025 행사 정보",
-        "image": "/thumbnail.png",
+        "image": "frontend/public/thumbnail.png",
     },
     "/mafbti": {
         "title": "MafBTI - 나의 마피아42 직업은?",
         "description": "AI가 분석하는 나만의 마피아42 역할! 지금 테스트해보세요",
-        "image": "/thumbnail.png",
+        "image": "frontend/public/thumbnail.png",
     },
     "/intro": {
         "title": "Fare,Well 2025 - 간편등록",
         "description": "카카오로 3초만에 등록",
-        "image": "/thumbnail.png",
+        "image": "frontend/public/thumbnail.png",
     },
 }
 
