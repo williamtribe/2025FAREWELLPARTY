@@ -875,7 +875,7 @@ input:disabled,
 }
 
 .floating-cta.share {
-  bottom: 130px;
+  bottom: 75px;
   right: 18px;
   background: linear-gradient(135deg, #f48fb1, #ec407a) !important;
   color: #ffffff;
