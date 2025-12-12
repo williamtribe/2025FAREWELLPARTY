@@ -894,7 +894,7 @@ input:disabled,
 }
 
 .floating-cta.simple-register-btn {
-  bottom: 130px;
+  bottom: 30px;
   right: 18px;
   background: linear-gradient(135deg, #90caf9, #42a5f5) !important;
   color: #ffffff;

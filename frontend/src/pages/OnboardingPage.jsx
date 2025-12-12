@@ -50,6 +50,41 @@ export default function OnboardingPage({ session, onComplete }) {
   const location = useLocation();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [simpleRegisterLoading, setSimpleRegisterLoading] = useState(false);
+
+  const handleSimpleRegister = async () => {
+    if (!session?.session_token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    setSimpleRegisterLoading(true);
+    try {
+      await fetch(`${API_BASE}/me`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${session.session_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: session.nickname || "미등록",
+          tagline: "",
+          intro: "",
+          interests: [],
+          strengths: [],
+          visibility: "private",
+          contact: "",
+          profile_image: session.profile_image_url || "",
+        }),
+      });
+      localStorage.removeItem("onboarding-draft");
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Simple registration failed:", err);
+      alert("등록 실패: " + err.message);
+    } finally {
+      setSimpleRegisterLoading(false);
+    }
+  };
   const [aiGenerated, setAiGenerated] = useState(null);
   const [customStrength, setCustomStrength] = useState("");
   const [roleResult, setRoleResult] = useState(null);
@@ -540,6 +575,14 @@ export default function OnboardingPage({ session, onComplete }) {
 
   return (
     <div className="onboarding-page">
+      <button 
+        className="floating-cta simple-register-btn" 
+        onClick={handleSimpleRegister}
+        disabled={simpleRegisterLoading}
+      >
+        {simpleRegisterLoading ? "등록 중..." : "⚡ 자기소개 생략"}
+      </button>
+
       <div className="progress-bar">
         {STEPS.map((s, i) => (
           <div

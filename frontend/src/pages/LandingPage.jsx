@@ -20,7 +20,7 @@ function renderWithDevComment(text) {
   );
 }
 
-export default function LandingPage({ session, onLogin, onSimpleRegister, onShare }) {
+export default function LandingPage({ session, onLogin, onShare }) {
   const [profileCount, setProfileCount] = useState(0);
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
