@@ -119,6 +119,27 @@ function EventInfo() {
       <section className="panel">
         <div className="panel-head">
           <div>
+            <h2>참가 등록 방법</h2>
+          </div>
+        </div>
+        <div className="card">
+          <p className="muted">일반 등록 (카톡 로그인)</p>
+          <p>
+            카카오 로그인 후 8단계 온보딩을 진행합니다. <br />
+            AI가 자기소개를 자동 생성해주고, 마피아42 역할도 배정받을 수 있어요!
+          </p>
+          <p className="muted" style={{marginTop: "1rem"}}>간편 등록</p>
+          <p>
+            자기소개 작성 없이 카카오 정보만으로 바로 등록됩니다. <br />
+            나중에 관리자가 프로필을 채워넣어드립니다. <br />
+            메인 페이지의 파란색 "간편등록" 버튼을 눌러주세요.
+          </p>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-head">
+          <div>
             <h2>문의</h2>
           </div>
         </div>
