@@ -193,16 +193,17 @@ function App() {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                name: event.data.session.name || "미등록",
+                name: event.data.session.nickname || "미등록",
                 tagline: "",
                 intro: "",
                 interests: [],
                 strengths: [],
                 visibility: "private",
                 contact: "",
+                profile_image: event.data.session.profile_image_url || "",
               }),
             });
-            console.log("Simple registration: minimal profile created");
+            console.log("Simple registration: minimal profile created with nickname:", event.data.session.nickname, "image:", event.data.session.profile_image_url);
           } catch (err) {
             console.warn("Simple registration profile creation failed:", err);
           }
