@@ -5,10 +5,10 @@ import secrets
 from pathlib import Path
 from typing import Annotated, Dict, List, Literal, Optional
 
-from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
 from .config import logger, settings
@@ -929,6 +929,80 @@ async def mafbti_role_assignment(payload: MafBTIPayload):
 # Include API router with /api prefix
 app.include_router(api_router)
 
+# Bot User-Agent patterns for crawler detection
+BOT_USER_AGENTS = [
+    "kakaotalk-scrap",
+    "facebookexternalhit",
+    "twitterbot",
+    "linkedinbot",
+    "slackbot",
+    "telegrambot",
+    "discordbot",
+    "whatsapp",
+    "googlebot",
+    "bingbot",
+]
+
+# Page-specific OG meta data
+OG_META_BY_PATH = {
+    "/": {
+        "title": "Fare,Well 2025 - 지금 등록하세요!",
+        "description": "대화상대 정해주는 GOAT 테크놀로지와 함께하는 송년회에 참여하세요",
+        "image": "/thumbnail.png",
+    },
+    "/event": {
+        "title": "Fare,Well 2025 - 행사 정보",
+        "description": "2025 송년회 일정, 장소, 이벤트 정보를 확인하세요",
+        "image": "/thumbnail.png",
+    },
+    "/mafbti": {
+        "title": "MafBTI - 나의 마피아42 직업은?",
+        "description": "AI가 분석하는 나만의 마피아42 역할! 지금 테스트해보세요",
+        "image": "/thumbnail.png",
+    },
+    "/onboarding": {
+        "title": "Fare,Well 2025 - 프로필 등록",
+        "description": "AI 취향 테스트로 나만의 프로필을 만들어보세요",
+        "image": "/thumbnail.png",
+    },
+}
+
+def is_crawler_bot(user_agent: str) -> bool:
+    if not user_agent:
+        return False
+    ua_lower = user_agent.lower()
+    return any(bot in ua_lower for bot in BOT_USER_AGENTS)
+
+def generate_og_html(path: str, base_url: str) -> str:
+    og_data = OG_META_BY_PATH.get(path, OG_META_BY_PATH["/"])
+    full_image_url = f"{base_url.rstrip('/')}{og_data['image']}"
+    full_page_url = f"{base_url.rstrip('/')}{path}"
+    
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{og_data['title']}</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{full_page_url}" />
+    <meta property="og:title" content="{og_data['title']}" />
+    <meta property="og:description" content="{og_data['description']}" />
+    <meta property="og:image" content="{full_image_url}" />
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="400" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{og_data['title']}" />
+    <meta name="twitter:description" content="{og_data['description']}" />
+    <meta name="twitter:image" content="{full_image_url}" />
+</head>
+<body>
+    <h1>{og_data['title']}</h1>
+    <p>{og_data['description']}</p>
+    <img src="{full_image_url}" alt="썸네일" />
+</body>
+</html>"""
+
 # Serve static frontend files in production
 if FRONTEND_BUILD_DIR.exists():
     # Mount static assets (js, css, images)
@@ -942,7 +1016,16 @@ if FRONTEND_BUILD_DIR.exists():
     
     # Catch-all route for SPA - serve index.html for any unmatched routes
     @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
+    async def serve_spa(full_path: str, request: Request):
+        user_agent = request.headers.get("user-agent", "")
+        request_path = f"/{full_path}" if full_path else "/"
+        
+        # If crawler bot, return dynamic OG meta HTML
+        if is_crawler_bot(user_agent):
+            logger.info(f"Crawler detected: {user_agent[:50]} for path: {request_path}")
+            og_html = generate_og_html(request_path, settings.base_url)
+            return HTMLResponse(content=og_html)
+        
         # Check if it's a file request (has extension)
         file_path = FRONTEND_BUILD_DIR / full_path
         if file_path.exists() and file_path.is_file():
