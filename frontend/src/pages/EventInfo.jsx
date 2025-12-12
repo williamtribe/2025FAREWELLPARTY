@@ -3,7 +3,7 @@ function EventInfo() {
     <div className="page">
       <div className="floating-actions">
         <a className="floating-cta info" href="/" style={{textDecoration: "none"}}>
-          내 프로필 보기
+          모든 참석자 보기
         </a>
         <a className="floating-cta simple-register-btn" href="/" style={{textDecoration: "none"}}>
           ⚡ 간편등록
