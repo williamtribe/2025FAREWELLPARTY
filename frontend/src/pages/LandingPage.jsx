@@ -129,23 +129,30 @@ export default function LandingPage({ session, onLogin, onSimpleRegister, onShar
 
   return (
     <div className="landing-page">
-      {isLoggedIn ? (
-        <>
-          <button className="floating-cta share" onClick={onShare}>
-            카톡 공유
-          </button>
-          <Link className="floating-cta ai-intro" to="/my-profile">
-            내 프로필
-          </Link>
-        </>
-      ) : (
-        <button className="floating-cta login-btn" onClick={onLogin}>
-          카톡 로그인
-        </button>
-      )}
-      <Link className="floating-cta info" to="/info">
-        행사 정보
-      </Link>
+      <div className="floating-actions">
+        {isLoggedIn ? (
+          <>
+            <button className="floating-cta share" onClick={onShare}>
+              카톡 공유
+            </button>
+            <Link className="floating-cta ai-intro" to="/my-profile" style={{textDecoration: "none"}}>
+              내 프로필
+            </Link>
+          </>
+        ) : (
+          <>
+            <button className="floating-cta login-btn" onClick={onLogin}>
+              카톡 로그인
+            </button>
+            <button className="floating-cta simple-register-btn" onClick={onSimpleRegister}>
+              ⚡ 간편등록
+            </button>
+          </>
+        )}
+        <Link className="floating-cta info" to="/info" style={{textDecoration: "none"}}>
+          행사 정보
+        </Link>
+      </div>
 
       <div className="landing-header">
         <p className="eyebrow">2025 송년회</p>
