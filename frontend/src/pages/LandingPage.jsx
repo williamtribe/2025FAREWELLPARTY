@@ -134,7 +134,7 @@ export default function LandingPage({ session, onLogin, onSimpleRegister, onShar
           <button className="floating-cta share" onClick={onShare}>
             카톡 공유
           </button>
-          <Link className="floating-cta ai-intro" to="/my-profile">
+          <Link className="floating-cta my-intro" to="/my-profile">
             내 프로필
           </Link>
         </>
