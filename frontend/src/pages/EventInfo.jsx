@@ -2,11 +2,12 @@ function EventInfo() {
   return (
     <div className="page">
       <div className="floating-actions">
-        <a className="floating-cta info" href="/" style={{textDecoration: "none"}}>
+        <a
+          className="floating-cta info"
+          href="/"
+          style={{ textDecoration: "none" }}
+        >
           모든 참석자 보기
-        </a>
-        <a className="floating-cta simple-register-btn" href="/" style={{textDecoration: "none"}}>
-          ⚡ 간편등록
         </a>
       </div>
 
@@ -128,7 +129,9 @@ function EventInfo() {
             카카오 로그인 후 8단계 온보딩을 진행합니다. <br />
             AI가 자기소개를 자동 생성해주고, 마피아42 역할도 배정받을 수 있어요!
           </p>
-          <p className="muted" style={{marginTop: "1rem"}}>간편 등록</p>
+          <p className="muted" style={{ marginTop: "1rem" }}>
+            간편 등록
+          </p>
           <p>
             자기소개 작성 없이 카카오 정보만으로 바로 등록됩니다. <br />
             나중에 관리자가 프로필을 채워넣어드립니다. <br />
