@@ -26,7 +26,13 @@ const HOST_ID = "4609921299";
 const LANDING_SEEN_KEY = "farewell-landing-seen";
 
 const DEFAULT_INTEREST_CATEGORIES = {
-  "🎬 애니": ["체인소맨", "귀멸의 칼날", "주술회전", "진격의 거인", "그 비스크 돌은 사랑을 한다"],
+  "🎬 애니": [
+    "체인소맨",
+    "귀멸의 칼날",
+    "주술회전",
+    "진격의 거인",
+    "그 비스크 돌은 사랑을 한다",
+  ],
   "🏋️ 운동": ["레슬링", "테니스", "MMA", "배드민턴", "축구", "헬스", "수영"],
   "🎮 게임": ["롤", "마피아42", "오버워치", "발로란트"],
   "🧪 기술": ["AI", "프로그래밍", "데이터"],
@@ -85,7 +91,9 @@ function App() {
   const [fixedRoleLoading, setFixedRoleLoading] = useState(false);
   const [fixedRoleStatus, setFixedRoleStatus] = useState("");
   const [showFixedRoleModal, setShowFixedRoleModal] = useState(false);
-  const [interestCategories, setInterestCategories] = useState(DEFAULT_INTEREST_CATEGORIES);
+  const [interestCategories, setInterestCategories] = useState(
+    DEFAULT_INTEREST_CATEGORIES,
+  );
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newItemInputs, setNewItemInputs] = useState({});
   const [showAddItemInput, setShowAddItemInput] = useState(null); // null or category name
@@ -115,24 +123,24 @@ function App() {
 
   const addNewCategory = () => {
     if (newCategoryName.trim() && !interestCategories[newCategoryName.trim()]) {
-      setInterestCategories(prev => ({
+      setInterestCategories((prev) => ({
         ...prev,
-        [newCategoryName.trim()]: []
+        [newCategoryName.trim()]: [],
       }));
       setNewCategoryName("");
     }
   };
 
   const handleNewItemInputChange = (category, value) => {
-    setNewItemInputs(prev => ({ ...prev, [category]: value }));
+    setNewItemInputs((prev) => ({ ...prev, [category]: value }));
   };
 
   const addNewItemToCategory = (category) => {
     const newItem = newItemInputs[category]?.trim();
     if (newItem && !interestCategories[category].includes(newItem)) {
-      setInterestCategories(prev => ({
+      setInterestCategories((prev) => ({
         ...prev,
-        [category]: [...prev[category], newItem]
+        [category]: [...prev[category], newItem],
       }));
       toggleInterest(newItem);
       handleNewItemInputChange(category, "");
@@ -173,17 +181,17 @@ function App() {
     fetchHostProfile();
   }, []);
 
-
   useEffect(() => {
     const handleMessage = async (event) => {
       if (event.data?.type === "kakao-login-success") {
         console.log("Login success from popup:", event.data.session);
         setSession(event.data.session);
         setStatus("로그인 완료! 프로필을 불러오는 중...");
-        
-        const isSimpleRegister = sessionStorage.getItem("simple-register") === "1";
+
+        const isSimpleRegister =
+          sessionStorage.getItem("simple-register") === "1";
         sessionStorage.removeItem("simple-register");
-        
+
         if (isSimpleRegister) {
           try {
             await fetch(`${API_BASE}/me`, {
@@ -203,14 +211,19 @@ function App() {
                 profile_image: event.data.session.profile_image_url || "",
               }),
             });
-            console.log("Simple registration: minimal profile created with nickname:", event.data.session.nickname, "image:", event.data.session.profile_image_url);
+            console.log(
+              "Simple registration: minimal profile created with nickname:",
+              event.data.session.nickname,
+              "image:",
+              event.data.session.profile_image_url,
+            );
           } catch (err) {
             console.warn("Simple registration profile creation failed:", err);
           }
           navigate("/", { replace: true });
           return;
         }
-        
+
         try {
           const res = await fetch(`${API_BASE}/me`, {
             headers: {
@@ -221,7 +234,10 @@ function App() {
           if (res.ok) {
             const data = await res.json();
             const incoming = data.profile || {};
-            const hasProfile = incoming.intro || incoming.tagline || (incoming.interests && incoming.interests.length > 0);
+            const hasProfile =
+              incoming.intro ||
+              incoming.tagline ||
+              (incoming.interests && incoming.interests.length > 0);
             if (!hasProfile) {
               navigate("/onboarding", { replace: true });
               return;
@@ -486,7 +502,7 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "실패");
       setReembedStatus(
-        `완료! 총 ${data.stats.total}명 중 자기소개 ${data.stats.intro_success}개, 관심사 ${data.stats.interests_success}개 임베딩됨`
+        `완료! 총 ${data.stats.total}명 중 자기소개 ${data.stats.intro_success}개, 관심사 ${data.stats.interests_success}개 임베딩됨`,
       );
     } catch (err) {
       setReembedStatus(`오류: ${err.message}`);
@@ -504,7 +520,7 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "실패");
       setJobEmbedStatus(
-        `완료! 총 ${data.total_jobs}개 중 ${data.embedded_count}개 직업 스토리 임베딩됨`
+        `완료! 총 ${data.total_jobs}개 중 ${data.embedded_count}개 직업 스토리 임베딩됨`,
       );
     } catch (err) {
       setJobEmbedStatus(`오류: ${err.message}`);
@@ -577,7 +593,10 @@ function App() {
     const newIdx = idx + direction;
     if (newIdx < 0 || newIdx >= orderProfiles.length) return;
     const newProfiles = [...orderProfiles];
-    [newProfiles[idx], newProfiles[newIdx]] = [newProfiles[newIdx], newProfiles[idx]];
+    [newProfiles[idx], newProfiles[newIdx]] = [
+      newProfiles[newIdx],
+      newProfiles[idx],
+    ];
     setOrderProfiles(newProfiles);
   };
 
@@ -608,14 +627,21 @@ function App() {
       const res = await fetch(`${API_BASE}/admin/fixed-roles`, {
         method: "POST",
         headers: authHeaders,
-        body: JSON.stringify({ kakao_id: kakaoId, fixed_role: fixedRole || null }),
+        body: JSON.stringify({
+          kakao_id: kakaoId,
+          fixed_role: fixedRole || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "저장 실패");
-      setFixedRoleProfiles(prev => 
-        prev.map(p => p.kakao_id === kakaoId ? { ...p, fixed_role: fixedRole || null } : p)
+      setFixedRoleProfiles((prev) =>
+        prev.map((p) =>
+          p.kakao_id === kakaoId ? { ...p, fixed_role: fixedRole || null } : p,
+        ),
       );
-      setFixedRoleStatus(`${fixedRole ? fixedRole + ' 배정 완료!' : '직업 배정 해제됨'}`);
+      setFixedRoleStatus(
+        `${fixedRole ? fixedRole + " 배정 완료!" : "직업 배정 해제됨"}`,
+      );
       setTimeout(() => setFixedRoleStatus(""), 2000);
     } catch (err) {
       setFixedRoleStatus(`오류: ${err.message}`);
@@ -680,8 +706,8 @@ function App() {
           <button className="floating-cta share" onClick={shareToKakao}>
             카톡 공유
           </button>
-          <Link className="floating-cta ai-intro" to="/ai-intro">
-            {profile.intro ? "3초 취향확인" : "3초 AI생성 자기소개"}
+          <Link className="floating-cta my-intro" to="/">
+            {profile.intro ? "전체 멤버" : "전체 멤버"}
           </Link>
         </>
       ) : (
@@ -772,12 +798,14 @@ function App() {
                           <input
                             type="text"
                             value={newItemInputs[category] || ""}
-                            onChange={(e) => handleNewItemInputChange(category, e.target.value)}
+                            onChange={(e) =>
+                              handleNewItemInputChange(category, e.target.value)
+                            }
                             placeholder="항목 추가..."
                             className="custom-input"
                             autoFocus
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === "Enter") {
                                 e.preventDefault();
                                 addNewItemToCategory(category);
                                 setShowAddItemInput(null);
@@ -785,20 +813,33 @@ function App() {
                             }}
                             disabled={!isLoggedIn}
                           />
-                          <button 
-                            className="add-btn" 
+                          <button
+                            className="add-btn"
                             onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => { addNewItemToCategory(category); setShowAddItemInput(null); }} 
+                            onClick={() => {
+                              addNewItemToCategory(category);
+                              setShowAddItemInput(null);
+                            }}
                             disabled={!isLoggedIn}
-                          >✓</button>
-                          <button 
-                            className="cancel-btn-small" 
+                          >
+                            ✓
+                          </button>
+                          <button
+                            className="cancel-btn-small"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={() => setShowAddItemInput(null)}
-                          >✕</button>
+                          >
+                            ✕
+                          </button>
                         </div>
                       ) : (
-                        <button className="add-btn-placeholder" onClick={() => setShowAddItemInput(category)} disabled={!isLoggedIn}>+</button>
+                        <button
+                          className="add-btn-placeholder"
+                          onClick={() => setShowAddItemInput(category)}
+                          disabled={!isLoggedIn}
+                        >
+                          +
+                        </button>
                       )}
                     </div>
                   </div>
@@ -810,21 +851,27 @@ function App() {
                   onChange={handleNewCategoryChange}
                   placeholder="새 카테고리 추가..."
                   className="custom-input"
-                  onKeyPress={(e) => e.key === 'Enter' && addNewCategory()}
+                  onKeyPress={(e) => e.key === "Enter" && addNewCategory()}
                   disabled={!isLoggedIn}
                 />
-                <button className="add-btn" onClick={addNewCategory} disabled={!isLoggedIn}>카테고리 추가</button>
+                <button
+                  className="add-btn"
+                  onClick={addNewCategory}
+                  disabled={!isLoggedIn}
+                >
+                  카테고리 추가
+                </button>
               </div>
               {profile.interests.length > 0 && (
-                <p className="selected-count">선택됨: {profile.interests.join(", ")}</p>
+                <p className="selected-count">
+                  선택됨: {profile.interests.join(", ")}
+                </p>
               )}
 
               <label>특기 (쉼표로 구분하여 입력)</label>
               <input
                 value={strengthsInput}
-                onChange={(e) =>
-                  updateListField("strengths", e.target.value)
-                }
+                onChange={(e) => updateListField("strengths", e.target.value)}
                 placeholder="사람을 좋아함"
                 disabled={!isLoggedIn}
               />
@@ -898,19 +945,29 @@ function App() {
       </div>
 
       {showRoleModal && roleResult && (
-        <div className="role-modal-overlay" onClick={() => setShowRoleModal(false)}>
+        <div
+          className="role-modal-overlay"
+          onClick={() => setShowRoleModal(false)}
+        >
           <div className="role-modal" onClick={(e) => e.stopPropagation()}>
             <div className="role-modal-header">
               <h2>🎭 마피아42 직업 배정</h2>
-              <button className="close-btn" onClick={() => setShowRoleModal(false)}>×</button>
+              <button
+                className="close-btn"
+                onClick={() => setShowRoleModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="role-modal-body">
               <div className="role-image-container">
-                <img 
+                <img
                   src={`/job_images/${roleResult.role}.png`}
                   alt={roleResult.role}
                   className="role-image"
-                  onError={(e) => { e.target.src = "/job_images/이레귤러_시민_시민 스킨.png"; }}
+                  onError={(e) => {
+                    e.target.src = "/job_images/이레귤러_시민_시민 스킨.png";
+                  }}
                 />
               </div>
               <div className="role-reveal">
@@ -941,8 +998,8 @@ function App() {
             <button className="admin-btn" onClick={handleReembedAll}>
               전체 프로필 임베딩 갱신
             </button>
-            <button 
-              className="admin-btn" 
+            <button
+              className="admin-btn"
               onClick={() => {
                 localStorage.removeItem("onboarding-draft");
                 navigate("/onboarding");
@@ -950,8 +1007,8 @@ function App() {
             >
               🔄 온보딩 다시하기 (테스트용)
             </button>
-            <button 
-              className="admin-btn" 
+            <button
+              className="admin-btn"
               onClick={loadProfileOrder}
               disabled={orderLoading}
             >
@@ -960,15 +1017,15 @@ function App() {
             <button className="admin-btn" onClick={handleEmbedJobs}>
               🎭 직업 스토리 임베딩
             </button>
-            <button 
-              className="admin-btn" 
+            <button
+              className="admin-btn"
               onClick={loadFixedRoles}
               disabled={fixedRoleLoading}
             >
               {fixedRoleLoading ? "불러오는 중..." : "🎯 직업 고정 배정"}
             </button>
-            <button 
-              className="admin-btn simple-register-btn" 
+            <button
+              className="admin-btn simple-register-btn"
               onClick={handleSimpleRegister}
             >
               ⚡ 간편등록 (자기소개 생략)
@@ -976,43 +1033,76 @@ function App() {
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
             {jobEmbedStatus && <p className="admin-status">{jobEmbedStatus}</p>}
             {orderStatus && <p className="admin-status">{orderStatus}</p>}
-            {fixedRoleStatus && <p className="admin-status">{fixedRoleStatus}</p>}
+            {fixedRoleStatus && (
+              <p className="admin-status">{fixedRoleStatus}</p>
+            )}
           </div>
         </section>
       )}
 
       {showOrderModal && (
-        <div className="order-modal-overlay" onClick={() => setShowOrderModal(false)}>
+        <div
+          className="order-modal-overlay"
+          onClick={() => setShowOrderModal(false)}
+        >
           <div className="order-modal" onClick={(e) => e.stopPropagation()}>
             <div className="order-modal-header">
               <h2>프로필 순서 관리</h2>
-              <button className="close-btn" onClick={() => setShowOrderModal(false)}>×</button>
+              <button
+                className="close-btn"
+                onClick={() => setShowOrderModal(false)}
+              >
+                ×
+              </button>
             </div>
-            <p className="order-hint">드래그하거나 화살표로 순서를 변경하세요</p>
+            <p className="order-hint">
+              드래그하거나 화살표로 순서를 변경하세요
+            </p>
             <div className="order-list">
               {orderProfiles.map((p, idx) => (
                 <div
                   key={p.kakao_id}
-                  className={`order-item ${draggedIdx === idx ? 'dragging' : ''} ${p.visibility === 'private' ? 'private' : ''}`}
+                  className={`order-item ${draggedIdx === idx ? "dragging" : ""} ${p.visibility === "private" ? "private" : ""}`}
                   draggable
                   onDragStart={() => handleDragStart(idx)}
                   onDragOver={(e) => handleDragOver(e, idx)}
                   onDragEnd={handleDragEnd}
                 >
                   <span className="order-num">{idx + 1}</span>
-                  <span className="order-name">{p.name || '익명'}</span>
-                  <span className="order-tagline">{p.tagline || ''}</span>
-                  {p.visibility === 'private' && <span className="order-private">비공개</span>}
+                  <span className="order-name">{p.name || "익명"}</span>
+                  <span className="order-tagline">{p.tagline || ""}</span>
+                  {p.visibility === "private" && (
+                    <span className="order-private">비공개</span>
+                  )}
                   <div className="order-arrows">
-                    <button onClick={() => moveProfile(idx, -1)} disabled={idx === 0}>↑</button>
-                    <button onClick={() => moveProfile(idx, 1)} disabled={idx === orderProfiles.length - 1}>↓</button>
+                    <button
+                      onClick={() => moveProfile(idx, -1)}
+                      disabled={idx === 0}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => moveProfile(idx, 1)}
+                      disabled={idx === orderProfiles.length - 1}
+                    >
+                      ↓
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
             <div className="order-modal-footer">
-              <button className="cancel-btn" onClick={() => setShowOrderModal(false)}>취소</button>
-              <button className="save-btn" onClick={saveProfileOrder} disabled={orderLoading}>
+              <button
+                className="cancel-btn"
+                onClick={() => setShowOrderModal(false)}
+              >
+                취소
+              </button>
+              <button
+                className="save-btn"
+                onClick={saveProfileOrder}
+                disabled={orderLoading}
+              >
                 {orderLoading ? "저장 중..." : "순서 저장"}
               </button>
             </div>
@@ -1022,17 +1112,31 @@ function App() {
       )}
 
       {showFixedRoleModal && (
-        <div className="order-modal-overlay" onClick={() => setShowFixedRoleModal(false)}>
-          <div className="order-modal fixed-role-modal" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="order-modal-overlay"
+          onClick={() => setShowFixedRoleModal(false)}
+        >
+          <div
+            className="order-modal fixed-role-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="order-modal-header">
               <h2>🎯 직업 고정 배정</h2>
-              <button className="close-btn" onClick={() => setShowFixedRoleModal(false)}>×</button>
+              <button
+                className="close-btn"
+                onClick={() => setShowFixedRoleModal(false)}
+              >
+                ×
+              </button>
             </div>
-            <p className="order-hint">각 사용자에게 고정 직업을 배정하면 RAG 검색을 생략하고 해당 직업을 바로 보여줍니다.</p>
+            <p className="order-hint">
+              각 사용자에게 고정 직업을 배정하면 RAG 검색을 생략하고 해당 직업을
+              바로 보여줍니다.
+            </p>
             <div className="order-list fixed-role-list">
               {fixedRoleProfiles.map((p) => (
                 <div key={p.kakao_id} className="order-item fixed-role-item">
-                  <span className="order-name">{p.name || '익명'}</span>
+                  <span className="order-name">{p.name || "익명"}</span>
                   <select
                     value={p.fixed_role || ""}
                     onChange={(e) => saveFixedRole(p.kakao_id, e.target.value)}
@@ -1046,14 +1150,23 @@ function App() {
                       </option>
                     ))}
                   </select>
-                  {p.fixed_role && <span className="fixed-role-badge">고정</span>}
+                  {p.fixed_role && (
+                    <span className="fixed-role-badge">고정</span>
+                  )}
                 </div>
               ))}
             </div>
             <div className="order-modal-footer">
-              <button className="cancel-btn" onClick={() => setShowFixedRoleModal(false)}>닫기</button>
+              <button
+                className="cancel-btn"
+                onClick={() => setShowFixedRoleModal(false)}
+              >
+                닫기
+              </button>
             </div>
-            {fixedRoleStatus && <p className="order-status">{fixedRoleStatus}</p>}
+            {fixedRoleStatus && (
+              <p className="order-status">{fixedRoleStatus}</p>
+            )}
           </div>
         </div>
       )}
@@ -1084,7 +1197,7 @@ function App() {
   };
 
   const handleOnboardingComplete = (completedProfile) => {
-    setProfile(prev => ({ ...prev, ...completedProfile }));
+    setProfile((prev) => ({ ...prev, ...completedProfile }));
     setIsEditing(false);
     setStatus("프로필이 완성되었습니다!");
   };
@@ -1115,32 +1228,27 @@ function App() {
       <Route path="/others" element={<OthersProfilePage session={session} />} />
       <Route
         path="/mafbti"
+        element={<MafBTIPage session={session} onLogin={handleKakaoLogin} />}
+      />
+      <Route
+        path="/onboarding"
         element={
-          <MafBTIPage
+          <OnboardingPage
             session={session}
-            onLogin={handleKakaoLogin}
+            onComplete={handleOnboardingComplete}
           />
         }
       />
-      <Route 
-        path="/onboarding" 
+      <Route
+        path="/"
         element={
-          <OnboardingPage 
-            session={session} 
-            onComplete={handleOnboardingComplete}
-          />
-        } 
-      />
-      <Route 
-        path="/" 
-        element={
-          <LandingPage 
-            session={session} 
+          <LandingPage
+            session={session}
             onLogin={handleKakaoLogin}
             onSimpleRegister={handleSimpleRegister}
             onShare={shareToKakao}
           />
-        } 
+        }
       />
       <Route path="/my-profile" element={mainPage} />
       <Route path="*" element={mainPage} />

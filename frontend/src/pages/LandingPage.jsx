@@ -140,7 +140,7 @@ export default function LandingPage({ session, onLogin, onSimpleRegister, onShar
         </>
       ) : (
         <button className="floating-cta login-btn" onClick={onLogin}>
-          카톡 로그인
+          카톡 로그인 먼저!
         </button>
       )}
       <Link className="floating-cta info" to="/info">
