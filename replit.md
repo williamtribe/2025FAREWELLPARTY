@@ -6,7 +6,18 @@ Korean farewell party website with:
 - **Backend**: FastAPI (Python) on port 8000
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
-## Recent Changes (December 4, 2025)
+## Recent Changes (December 12, 2025)
+- **Dynamic OG meta tags for social sharing (Crawler Bot Detection)**:
+  - FastAPI middleware detects Kakao/Facebook/Twitter/etc crawlers by User-Agent
+  - Returns page-specific OG meta tags instead of SPA shell
+  - Paths: `/` → 등록 안내, `/event` → 행사 정보, `/mafbti` → 성격테스트
+  - Works in production mode only (after Publish)
+- **Simple registration button moved to OnboardingPage**:
+  - "⚡ 자기소개 생략" floating button on onboarding page
+  - Triggers Kakao login if not logged in, then saves minimal profile
+  - Removed from LandingPage for cleaner UX
+
+## Previous Changes (December 4, 2025)
 - **MafBTI (/mafbti)**: Standalone Mafia42 personality test page
   - No login required - anyone can take the test
   - Simple self-intro input → AI job assignment via vector similarity
