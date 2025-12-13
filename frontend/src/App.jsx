@@ -372,6 +372,13 @@ function App() {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/me`, { headers: authHeaders });
+      if (res.status === 401) {
+        localStorage.removeItem("farewell-session");
+        setSession(null);
+        setStatus("세션이 만료되었습니다. 다시 로그인해주세요.");
+        setLoading(false);
+        return;
+      }
       if (!res.ok) throw new Error("프로필을 불러오지 못했습니다.");
       const data = await res.json();
       const incoming = data.profile || {};
