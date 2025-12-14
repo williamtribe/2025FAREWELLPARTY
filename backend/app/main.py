@@ -1070,9 +1070,9 @@ async def mafbti_role_assignment(payload: MafBTIPayload):
 app.include_router(api_router)
 
 # Bot User-Agent patterns for crawler detection
+# Note: Only "kakaotalk-scrap" (the actual scraper bot), NOT "kakaotalk" (in-app browser)
 BOT_USER_AGENTS = [
     "kakaotalk-scrap",
-    "kakaotalk",
     "facebookexternalhit",
     "twitterbot",
     "linkedinbot",
