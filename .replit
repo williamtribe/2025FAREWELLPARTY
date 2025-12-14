@@ -10,7 +10,7 @@ packages = ["imagemagick"]
 
 [userenv.shared]
 VITE_API_BASE_URL = ""
-NEXT_PUBLIC_BASE_URL = "http://localhost:8000"
+NEXT_PUBLIC_BASE_URL = "https://2025-farewellparty--turtle816.replit.app"
 KAKAO_REDIRECT_URI = "https://2025-farewellparty--turtle816.replit.app/api/auth/kakao/callback"
 PINECONE_INDEX = "members"
 PINECONE_ENVIRONMENT = "us-east-1"
