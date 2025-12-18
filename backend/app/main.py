@@ -153,11 +153,26 @@ async def kakao_callback(code: str, state: Optional[str] = None):
     nickname = profile_data.get("nickname", "친구")
     profile_image_url = profile_data.get("profile_image_url", "")
 
-    # Update profile_image for existing users on every login
-    if profile_image_url:
-        existing_profile = supabase_service.fetch_profile(kakao_id)
-        if existing_profile:
+    # Check if user exists, create or update profile
+    existing_profile = supabase_service.fetch_profile(kakao_id)
+    if existing_profile:
+        # Update profile_image for existing users on every login
+        if profile_image_url:
             supabase_service.update_profile_image(kakao_id, profile_image_url)
+    else:
+        # Create new profile for first-time users
+        new_profile = {
+            "kakao_id": kakao_id,
+            "name": nickname,
+            "tagline": "",
+            "intro": "",
+            "interests": [],
+            "strengths": [],
+            "contact": "",
+            "visibility": "public",
+            "profile_image": profile_image_url,
+        }
+        supabase_service.upsert_profile(new_profile)
 
     payload = {
         "kakao_id": kakao_id,
