@@ -153,7 +153,9 @@ class SupabaseService:
     def upsert_profile(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.client:
             return {"skipped": True, "reason": "supabase_not_configured"}
-        result = self.client.table("member_profiles").upsert(data).execute()
+        logger.info(f"UPSERT PROFILE: kakao_id={data.get('kakao_id')}, name={data.get('name')}")
+        result = self.client.table("member_profiles").upsert(data, on_conflict="kakao_id").execute()
+        logger.info(f"UPSERT RESULT: {result.data}")
         return {"data": result.data}
 
     def fetch_profile(self, kakao_id: str) -> Optional[Dict[str, Any]]:
