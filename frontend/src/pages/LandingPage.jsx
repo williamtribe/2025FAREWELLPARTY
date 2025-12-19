@@ -29,7 +29,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [myPicks, setMyPicks] = useState(new Set());
   const [pickLoading, setPickLoading] = useState(false);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState("intro");
   const [searchResults, setSearchResults] = useState(null);
@@ -117,11 +117,11 @@ export default function LandingPage({ session, onLogin, onShare }) {
       alert("검색어는 2글자 이상 입력해주세요.");
       return;
     }
-    
+
     setSearchLoading(true);
     try {
       const res = await fetch(
-        `${API_BASE}/search-profiles?q=${encodeURIComponent(searchQuery)}&search_type=${searchType}&limit=20`
+        `${API_BASE}/search-profiles?q=${encodeURIComponent(searchQuery)}&search_type=${searchType}&limit=20`,
       );
       const data = await res.json();
       if (res.ok) {
@@ -271,7 +271,11 @@ export default function LandingPage({ session, onLogin, onShare }) {
           <input
             type="text"
             className="search-input"
-            placeholder={searchType === "intro" ? "예: 게임 좋아하는 사람" : "예: 마피아42, 코딩"}
+            placeholder={
+              searchType === "intro"
+                ? "최대한 자세히 적어주세요!"
+                : "최대한 자세히 적어주세요!"
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -311,7 +315,9 @@ export default function LandingPage({ session, onLogin, onShare }) {
                     <div className="search-result-info">
                       <span className="search-result-name">{profile.name}</span>
                       {profile.tagline && (
-                        <span className="search-result-tagline">{profile.tagline}</span>
+                        <span className="search-result-tagline">
+                          {profile.tagline}
+                        </span>
                       )}
                     </div>
                     <span className="similarity-score">
@@ -319,27 +325,36 @@ export default function LandingPage({ session, onLogin, onShare }) {
                     </span>
                   </div>
                   {profile.intro && (
-                    <p className="search-result-intro">{renderWithDevComment(profile.intro)}</p>
+                    <p className="search-result-intro">
+                      {renderWithDevComment(profile.intro)}
+                    </p>
                   )}
                   {profile.interests?.length > 0 && (
                     <div className="search-result-interests">
                       {profile.interests.slice(0, 5).map((interest, idx) => (
-                        <span key={idx} className="interest-chip-small">{interest}</span>
+                        <span key={idx} className="interest-chip-small">
+                          {interest}
+                        </span>
                       ))}
                       {profile.interests.length > 5 && (
-                        <span className="interest-chip-small more">+{profile.interests.length - 5}</span>
+                        <span className="interest-chip-small more">
+                          +{profile.interests.length - 5}
+                        </span>
                       )}
                     </div>
                   )}
-                  {isLoggedIn && String(profile.kakao_id) !== String(session?.kakao_id) && (
-                    <button
-                      className={`pick-btn-small ${myPicks.has(profile.kakao_id) ? 'picked' : ''}`}
-                      onClick={() => togglePick(profile.kakao_id)}
-                      disabled={pickLoading}
-                    >
-                      {myPicks.has(profile.kakao_id) ? '💚 찜했어요' : '🤍 찜하기'}
-                    </button>
-                  )}
+                  {isLoggedIn &&
+                    String(profile.kakao_id) !== String(session?.kakao_id) && (
+                      <button
+                        className={`pick-btn-small ${myPicks.has(profile.kakao_id) ? "picked" : ""}`}
+                        onClick={() => togglePick(profile.kakao_id)}
+                        disabled={pickLoading}
+                      >
+                        {myPicks.has(profile.kakao_id)
+                          ? "💚 찜했어요"
+                          : "🤍 찜하기"}
+                      </button>
+                    )}
                 </div>
               ))}
             </div>
