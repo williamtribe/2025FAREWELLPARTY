@@ -402,6 +402,12 @@ async def list_public_profiles(limit: int = 50):
     return {"profiles": profiles}
 
 
+@api_router.get("/profiles/members")
+async def list_member_visible_profiles(limit: int = 50, user: SessionUser = Depends(get_current_user)):
+    profiles = supabase_service.fetch_member_visible_profiles(limit=limit)
+    return {"profiles": profiles}
+
+
 @api_router.get("/profiles/{kakao_id}")
 async def view_profile(
         kakao_id: str,

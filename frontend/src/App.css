@@ -159,6 +159,27 @@ body {
   color: #5a7a60;
 }
 
+.card-chips.subtle .chip {
+  background: rgba(31, 122, 77, 0.08);
+  color: #2e5a37;
+}
+
+.card-contact {
+  font-size: 0.85rem;
+  margin-top: 0.8rem;
+}
+
+.visibility-badge {
+  display: inline-block;
+  margin-top: 0.8rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(214, 40, 40, 0.12);
+  color: #c4313b;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
 .carousel-card-wrapper {
   touch-action: pan-y;
   cursor: grab;

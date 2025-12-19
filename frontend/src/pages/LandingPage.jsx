@@ -30,13 +30,23 @@ export default function LandingPage({ session, onLogin, onShare }) {
   
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  
+  const isLoggedIn = Boolean(session?.session_token);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const headers = isLoggedIn 
+          ? { Authorization: `Bearer ${session.session_token}` }
+          : {};
+        
+        const profilesEndpoint = isLoggedIn 
+          ? `${API_BASE}/profiles/members?limit=50`
+          : `${API_BASE}/profiles/public?limit=50`;
+        
         const [countRes, profilesRes] = await Promise.all([
           fetch(`${API_BASE}/profiles/count`),
-          fetch(`${API_BASE}/profiles/public?limit=50`),
+          fetch(profilesEndpoint, { headers }),
         ]);
         const countData = await countRes.json();
         const profilesData = await profilesRes.json();
@@ -49,9 +59,8 @@ export default function LandingPage({ session, onLogin, onShare }) {
       }
     };
     fetchData();
-  }, []);
+  }, [isLoggedIn, session?.session_token]);
 
-  const isLoggedIn = Boolean(session?.session_token);
   const currentProfile = publicProfiles[currentIndex];
 
   const goNext = () => {
@@ -201,13 +210,23 @@ export default function LandingPage({ session, onLogin, onShare }) {
               <p className="card-intro">{renderWithDevComment(currentProfile?.intro) || "자기소개가 없어요"}</p>
               {currentProfile?.interests?.length > 0 && (
                 <div className="card-chips">
-                  {currentProfile.interests.slice(0, 5).map((interest, idx) => (
+                  {currentProfile.interests.map((interest, idx) => (
                     <span key={idx} className="chip">{interest}</span>
                   ))}
-                  {currentProfile.interests.length > 5 && (
-                    <span className="chip more">+{currentProfile.interests.length - 5}</span>
-                  )}
                 </div>
+              )}
+              {currentProfile?.strengths?.length > 0 && (
+                <div className="card-chips subtle">
+                  {currentProfile.strengths.map((strength, idx) => (
+                    <span key={idx} className="chip">{strength}</span>
+                  ))}
+                </div>
+              )}
+              {isLoggedIn && currentProfile?.contact && (
+                <p className="card-contact muted">연락처: {currentProfile.contact}</p>
+              )}
+              {currentProfile?.visibility === "members" && (
+                <span className="visibility-badge">멤버 전용</span>
               )}
             </div>
             

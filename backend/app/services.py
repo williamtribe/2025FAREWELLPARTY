@@ -217,6 +217,41 @@ class SupabaseService:
                 return result.data or []
             raise
 
+    def fetch_member_visible_profiles(self, limit: int = 50) -> list[Dict[str, Any]]:
+        """Fetch profiles visible to logged-in members (public + members visibility)."""
+        if not self.client:
+            return []
+        
+        def is_column_missing(err: Exception, col_name: str) -> bool:
+            err_str = str(err).lower()
+            return col_name in err_str and ("not exist" in err_str or "not find" in err_str or "could not find" in err_str or "pgrst204" in err_str)
+        
+        try:
+            result = (self.client.table("member_profiles").select(
+                "kakao_id,name,tagline,intro,interests,strengths,contact,want_to_talk_to,visibility,profile_image,display_order,updated_at"
+            ).in_("visibility", ["public", "members"]).order("display_order", desc=False).order("updated_at", desc=True).limit(limit).execute())
+            return result.data or []
+        except Exception as e:
+            if is_column_missing(e, "display_order"):
+                try:
+                    result = (self.client.table("member_profiles").select(
+                        "kakao_id,name,tagline,intro,interests,strengths,contact,want_to_talk_to,visibility,profile_image,updated_at"
+                    ).in_("visibility", ["public", "members"]).order("updated_at", desc=True).limit(limit).execute())
+                    return result.data or []
+                except Exception as e2:
+                    if is_column_missing(e2, "want_to_talk_to"):
+                        result = (self.client.table("member_profiles").select(
+                            "kakao_id,name,tagline,intro,interests,strengths,contact,visibility,profile_image,updated_at"
+                        ).in_("visibility", ["public", "members"]).order("updated_at", desc=True).limit(limit).execute())
+                        return result.data or []
+                    raise
+            elif is_column_missing(e, "want_to_talk_to"):
+                result = (self.client.table("member_profiles").select(
+                    "kakao_id,name,tagline,intro,interests,strengths,contact,visibility,profile_image,display_order,updated_at"
+                ).in_("visibility", ["public", "members"]).order("display_order", desc=False).order("updated_at", desc=True).limit(limit).execute())
+                return result.data or []
+            raise
+
     def fetch_all_profiles_for_admin(self) -> list[Dict[str, Any]]:
         """Fetch all profiles for admin ordering (includes private)."""
         if not self.client:
