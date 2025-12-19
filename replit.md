@@ -7,6 +7,16 @@ Korean farewell party website with:
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
 ## Recent Changes (December 19, 2025)
+- **Admin Clustering Feature**:
+  - K-means clustering on profile embeddings (uses scikit-learn)
+  - Configurable cluster count (2-10) and namespace (intro/interests)
+  - PCA for 2D visualization coordinates
+  - API endpoint: POST /api/admin/clusters with {k, namespace}
+  - Admin-only access via session check
+  - react-force-graph-2d for interactive graph visualization
+  - Modal shows cluster groups with member lists + force-directed graph
+  - Click nodes to see cluster member details
+- **Search result pick buttons**: Logged-in users can pick/unpick profiles from search results
 - **임베딩 기반 검색 기능 on LandingPage**:
   - Two search modes: 자기소개로 검색 (intro) / 관심사로 검색 (interests)
   - Uses OpenAI embeddings + Pinecone vector similarity search

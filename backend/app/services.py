@@ -3,9 +3,12 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import httpx
+import numpy as np
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from openai import OpenAI
 from pinecone import Pinecone, ServerlessSpec
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 from supabase import Client, create_client
 
 from .config import settings
@@ -834,12 +837,115 @@ class PineconeService:
             return []
 
 
+class ClusteringService:
+    """Clustering service using K-means on Pinecone embeddings."""
+
+    def __init__(self, pinecone_svc: PineconeService, supabase_svc: SupabaseService) -> None:
+        self.pinecone = pinecone_svc
+        self.supabase = supabase_svc
+
+    def cluster_profiles(self, k: int = 3, namespace: str = "intro") -> Dict[str, Any]:
+        """
+        Cluster member profiles using K-means on their embeddings.
+        
+        Args:
+            k: Number of clusters (2-10)
+            namespace: Pinecone namespace to use ('intro' or 'interests')
+        
+        Returns:
+            Dict with clusters info and graph data for visualization
+        """
+        if not self.pinecone.index:
+            return {"error": "Pinecone not configured"}
+        
+        k = max(2, min(k, 10))
+        
+        profiles = self.supabase.fetch_all_profiles_for_admin()
+        if not profiles:
+            return {"error": "No profiles found"}
+        
+        embeddings = []
+        valid_profiles = []
+        
+        for profile in profiles:
+            kakao_id = str(profile.get("kakao_id"))
+            vector = self.pinecone.fetch_vector(kakao_id, namespace=namespace)
+            if vector:
+                embeddings.append(vector)
+                valid_profiles.append(profile)
+        
+        if len(valid_profiles) < k:
+            return {
+                "error": f"Not enough profiles with embeddings. Found {len(valid_profiles)}, need at least {k}",
+                "profiles_with_embeddings": len(valid_profiles)
+            }
+        
+        X = np.array(embeddings)
+        
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        labels = kmeans.fit_predict(X)
+        
+        pca = PCA(n_components=2)
+        coords_2d = pca.fit_transform(X)
+        
+        cluster_colors = [
+            "#e74c3c", "#3498db", "#2ecc71", "#f39c12", "#9b59b6",
+            "#1abc9c", "#e67e22", "#34495e", "#16a085", "#c0392b"
+        ]
+        
+        nodes = []
+        for i, profile in enumerate(valid_profiles):
+            cluster_idx = int(labels[i])
+            nodes.append({
+                "id": str(profile.get("kakao_id")),
+                "kakao_id": str(profile.get("kakao_id")),
+                "name": profile.get("name") or "익명",
+                "cluster": cluster_idx,
+                "color": cluster_colors[cluster_idx % len(cluster_colors)],
+                "x": float(coords_2d[i][0]) * 100,
+                "y": float(coords_2d[i][1]) * 100,
+            })
+        
+        edges = []
+        for cluster_idx in range(k):
+            cluster_members = [n for n in nodes if n["cluster"] == cluster_idx]
+            for i, member in enumerate(cluster_members):
+                for other in cluster_members[i+1:]:
+                    edges.append({
+                        "source": member["id"],
+                        "target": other["id"],
+                        "cluster": cluster_idx,
+                    })
+        
+        clusters = []
+        for cluster_idx in range(k):
+            cluster_members = [n for n in nodes if n["cluster"] == cluster_idx]
+            clusters.append({
+                "id": cluster_idx,
+                "color": cluster_colors[cluster_idx % len(cluster_colors)],
+                "member_count": len(cluster_members),
+                "members": [{"kakao_id": m["kakao_id"], "name": m["name"]} for m in cluster_members],
+            })
+        
+        return {
+            "k": k,
+            "namespace": namespace,
+            "total_profiles": len(valid_profiles),
+            "clusters": clusters,
+            "graph": {
+                "nodes": nodes,
+                "edges": edges,
+            }
+        }
+
+
 session_signer = SessionSigner()
 kakao_client = KakaoClient()
 supabase_service = SupabaseService()
 embedding_service = EmbeddingService()
 intro_generation_service = IntroGenerationService()
 pinecone_service = PineconeService()
+clustering_service = ClusteringService(pinecone_service, supabase_service)
 
 
 def normalize_profile_text(payload: Dict[str, Any]) -> str:

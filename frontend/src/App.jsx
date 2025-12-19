@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
   Route,
@@ -6,6 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import ForceGraph2D from "react-force-graph-2d";
 import "./App.css";
 import IntroPage from "./pages/IntroPage";
 import EventInfo from "./pages/EventInfo";
@@ -93,6 +94,12 @@ function App() {
   const [fixedRoleStatus, setFixedRoleStatus] = useState("");
   const [showFixedRoleModal, setShowFixedRoleModal] = useState(false);
   const [shareEventStatus, setShareEventStatus] = useState("");
+  const [clusterK, setClusterK] = useState(3);
+  const [clusterNamespace, setClusterNamespace] = useState("intro");
+  const [clusterData, setClusterData] = useState(null);
+  const [clusterLoading, setClusterLoading] = useState(false);
+  const [clusterStatus, setClusterStatus] = useState("");
+  const [showClusterModal, setShowClusterModal] = useState(false);
   const [interestCategories, setInterestCategories] = useState(
     DEFAULT_INTEREST_CATEGORIES,
   );
@@ -692,6 +699,32 @@ function App() {
     }
   };
 
+  const runClustering = async () => {
+    if (!session?.is_admin) return;
+    setClusterLoading(true);
+    setClusterStatus("클러스터링 중...");
+    setClusterData(null);
+    try {
+      const res = await fetch(`${API_BASE}/admin/clusters`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          k: clusterK,
+          namespace: clusterNamespace,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "클러스터링 실패");
+      setClusterData(data);
+      setClusterStatus(`${data.total_profiles}명을 ${data.k}개 그룹으로 분류 완료!`);
+      setShowClusterModal(true);
+    } catch (err) {
+      setClusterStatus(`오류: ${err.message}`);
+    } finally {
+      setClusterLoading(false);
+    }
+  };
+
   const fetchMyRole = async () => {
     if (!session?.session_token || !profile.intro) return;
     setRoleLoading(true);
@@ -1084,6 +1117,30 @@ function App() {
             <button className="admin-btn" onClick={handleShareEvent}>
               📢 행사정보 공유
             </button>
+            <div className="cluster-controls">
+              <label>
+                그룹 수:
+                <select value={clusterK} onChange={(e) => setClusterK(Number(e.target.value))}>
+                  {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                    <option key={n} value={n}>{n}개</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                기준:
+                <select value={clusterNamespace} onChange={(e) => setClusterNamespace(e.target.value)}>
+                  <option value="intro">자기소개</option>
+                  <option value="interests">관심사</option>
+                </select>
+              </label>
+              <button
+                className="admin-btn"
+                onClick={runClustering}
+                disabled={clusterLoading}
+              >
+                {clusterLoading ? "분석 중..." : "📊 클러스터링 실행"}
+              </button>
+            </div>
             {reembedStatus && <p className="admin-status">{reembedStatus}</p>}
             {jobEmbedStatus && <p className="admin-status">{jobEmbedStatus}</p>}
             {orderStatus && <p className="admin-status">{orderStatus}</p>}
@@ -1092,6 +1149,9 @@ function App() {
             )}
             {shareEventStatus && (
               <p className="admin-status">{shareEventStatus}</p>
+            )}
+            {clusterStatus && (
+              <p className="admin-status">{clusterStatus}</p>
             )}
           </div>
         </section>
@@ -1224,6 +1284,76 @@ function App() {
             {fixedRoleStatus && (
               <p className="order-status">{fixedRoleStatus}</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {showClusterModal && clusterData && (
+        <div
+          className="order-modal-overlay cluster-modal-overlay"
+          onClick={() => setShowClusterModal(false)}
+        >
+          <div className="cluster-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h2>클러스터링 결과</h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowClusterModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="cluster-info">
+              <span>{clusterData.total_profiles}명 → {clusterData.k}개 그룹</span>
+              <span className="cluster-namespace">
+                기준: {clusterData.namespace === "intro" ? "자기소개" : "관심사"}
+              </span>
+            </div>
+            <div className="cluster-graph-container">
+              <ForceGraph2D
+                graphData={{
+                  nodes: clusterData.graph.nodes,
+                  links: clusterData.graph.edges,
+                }}
+                nodeLabel={(node) => node.name}
+                nodeColor={(node) => node.color}
+                nodeRelSize={8}
+                linkColor={() => "rgba(0, 0, 0, 0.1)"}
+                linkWidth={1}
+                width={500}
+                height={350}
+                cooldownTicks={100}
+                onNodeClick={(node) => {
+                  const cluster = clusterData.clusters.find(
+                    (c) => c.id === node.cluster
+                  );
+                  if (cluster) {
+                    alert(
+                      `${node.name}\n\n그룹 ${cluster.id + 1} (${cluster.member_count}명)\n멤버: ${cluster.members.map((m) => m.name).join(", ")}`
+                    );
+                  }
+                }}
+              />
+            </div>
+            <div className="cluster-list">
+              {clusterData.clusters.map((cluster) => (
+                <div key={cluster.id} className="cluster-group">
+                  <div
+                    className="cluster-group-header"
+                    style={{ borderLeft: `4px solid ${cluster.color}` }}
+                  >
+                    그룹 {cluster.id + 1} ({cluster.member_count}명)
+                  </div>
+                  <div className="cluster-members">
+                    {cluster.members.map((m) => (
+                      <span key={m.kakao_id} className="cluster-member-chip">
+                        {m.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

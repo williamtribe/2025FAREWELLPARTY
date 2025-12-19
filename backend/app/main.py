@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from .config import logger, settings
 from .services import (
     assemble_profile_record,
+    clustering_service,
     embedding_service,
     intro_generation_service,
     kakao_client,
@@ -697,6 +698,25 @@ async def set_fixed_role(payload: FixedRolePayload,
         "kakao_id": payload.kakao_id,
         "fixed_role": payload.fixed_role
     }
+
+
+class ClusterRequest(BaseModel):
+    k: int = Field(default=3, ge=2, le=10)
+    namespace: Literal["intro", "interests"] = "intro"
+
+
+@api_router.post("/admin/clusters")
+async def admin_clusters(payload: ClusterRequest,
+                         user: SessionUser = Depends(get_current_user)):
+    """Cluster profiles using K-means on embeddings (admin only)."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    result = clustering_service.cluster_profiles(k=payload.k, namespace=payload.namespace)
+    if result.get("error"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=result.get("error"))
+    return result
 
 
 @api_router.get("/kakao/friends")
