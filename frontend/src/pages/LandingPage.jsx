@@ -222,9 +222,6 @@ export default function LandingPage({ session, onLogin, onShare }) {
                   ))}
                 </div>
               )}
-              {isLoggedIn && currentProfile?.contact && (
-                <p className="card-contact muted">연락처: {currentProfile.contact}</p>
-              )}
               {currentProfile?.visibility === "members" && (
                 <span className="visibility-badge">멤버 전용</span>
               )}
