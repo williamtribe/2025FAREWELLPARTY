@@ -331,6 +331,15 @@ export default function LandingPage({ session, onLogin, onShare }) {
                       )}
                     </div>
                   )}
+                  {isLoggedIn && String(profile.kakao_id) !== String(session?.kakao_id) && (
+                    <button
+                      className={`pick-btn-small ${myPicks.has(profile.kakao_id) ? 'picked' : ''}`}
+                      onClick={() => togglePick(profile.kakao_id)}
+                      disabled={pickLoading}
+                    >
+                      {myPicks.has(profile.kakao_id) ? '💚 찜했어요' : '🤍 찜하기'}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
