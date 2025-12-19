@@ -41,8 +41,8 @@ export default function LandingPage({ session, onLogin, onShare }) {
           : {};
         
         const profilesEndpoint = isLoggedIn 
-          ? `${API_BASE}/profiles/members?limit=50`
-          : `${API_BASE}/profiles/public?limit=50`;
+          ? `${API_BASE}/profiles/members?limit=500`
+          : `${API_BASE}/profiles/public?limit=500`;
         
         const [countRes, profilesRes] = await Promise.all([
           fetch(`${API_BASE}/profiles/count`),
