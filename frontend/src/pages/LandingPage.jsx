@@ -276,7 +276,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
               {currentProfile?.visibility === "members" && (
                 <span className="visibility-badge">멤버 전용</span>
               )}
-              {isLoggedIn && currentProfile?.kakao_id && currentProfile.kakao_id !== session?.kakao_id && (
+              {isLoggedIn && currentProfile?.kakao_id && String(currentProfile.kakao_id) !== String(session?.kakao_id) && (
                 <button
                   className={`pick-btn ${myPicks.has(currentProfile.kakao_id) ? 'picked' : ''}`}
                   onClick={(e) => {
