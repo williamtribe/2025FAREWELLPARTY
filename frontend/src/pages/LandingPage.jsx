@@ -6,7 +6,7 @@ const API_BASE = "/api";
 // Render text with *comment styled differently
 function renderWithDevComment(text) {
   if (!text) return null;
-  const starIndex = text.indexOf('*');
+  const starIndex = text.indexOf("*");
   if (starIndex === -1) {
     return <>{text}</>;
   }
@@ -29,38 +29,38 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [myPicks, setMyPicks] = useState(new Set());
   const [pickLoading, setPickLoading] = useState(false);
-  
+
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-  
+
   const isLoggedIn = Boolean(session?.session_token);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const headers = isLoggedIn 
+        const headers = isLoggedIn
           ? { Authorization: `Bearer ${session.session_token}` }
           : {};
-        
-        const profilesEndpoint = isLoggedIn 
+
+        const profilesEndpoint = isLoggedIn
           ? `${API_BASE}/profiles/members?limit=500`
           : `${API_BASE}/profiles/public?limit=500`;
-        
+
         const requests = [
           fetch(`${API_BASE}/profiles/count`),
           fetch(profilesEndpoint, { headers }),
         ];
-        
+
         if (isLoggedIn) {
           requests.push(fetch(`${API_BASE}/picks`, { headers }));
         }
-        
+
         const responses = await Promise.all(requests);
         const countData = await responses[0].json();
         const profilesData = await responses[1].json();
         setProfileCount(countData.count || 0);
         setPublicProfiles(profilesData.profiles || []);
-        
+
         if (isLoggedIn && responses[2]) {
           const picksData = await responses[2].json();
           setMyPicks(new Set(picksData.picks || []));
@@ -77,10 +77,10 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const togglePick = async (targetKakaoId) => {
     if (!isLoggedIn || pickLoading) return;
     setPickLoading(true);
-    
+
     const isPicked = myPicks.has(targetKakaoId);
     const method = isPicked ? "DELETE" : "POST";
-    
+
     try {
       const res = await fetch(`${API_BASE}/picks/${targetKakaoId}`, {
         method,
@@ -149,7 +149,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const handleTouchEnd = () => {
     const diff = touchEndX.current - touchStartX.current;
     setSwipeOffset(0);
-    
+
     if (diff > 50) {
       goPrev();
     } else if (diff < -50) {
@@ -174,7 +174,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const handleMouseUp = () => {
     const diff = touchEndX.current - touchStartX.current;
     setSwipeOffset(0);
-    
+
     if (diff > 50) {
       goPrev();
     } else if (diff < -50) {
@@ -229,8 +229,8 @@ export default function LandingPage({ session, onLogin, onShare }) {
               🎲 섞기
             </button>
           </div>
-          
-          <div 
+
+          <div
             className="carousel-card-wrapper"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -240,66 +240,78 @@ export default function LandingPage({ session, onLogin, onShare }) {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
-            <div 
+            <div
               className="carousel-card"
               style={{
                 transform: `translateX(${swipeOffset}px)`,
-                transition: isAnimating ? 'transform 0.2s ease-out' : 'none',
+                transition: isAnimating ? "transform 0.2s ease-out" : "none",
               }}
             >
               {currentProfile?.profile_image && (
                 <div className="card-avatar">
-                  <img 
-                    src={currentProfile.profile_image} 
-                    alt={currentProfile?.name || "프로필"} 
-                    onError={(e) => e.target.style.display = 'none'}
+                  <img
+                    src={currentProfile.profile_image}
+                    alt={currentProfile?.name || "프로필"}
+                    onError={(e) => (e.target.style.display = "none")}
                   />
                 </div>
               )}
               <h3 className="card-name">{currentProfile?.name || "익명"}</h3>
-              <p className="card-tagline">{renderWithDevComment(currentProfile?.tagline) || ""}</p>
-              <p className="card-intro">{renderWithDevComment(currentProfile?.intro) || "자기소개가 없어요"}</p>
+              <p className="card-tagline">
+                {renderWithDevComment(currentProfile?.tagline) || ""}
+              </p>
+              <p className="card-intro">
+                {renderWithDevComment(currentProfile?.intro) ||
+                  "자기소개가 없어요"}
+              </p>
               {currentProfile?.interests?.length > 0 && (
                 <div className="card-chips">
                   {currentProfile.interests.map((interest, idx) => (
-                    <span key={idx} className="chip">{interest}</span>
+                    <span key={idx} className="chip">
+                      {interest}
+                    </span>
                   ))}
                 </div>
               )}
               {currentProfile?.strengths?.length > 0 && (
                 <div className="card-chips subtle">
                   {currentProfile.strengths.map((strength, idx) => (
-                    <span key={idx} className="chip">{strength}</span>
+                    <span key={idx} className="chip">
+                      {strength}
+                    </span>
                   ))}
                 </div>
               )}
               {currentProfile?.visibility === "members" && (
-                <span className="visibility-badge">멤버 전용</span>
+                <span className="visibility-badge">참여자만 볼 수 있음</span>
               )}
-              {isLoggedIn && currentProfile?.kakao_id && String(currentProfile.kakao_id) !== String(session?.kakao_id) && (
-                <button
-                  className={`pick-btn ${myPicks.has(currentProfile.kakao_id) ? 'picked' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePick(currentProfile.kakao_id);
-                  }}
-                  disabled={pickLoading}
-                >
-                  {myPicks.has(currentProfile.kakao_id) ? '💚 찜했어요' : '🤍 찜하기'}
-                </button>
-              )}
+              {isLoggedIn &&
+                currentProfile?.kakao_id &&
+                String(currentProfile.kakao_id) !==
+                  String(session?.kakao_id) && (
+                  <button
+                    className={`pick-btn ${myPicks.has(currentProfile.kakao_id) ? "picked" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePick(currentProfile.kakao_id);
+                    }}
+                    disabled={pickLoading}
+                  >
+                    {myPicks.has(currentProfile.kakao_id)
+                      ? "💚 찜했어요"
+                      : "🤍 찜하기"}
+                  </button>
+                )}
             </div>
-            
-            <div className="swipe-hint">
-              ← 슥슥 넘겨보세요 →
-            </div>
+
+            <div className="swipe-hint">← 슥슥 넘겨보세요 →</div>
           </div>
 
           <div className="carousel-dots">
             {publicProfiles.slice(0, 10).map((_, idx) => (
-              <span 
-                key={idx} 
-                className={`dot ${idx === currentIndex ? 'active' : ''}`}
+              <span
+                key={idx}
+                className={`dot ${idx === currentIndex ? "active" : ""}`}
                 onClick={() => !isAnimating && setCurrentIndex(idx)}
               />
             ))}
