@@ -60,6 +60,7 @@ const emptyProfile = {
   interests: [],
   strengths: [],
   contact: "",
+  want_to_talk_to: "",
   visibility: "public",
 };
 
@@ -913,6 +914,15 @@ function App() {
                 value={strengthsInput}
                 onChange={(e) => updateListField("strengths", e.target.value)}
                 placeholder="사람을 좋아함"
+                disabled={!isLoggedIn}
+              />
+
+              <label>대화하고 싶은 사람</label>
+              <textarea
+                value={profile.want_to_talk_to || ""}
+                onChange={(e) => updateField("want_to_talk_to", e.target.value)}
+                placeholder="파티에서 만나고 싶은 사람 (선택사항)"
+                rows={2}
                 disabled={!isLoggedIn}
               />
 
