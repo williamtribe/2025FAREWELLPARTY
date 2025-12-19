@@ -1500,6 +1500,34 @@ button.secondary:disabled {
   padding: 1rem;
 }
 
+.load-more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.load-more-btn {
+  background: linear-gradient(135deg, #1f7a4d 0%, #2e8b57 100%);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(31, 122, 77, 0.3);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .profile-card-mini {
   background: white;
   border-radius: 16px;

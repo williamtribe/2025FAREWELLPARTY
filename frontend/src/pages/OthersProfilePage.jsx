@@ -9,19 +9,26 @@ function OthersProfilePage({ session }) {
   const [mode, setMode] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [currentLimit, setCurrentLimit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
 
   const isLoggedIn = Boolean(session?.session_token);
 
-  const fetchProfiles = async (type, selectedCriteria) => {
+  const fetchProfiles = async (type, selectedCriteria, limit = 10, append = false) => {
     if (!session?.session_token) return;
     
-    setLoading(true);
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     
     try {
       const endpoint = type === "similar" ? "/similar-profiles" : "/different-profiles";
-      const res = await fetch(`${API_BASE}${endpoint}?criteria=${selectedCriteria}`, {
+      const res = await fetch(`${API_BASE}${endpoint}?criteria=${selectedCriteria}&limit=${limit}`, {
         headers: {
           Authorization: `Bearer ${session.session_token}`,
         },
@@ -32,7 +39,10 @@ function OthersProfilePage({ session }) {
       }
       
       const data = await res.json();
-      setProfiles(data.profiles || []);
+      const newProfiles = data.profiles || [];
+      setProfiles(newProfiles);
+      setCurrentLimit(limit);
+      setHasMore(newProfiles.length >= limit);
       
       if (data.message === "no_embedding_found") {
         setError(selectedCriteria === "intro" 
@@ -43,6 +53,13 @@ function OthersProfilePage({ session }) {
       setError(err.message);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (mode && criteria) {
+      fetchProfiles(mode, criteria, currentLimit + 10, true);
     }
   };
 
@@ -60,6 +77,8 @@ function OthersProfilePage({ session }) {
     setMode(null);
     setProfiles([]);
     setError(null);
+    setCurrentLimit(10);
+    setHasMore(true);
   };
 
   if (!isLoggedIn) {
@@ -221,28 +240,41 @@ function OthersProfilePage({ session }) {
           </div>
         </section>
       ) : (
-        <section className="panel profiles-grid">
-          {profiles.map((profile) => (
-            <div key={profile.kakao_id} className="profile-card-mini">
-              <div className="profile-header">
-                <h3>{profile.name || "이름 미입력"}</h3>
-                <span className="match-score">
-                  {Math.round((profile.similarity_score || 0) * 100)}% 
-                  {mode === "similar" ? " 닮음" : " 다름"}
-                </span>
-              </div>
-              <p className="tagline">{profile.tagline || "한 줄 소개가 없어요"}</p>
-              <p className="intro">{profile.intro || "자기소개가 없어요"}</p>
-              {profile.interests && profile.interests.length > 0 && (
-                <div className="chips">
-                  {profile.interests.slice(0, 3).map((chip) => (
-                    <span key={chip} className="chip">{chip}</span>
-                  ))}
+        <>
+          <section className="panel profiles-grid">
+            {profiles.map((profile) => (
+              <div key={profile.kakao_id} className="profile-card-mini">
+                <div className="profile-header">
+                  <h3>{profile.name || "이름 미입력"}</h3>
+                  <span className="match-score">
+                    {Math.round((profile.similarity_score || 0) * 100)}% 
+                    {mode === "similar" ? " 닮음" : " 다름"}
+                  </span>
                 </div>
-              )}
+                <p className="tagline">{profile.tagline || "한 줄 소개가 없어요"}</p>
+                <p className="intro">{profile.intro || "자기소개가 없어요"}</p>
+                {profile.interests && profile.interests.length > 0 && (
+                  <div className="chips">
+                    {profile.interests.slice(0, 3).map((chip) => (
+                      <span key={chip} className="chip">{chip}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
+          {hasMore && (
+            <div className="load-more-wrap">
+              <button 
+                className="load-more-btn" 
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? "불러오는 중..." : "더 보기"}
+              </button>
             </div>
-          ))}
-        </section>
+          )}
+        </>
       )}
     </div>
   );
