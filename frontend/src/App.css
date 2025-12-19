@@ -84,10 +84,33 @@ body {
   gap: 1rem;
 }
 
+.carousel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .carousel-counter {
-  text-align: center;
   font-size: 0.85rem;
   color: #5a7a60;
+}
+
+.shuffle-btn {
+  background: rgba(31, 122, 77, 0.1);
+  border: 1px solid rgba(31, 122, 77, 0.3);
+  color: #1f7a4d;
+  padding: 0.4rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shuffle-btn:hover {
+  background: rgba(31, 122, 77, 0.2);
+  transform: scale(1.05);
 }
 
 .carousel-card {

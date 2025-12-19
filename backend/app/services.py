@@ -175,7 +175,17 @@ class SupabaseService:
             result = self.client.table("member_profiles").select("has_picked").eq(
                 "kakao_id", kakao_id).limit(1).execute()
             if result.data and result.data[0].get("has_picked"):
-                return result.data[0]["has_picked"]
+                picks = result.data[0]["has_picked"]
+                if isinstance(picks, list):
+                    return picks
+                elif isinstance(picks, str):
+                    import json
+                    try:
+                        parsed = json.loads(picks)
+                        return parsed if isinstance(parsed, list) else []
+                    except:
+                        return []
+                return []
             return []
         except Exception as e:
             error_str = str(e).lower()

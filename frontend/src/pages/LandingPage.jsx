@@ -97,6 +97,16 @@ export default function LandingPage({ session, onLogin, onShare }) {
     }
   };
 
+  const shuffleProfiles = () => {
+    const shuffled = [...publicProfiles];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setPublicProfiles(shuffled);
+    setCurrentIndex(0);
+  };
+
   const currentProfile = publicProfiles[currentIndex];
 
   const goNext = () => {
@@ -211,8 +221,13 @@ export default function LandingPage({ session, onLogin, onShare }) {
         <div className="loading-state">프로필 불러오는 중...</div>
       ) : publicProfiles.length > 0 ? (
         <div className="profile-carousel">
-          <div className="carousel-counter">
-            {currentIndex + 1} / {publicProfiles.length}
+          <div className="carousel-header">
+            <div className="carousel-counter">
+              {currentIndex + 1} / {publicProfiles.length}
+            </div>
+            <button className="shuffle-btn" onClick={shuffleProfiles}>
+              🎲 섞기
+            </button>
           </div>
           
           <div 
