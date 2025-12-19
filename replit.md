@@ -6,7 +6,15 @@ Korean farewell party website with:
 - **Backend**: FastAPI (Python) on port 8000
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
-## Recent Changes (December 12, 2025)
+## Recent Changes (December 19, 2025)
+- **찜하기 (Pick/Favorite) feature on LandingPage**:
+  - Logged-in users can pick/unpick profiles on the main carousel
+  - Picks stored in member_profiles.has_picked array (Supabase)
+  - API endpoints: GET /picks, POST /picks/{target_kakao_id}, DELETE /picks/{target_kakao_id}
+  - Cannot pick own profile
+  - Green button when picked, white outline when not picked
+
+## Previous Changes (December 12, 2025)
 - **Dynamic OG meta tags for social sharing (Crawler Bot Detection)**:
   - FastAPI middleware detects Kakao/Facebook/Twitter/etc crawlers by User-Agent
   - Returns page-specific OG meta tags instead of SPA shell
