@@ -27,6 +27,8 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const [loading, setLoading] = useState(true);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [myPicks, setMyPicks] = useState(new Set());
+  const [pickLoading, setPickLoading] = useState(false);
   
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -44,14 +46,25 @@ export default function LandingPage({ session, onLogin, onShare }) {
           ? `${API_BASE}/profiles/members?limit=500`
           : `${API_BASE}/profiles/public?limit=500`;
         
-        const [countRes, profilesRes] = await Promise.all([
+        const requests = [
           fetch(`${API_BASE}/profiles/count`),
           fetch(profilesEndpoint, { headers }),
-        ]);
-        const countData = await countRes.json();
-        const profilesData = await profilesRes.json();
+        ];
+        
+        if (isLoggedIn) {
+          requests.push(fetch(`${API_BASE}/picks`, { headers }));
+        }
+        
+        const responses = await Promise.all(requests);
+        const countData = await responses[0].json();
+        const profilesData = await responses[1].json();
         setProfileCount(countData.count || 0);
         setPublicProfiles(profilesData.profiles || []);
+        
+        if (isLoggedIn && responses[2]) {
+          const picksData = await responses[2].json();
+          setMyPicks(new Set(picksData.picks || []));
+        }
       } catch (err) {
         console.error("Failed to fetch landing data:", err);
       } finally {
@@ -60,6 +73,29 @@ export default function LandingPage({ session, onLogin, onShare }) {
     };
     fetchData();
   }, [isLoggedIn, session?.session_token]);
+
+  const togglePick = async (targetKakaoId) => {
+    if (!isLoggedIn || pickLoading) return;
+    setPickLoading(true);
+    
+    const isPicked = myPicks.has(targetKakaoId);
+    const method = isPicked ? "DELETE" : "POST";
+    
+    try {
+      const res = await fetch(`${API_BASE}/picks/${targetKakaoId}`, {
+        method,
+        headers: { Authorization: `Bearer ${session.session_token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMyPicks(new Set(data.has_picked || []));
+      }
+    } catch (err) {
+      console.error("Failed to toggle pick:", err);
+    } finally {
+      setPickLoading(false);
+    }
+  };
 
   const currentProfile = publicProfiles[currentIndex];
 
@@ -224,6 +260,18 @@ export default function LandingPage({ session, onLogin, onShare }) {
               )}
               {currentProfile?.visibility === "members" && (
                 <span className="visibility-badge">멤버 전용</span>
+              )}
+              {isLoggedIn && currentProfile?.kakao_id && currentProfile.kakao_id !== session?.kakao_id && (
+                <button
+                  className={`pick-btn ${myPicks.has(currentProfile.kakao_id) ? 'picked' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePick(currentProfile.kakao_id);
+                  }}
+                  disabled={pickLoading}
+                >
+                  {myPicks.has(currentProfile.kakao_id) ? '💚 찜했어요' : '🤍 찜하기'}
+                </button>
               )}
             </div>
             
