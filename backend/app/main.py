@@ -408,6 +408,33 @@ async def list_member_visible_profiles(limit: int = 50, user: SessionUser = Depe
     return {"profiles": profiles}
 
 
+@api_router.get("/picks")
+async def get_my_picks(user: SessionUser = Depends(get_current_user)):
+    """Get list of kakao_ids that current user has picked."""
+    picks = supabase_service.get_picked_profiles(user.kakao_id)
+    return {"picks": picks}
+
+
+@api_router.post("/picks/{target_kakao_id}")
+async def add_pick(target_kakao_id: str, user: SessionUser = Depends(get_current_user)):
+    """Add a profile to user's picked list."""
+    if target_kakao_id == user.kakao_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="cannot_pick_self")
+    result = supabase_service.add_pick(user.kakao_id, target_kakao_id)
+    if result.get("skipped"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result.get("reason"))
+    return {"success": True, "has_picked": result.get("has_picked", [])}
+
+
+@api_router.delete("/picks/{target_kakao_id}")
+async def remove_pick(target_kakao_id: str, user: SessionUser = Depends(get_current_user)):
+    """Remove a profile from user's picked list."""
+    result = supabase_service.remove_pick(user.kakao_id, target_kakao_id)
+    if result.get("skipped"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=result.get("reason"))
+    return {"success": True, "has_picked": result.get("has_picked", [])}
+
+
 @api_router.get("/profiles/{kakao_id}")
 async def view_profile(
         kakao_id: str,
