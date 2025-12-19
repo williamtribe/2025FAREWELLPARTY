@@ -167,6 +167,61 @@ class SupabaseService:
             return None
         return result.data[0]
 
+    def get_picked_profiles(self, kakao_id: str) -> list[str]:
+        """Get list of kakao_ids that user has picked."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("member_profiles").select("has_picked").eq(
+                "kakao_id", kakao_id).limit(1).execute()
+            if result.data and result.data[0].get("has_picked"):
+                return result.data[0]["has_picked"]
+            return []
+        except Exception as e:
+            error_str = str(e).lower()
+            if "has_picked" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                logger.warning(f"has_picked column not found for {kakao_id}")
+                return []
+            raise
+
+    def add_pick(self, kakao_id: str, target_kakao_id: str) -> Dict[str, Any]:
+        """Add a profile to user's picked list."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            current_picks = self.get_picked_profiles(kakao_id)
+            if target_kakao_id not in current_picks:
+                current_picks.append(target_kakao_id)
+            result = self.client.table("member_profiles").update({
+                "has_picked": current_picks
+            }).eq("kakao_id", kakao_id).execute()
+            return {"data": result.data, "has_picked": current_picks}
+        except Exception as e:
+            error_str = str(e).lower()
+            if "has_picked" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                logger.warning(f"has_picked column not found, cannot add pick")
+                return {"skipped": True, "reason": "has_picked_column_not_exists"}
+            raise
+
+    def remove_pick(self, kakao_id: str, target_kakao_id: str) -> Dict[str, Any]:
+        """Remove a profile from user's picked list."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            current_picks = self.get_picked_profiles(kakao_id)
+            if target_kakao_id in current_picks:
+                current_picks.remove(target_kakao_id)
+            result = self.client.table("member_profiles").update({
+                "has_picked": current_picks
+            }).eq("kakao_id", kakao_id).execute()
+            return {"data": result.data, "has_picked": current_picks}
+        except Exception as e:
+            error_str = str(e).lower()
+            if "has_picked" in error_str and ("not exist" in error_str or "not find" in error_str or "could not find" in error_str or "pgrst204" in error_str):
+                logger.warning(f"has_picked column not found, cannot remove pick")
+                return {"skipped": True, "reason": "has_picked_column_not_exists"}
+            raise
+
     def update_profile_image(self, kakao_id: str, profile_image_url: str) -> Dict[str, Any]:
         """Update only the profile_image field for an existing user."""
         if not self.client:
