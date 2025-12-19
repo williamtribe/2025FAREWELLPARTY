@@ -816,6 +816,7 @@ input:disabled,
 .intro {
   color: #23402b;
   line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .chips {
@@ -1517,6 +1518,7 @@ button.secondary:disabled {
   color: #555;
   margin-bottom: 0.8rem;
   line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .profile-card-mini .chips {
