@@ -61,6 +61,7 @@ class ProfilePayload(BaseModel):
     interests: List[str] = Field(default_factory=list)
     strengths: List[str] = Field(default_factory=list)
     contact: Optional[str] = None
+    want_to_talk_to: Optional[str] = None
     profile_image: Optional[str] = None
     visibility: Literal["public", "private", "members"] = "public"
 

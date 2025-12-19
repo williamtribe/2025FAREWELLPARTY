@@ -24,6 +24,7 @@ const STEPS = [
   { id: "interests", title: "관심사" },
   { id: "strengths", title: "특기" },
   { id: "contact", title: "연락처" },
+  { id: "want_to_talk_to", title: "대화 상대" },
   { id: "result", title: "결과" },
 ];
 
@@ -141,6 +142,7 @@ export default function OnboardingPage({ session, onComplete }) {
     interests: [],
     strengths: [],
     contact: "",
+    want_to_talk_to: "",
     visibility: "public",
   });
 
@@ -543,6 +545,25 @@ export default function OnboardingPage({ session, onComplete }) {
               onChange={(e) => updateField("contact", e.target.value)}
               placeholder="카카오톡 ID 또는 전화번호"
               className="onboarding-input"
+            />
+            <div className="step-actions">
+              <button className="secondary" onClick={prevStep}>이전</button>
+              <button className="primary" onClick={nextStep}>다음</button>
+            </div>
+          </div>
+        );
+
+      case "want_to_talk_to":
+        return (
+          <div className="onboarding-step">
+            <h2>대화하고 싶은 사람</h2>
+            <p className="step-desc">파티에서 만나고 싶은 사람이 있나요? (선택사항)</p>
+            <textarea
+              value={profile.want_to_talk_to}
+              onChange={(e) => updateField("want_to_talk_to", e.target.value)}
+              placeholder="예: 같은 취미를 가진 사람, 특정 분야 전문가, 또는 특정 닉네임..."
+              className="onboarding-textarea"
+              rows={3}
             />
             <div className="step-actions">
               <button className="secondary" onClick={prevStep}>이전</button>

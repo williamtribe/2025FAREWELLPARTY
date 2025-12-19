@@ -789,6 +789,7 @@ def assemble_profile_record(kakao_id: str,
         "strengths": profile.get("strengths", []),
         "visibility": profile.get("visibility", "public"),
         "contact": profile.get("contact"),
+        "want_to_talk_to": profile.get("want_to_talk_to"),
         "updated_at": now,
     }
     # Include profile_image if provided (from payload or session)
