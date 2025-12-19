@@ -923,6 +923,15 @@ class ClusteringService:
         pca = PCA(n_components=2)
         coords_2d = pca.fit_transform(X)
         
+        if len(coords_2d) > 0:
+            for dim in range(2):
+                col = coords_2d[:, dim]
+                min_val, max_val = col.min(), col.max()
+                if max_val - min_val > 0:
+                    coords_2d[:, dim] = (col - min_val) / (max_val - min_val) * 400 - 200
+                else:
+                    coords_2d[:, dim] = 0
+        
         cluster_colors = [
             "#e74c3c", "#3498db", "#2ecc71", "#f39c12", "#9b59b6",
             "#1abc9c", "#e67e22", "#34495e", "#16a085", "#c0392b"
@@ -937,8 +946,8 @@ class ClusteringService:
                 "name": profile.get("name") or "익명",
                 "cluster": cluster_idx,
                 "color": cluster_colors[cluster_idx % len(cluster_colors)],
-                "x": float(coords_2d[i][0]) * 100,
-                "y": float(coords_2d[i][1]) * 100,
+                "x": float(coords_2d[i][0]),
+                "y": float(coords_2d[i][1]),
             })
         
         edges = []
