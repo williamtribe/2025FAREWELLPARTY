@@ -7,6 +7,12 @@ Korean farewell party website with:
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
 ## Recent Changes (December 19, 2025)
+- **임베딩 기반 검색 기능 on LandingPage**:
+  - Two search modes: 자기소개로 검색 (intro) / 관심사로 검색 (interests)
+  - Uses OpenAI embeddings + Pinecone vector similarity search
+  - API endpoint: GET /search-profiles?q={query}&search_type={intro|interests}
+  - Results show similarity score (%) for each profile
+  - Search results display name, tagline, intro preview, and interest chips
 - **찜하기 (Pick/Favorite) feature on LandingPage**:
   - Logged-in users can pick/unpick profiles on the main carousel
   - Picks stored in member_profiles.has_picked array (Supabase)

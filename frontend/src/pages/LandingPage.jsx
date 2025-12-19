@@ -29,6 +29,11 @@ export default function LandingPage({ session, onLogin, onShare }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [myPicks, setMyPicks] = useState(new Set());
   const [pickLoading, setPickLoading] = useState(false);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState("intro");
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -105,6 +110,36 @@ export default function LandingPage({ session, onLogin, onShare }) {
     }
     setPublicProfiles(shuffled);
     setCurrentIndex(0);
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
+      alert("검색어는 2글자 이상 입력해주세요.");
+      return;
+    }
+    
+    setSearchLoading(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/search-profiles?q=${encodeURIComponent(searchQuery)}&search_type=${searchType}&limit=20`
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setSearchResults(data.profiles || []);
+      } else {
+        alert(data.detail || "검색에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error("Search failed:", err);
+      alert("검색 중 오류가 발생했습니다.");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchResults(null);
+    setSearchQuery("");
   };
 
   const currentProfile = publicProfiles[currentIndex];
@@ -217,7 +252,93 @@ export default function LandingPage({ session, onLogin, onShare }) {
         </div>
       </div>
 
-      {loading ? (
+      <div className="search-section">
+        <div className="search-type-tabs">
+          <button
+            className={`search-type-btn ${searchType === "intro" ? "active" : ""}`}
+            onClick={() => setSearchType("intro")}
+          >
+            자기소개로 검색
+          </button>
+          <button
+            className={`search-type-btn ${searchType === "interests" ? "active" : ""}`}
+            onClick={() => setSearchType("interests")}
+          >
+            관심사로 검색
+          </button>
+        </div>
+        <div className="search-input-row">
+          <input
+            type="text"
+            className="search-input"
+            placeholder={searchType === "intro" ? "예: 게임 좋아하는 사람" : "예: 마피아42, 코딩"}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+          <button
+            className="search-btn"
+            onClick={handleSearch}
+            disabled={searchLoading}
+          >
+            {searchLoading ? "..." : "🔍"}
+          </button>
+        </div>
+        {searchResults !== null && (
+          <button className="clear-search-btn" onClick={clearSearch}>
+            ← 전체 목록으로
+          </button>
+        )}
+      </div>
+
+      {searchResults !== null ? (
+        <div className="search-results">
+          <h3 className="search-results-title">
+            "{searchQuery}" 검색 결과 ({searchResults.length}명)
+          </h3>
+          {searchResults.length > 0 ? (
+            <div className="search-results-list">
+              {searchResults.map((profile) => (
+                <div key={profile.kakao_id} className="search-result-card">
+                  <div className="search-result-header">
+                    {profile.profile_image && (
+                      <img
+                        src={profile.profile_image}
+                        alt=""
+                        className="search-result-avatar"
+                      />
+                    )}
+                    <div className="search-result-info">
+                      <span className="search-result-name">{profile.name}</span>
+                      {profile.tagline && (
+                        <span className="search-result-tagline">{profile.tagline}</span>
+                      )}
+                    </div>
+                    <span className="similarity-score">
+                      {Math.round(profile.similarity_score * 100)}%
+                    </span>
+                  </div>
+                  {profile.intro && (
+                    <p className="search-result-intro">{renderWithDevComment(profile.intro)}</p>
+                  )}
+                  {profile.interests?.length > 0 && (
+                    <div className="search-result-interests">
+                      {profile.interests.slice(0, 5).map((interest, idx) => (
+                        <span key={idx} className="interest-chip-small">{interest}</span>
+                      ))}
+                      {profile.interests.length > 5 && (
+                        <span className="interest-chip-small more">+{profile.interests.length - 5}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-results">검색 결과가 없습니다.</p>
+          )}
+        </div>
+      ) : loading ? (
         <div className="loading-state">프로필 불러오는 중...</div>
       ) : publicProfiles.length > 0 ? (
         <div className="profile-carousel">

@@ -803,6 +803,59 @@ async def get_different_profiles(user: SessionUser = Depends(get_current_user),
     return {"profiles": profiles, "criteria": criteria}
 
 
+@api_router.get("/search-profiles")
+async def search_profiles(
+    q: str,
+    search_type: Literal["intro", "interests"] = "intro",
+    limit: int = 10
+):
+    """Search profiles by text query using embedding similarity."""
+    if not q or len(q.strip()) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="검색어는 2글자 이상 입력해주세요."
+        )
+    
+    query_text = q.strip()
+    vector = embedding_service.embed_member(query_text)
+    
+    if not vector:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="임베딩 생성에 실패했습니다."
+        )
+    
+    namespace = search_type
+    matches = pinecone_service.query_by_vector(
+        vector=vector,
+        top_k=limit,
+        namespace=namespace
+    )
+    
+    if not matches:
+        return {
+            "profiles": [],
+            "query": query_text,
+            "search_type": search_type,
+            "message": "검색 결과가 없습니다."
+        }
+    
+    profiles = []
+    for match in matches:
+        profile = supabase_service.fetch_profile(match["kakao_id"])
+        if profile and profile.get("visibility") in ["public", "members"]:
+            profiles.append({
+                **profile,
+                "similarity_score": match["score"],
+            })
+    
+    return {
+        "profiles": profiles,
+        "query": query_text,
+        "search_type": search_type
+    }
+
+
 MAFIA42_ROLES = {
     "마피아팀":
     ["마피아", "스파이", "짐승인간", "마담", "도둑", "마녀", "과학자", "사기꾼", "청부업자", "악인"],
