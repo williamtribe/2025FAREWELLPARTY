@@ -844,6 +844,38 @@ class ClusteringService:
         self.pinecone = pinecone_svc
         self.supabase = supabase_svc
 
+    def _balanced_assignment(self, X: np.ndarray, centroids: np.ndarray, k: int) -> np.ndarray:
+        """
+        Assign points to clusters with balanced sizes.
+        Uses greedy assignment: for each point, assign to nearest cluster that isn't full.
+        """
+        n = len(X)
+        target_size = n // k
+        remainder = n % k
+        
+        max_sizes = [target_size + (1 if i < remainder else 0) for i in range(k)]
+        
+        distances = np.linalg.norm(X[:, np.newaxis] - centroids, axis=2)
+        
+        labels = np.full(n, -1, dtype=int)
+        cluster_counts = [0] * k
+        
+        sorted_indices = []
+        for i in range(n):
+            min_dist = np.min(distances[i])
+            sorted_indices.append((min_dist, i))
+        sorted_indices.sort()
+        
+        for _, point_idx in sorted_indices:
+            cluster_order = np.argsort(distances[point_idx])
+            for cluster_idx in cluster_order:
+                if cluster_counts[cluster_idx] < max_sizes[cluster_idx]:
+                    labels[point_idx] = cluster_idx
+                    cluster_counts[cluster_idx] += 1
+                    break
+        
+        return labels
+
     def cluster_profiles(self, k: int = 3, namespace: str = "intro") -> Dict[str, Any]:
         """
         Cluster member profiles using K-means on their embeddings.
@@ -883,7 +915,10 @@ class ClusteringService:
         X = np.array(embeddings)
         
         kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-        labels = kmeans.fit_predict(X)
+        kmeans.fit(X)
+        centroids = kmeans.cluster_centers_
+        
+        labels = self._balanced_assignment(X, centroids, k)
         
         pca = PCA(n_components=2)
         coords_2d = pca.fit_transform(X)
