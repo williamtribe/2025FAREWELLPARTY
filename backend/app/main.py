@@ -842,7 +842,7 @@ async def search_profiles(
     
     profiles = []
     for match in matches:
-        profile = supabase_service.fetch_profile(match["kakao_id"])
+        profile = supabase_service.fetch_profile(match["id"])
         if profile and profile.get("visibility") in ["public", "members"]:
             profiles.append({
                 **profile,
