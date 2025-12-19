@@ -651,7 +651,8 @@ function App() {
           if (navigator?.clipboard?.writeText) {
             navigator.clipboard.writeText(`${SHARE_URL}/info`).then(
               () => setShareEventStatus("카카오톡이 없어 링크를 복사했습니다."),
-              () => setShareEventStatus("공유 실패. 링크를 직접 복사해 주세요."),
+              () =>
+                setShareEventStatus("공유 실패. 링크를 직접 복사해 주세요."),
             );
           } else {
             setShareEventStatus("공유 실패. 링크를 직접 복사해 주세요.");
@@ -917,11 +918,11 @@ function App() {
                 disabled={!isLoggedIn}
               />
 
-              <label>대화하고 싶은 사람</label>
+              <label>대화해보고 싶은 사람</label>
               <textarea
                 value={profile.want_to_talk_to || ""}
                 onChange={(e) => updateField("want_to_talk_to", e.target.value)}
-                placeholder="파티에서 만나고 싶은 사람 (선택사항)"
+                placeholder="특별히 얘기해보고 싶은 사람이 있다면 구체적으로 적어주세요"
                 rows={2}
                 disabled={!isLoggedIn}
               />
