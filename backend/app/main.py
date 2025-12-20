@@ -719,6 +719,69 @@ async def admin_clusters(payload: ClusterRequest,
     return result
 
 
+@api_router.get("/admin/all-roles")
+async def admin_all_roles(user: SessionUser = Depends(get_current_user)):
+    """Get all member profiles with their Mafia42 roles (admin only)."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    
+    profiles = supabase_service.fetch_all_profiles_for_admin()
+    jobs = supabase_service.fetch_mafia42_jobs()
+    job_map = {j.get("code"): j for j in jobs}
+    job_name_map = {j.get("name"): j for j in jobs}
+    
+    results = []
+    for profile in profiles:
+        kakao_id = str(profile.get("kakao_id"))
+        name = profile.get("name") or "익명"
+        fixed_role = profile.get("fixed_role")
+        profile_image = profile.get("profile_image")
+        
+        role_info = {
+            "kakao_id": kakao_id,
+            "name": name,
+            "profile_image": profile_image,
+            "role": None,
+            "team": None,
+            "code": None,
+            "fixed": False,
+            "similarity": None,
+        }
+        
+        if fixed_role:
+            job_data = job_name_map.get(fixed_role)
+            if job_data:
+                role_info["role"] = job_data.get("name")
+                role_info["team"] = _convert_team_name(job_data.get("team", "citizen"))
+                role_info["code"] = str(job_data.get("code", ""))
+            else:
+                role_info["role"] = fixed_role
+                role_info["team"] = "시민팀"
+            role_info["fixed"] = True
+        else:
+            profile_text = f"{name}\n{profile.get('tagline', '')}\n{profile.get('intro', '')}\n{', '.join(profile.get('interests') or [])}\n{', '.join(profile.get('strengths') or [])}"
+            user_vector = embedding_service.embed_member(profile_text)
+            
+            if user_vector:
+                matches = pinecone_service.query_by_vector(vector=user_vector, top_k=1, namespace="mafia42_jobs")
+                if matches:
+                    best = matches[0]
+                    job_code = best.get("id", "")
+                    job_data = job_map.get(job_code)
+                    if job_data:
+                        role_info["role"] = job_data.get("name")
+                        role_info["team"] = _convert_team_name(job_data.get("team", "citizen"))
+                        role_info["code"] = str(job_data.get("code", ""))
+                        role_info["similarity"] = round(best.get("score", 0) * 100, 1)
+        
+        results.append(role_info)
+    
+    results.sort(key=lambda x: (x["team"] or "zzz", x["role"] or "zzz", x["name"]))
+    
+    return {"roles": results, "total": len(results)}
+
+
 @api_router.get("/kakao/friends")
 async def kakao_friends(access_token: str,
                         user: SessionUser = Depends(get_current_user)):

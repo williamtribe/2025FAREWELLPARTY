@@ -7,10 +7,16 @@ Korean farewell party website with:
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
 ## Recent Changes (December 19, 2025)
+- **Admin All Roles Viewer**:
+  - View all member Mafia42 role assignments at once
+  - Shows fixed roles (admin-assigned) and calculated roles (AI similarity)
+  - Grouped by team: 마피아팀, 시민팀, 교주팀, 미배정
+  - Displays profile image, name, role, similarity score
+  - API endpoint: GET /api/admin/all-roles (admin-only)
 - **Admin Clustering Feature**:
-  - K-means clustering on profile embeddings (uses scikit-learn)
+  - Soft-balanced K-means clustering (±20% tolerance for natural grouping)
   - Configurable cluster count (2-10) and namespace (intro/interests)
-  - PCA for 2D visualization coordinates
+  - PCA for 2D visualization with normalized coordinates
   - API endpoint: POST /api/admin/clusters with {k, namespace}
   - Admin-only access via session check
   - react-force-graph-2d for interactive graph visualization

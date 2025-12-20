@@ -100,6 +100,9 @@ function App() {
   const [clusterLoading, setClusterLoading] = useState(false);
   const [clusterStatus, setClusterStatus] = useState("");
   const [showClusterModal, setShowClusterModal] = useState(false);
+  const [allRolesData, setAllRolesData] = useState(null);
+  const [allRolesLoading, setAllRolesLoading] = useState(false);
+  const [showAllRolesModal, setShowAllRolesModal] = useState(false);
   const [interestCategories, setInterestCategories] = useState(
     DEFAULT_INTEREST_CATEGORIES,
   );
@@ -699,6 +702,25 @@ function App() {
     }
   };
 
+  const fetchAllRoles = async () => {
+    if (!session?.is_admin) return;
+    setAllRolesLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/all-roles`, {
+        headers: authHeaders,
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "직업 조회 실패");
+      setAllRolesData(data);
+      setShowAllRolesModal(true);
+    } catch (err) {
+      alert(`오류: ${err.message}`);
+    } finally {
+      setAllRolesLoading(false);
+    }
+  };
+
   const runClustering = async () => {
     if (!session?.is_admin) return;
     setClusterLoading(true);
@@ -1117,6 +1139,13 @@ function App() {
             <button className="admin-btn" onClick={handleShareEvent}>
               📢 행사정보 공유
             </button>
+            <button
+              className="admin-btn"
+              onClick={fetchAllRoles}
+              disabled={allRolesLoading}
+            >
+              {allRolesLoading ? "불러오는 중..." : "🎭 전체 직업 보기"}
+            </button>
             <div className="cluster-controls">
               <label>
                 그룹 수:
@@ -1353,6 +1382,97 @@ function App() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAllRolesModal && allRolesData && (
+        <div
+          className="order-modal-overlay"
+          onClick={() => setShowAllRolesModal(false)}
+        >
+          <div className="cluster-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h2>🎭 전체 직업 목록 ({allRolesData.total}명)</h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowAllRolesModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="all-roles-list">
+              {["마피아팀", "시민팀", "교주팀"].map((team) => {
+                const teamMembers = allRolesData.roles.filter(
+                  (r) => r.team === team
+                );
+                if (teamMembers.length === 0) return null;
+                return (
+                  <div key={team} className="team-section">
+                    <h3 className={`team-header ${team === "마피아팀" ? "mafia" : team === "교주팀" ? "cult" : "citizen"}`}>
+                      {team} ({teamMembers.length}명)
+                    </h3>
+                    <div className="role-cards">
+                      {teamMembers.map((r) => (
+                        <div key={r.kakao_id} className="role-card">
+                          {r.profile_image && (
+                            <img
+                              src={r.profile_image}
+                              alt=""
+                              className="role-card-img"
+                            />
+                          )}
+                          <div className="role-card-info">
+                            <div className="role-card-name">{r.name}</div>
+                            <div className="role-card-role">
+                              {r.role || "미배정"}
+                              {r.fixed && <span className="fixed-badge">고정</span>}
+                            </div>
+                            {r.similarity && (
+                              <div className="role-card-similarity">
+                                유사도: {r.similarity}%
+                              </div>
+                            )}
+                          </div>
+                          {r.code && (
+                            <img
+                              src={`/job_images/${r.code}.png`}
+                              alt={r.role}
+                              className="role-card-job-img"
+                              onError={(e) => (e.target.style.display = "none")}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {allRolesData.roles.filter((r) => !r.role).length > 0 && (
+                <div className="team-section">
+                  <h3 className="team-header unassigned">미배정 ({allRolesData.roles.filter((r) => !r.role).length}명)</h3>
+                  <div className="role-cards">
+                    {allRolesData.roles
+                      .filter((r) => !r.role)
+                      .map((r) => (
+                        <div key={r.kakao_id} className="role-card">
+                          {r.profile_image && (
+                            <img
+                              src={r.profile_image}
+                              alt=""
+                              className="role-card-img"
+                            />
+                          )}
+                          <div className="role-card-info">
+                            <div className="role-card-name">{r.name}</div>
+                            <div className="role-card-role">미배정</div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
