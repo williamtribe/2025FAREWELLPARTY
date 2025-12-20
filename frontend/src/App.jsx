@@ -748,7 +748,7 @@ function App() {
   };
 
   const fetchMyRole = async () => {
-    if (!session?.session_token || !profile.intro) return;
+    if (!session?.session_token) return;
     setRoleLoading(true);
     try {
       const res = await fetch(`${API_BASE}/role-assignment`, {
@@ -1029,15 +1029,13 @@ function App() {
                 </div>
                 <p className="muted">연락처: {displayContact}</p>
                 <p className="muted">공개 범위: {profile.visibility}</p>
-                {profile.intro && (
-                  <button
-                    className="role-check-btn"
-                    onClick={fetchMyRole}
-                    disabled={roleLoading}
-                  >
-                    {roleLoading ? "분석 중..." : "🎭 나의 마피아42 직업 확인"}
-                  </button>
-                )}
+                <button
+                  className="role-check-btn"
+                  onClick={fetchMyRole}
+                  disabled={roleLoading}
+                >
+                  {roleLoading ? "분석 중..." : "🎭 나의 마피아42 직업 확인"}
+                </button>
               </div>
             </div>
           )}
