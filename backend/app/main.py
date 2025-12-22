@@ -728,8 +728,9 @@ async def admin_all_roles(user: SessionUser = Depends(get_current_user)):
     
     profiles = supabase_service.fetch_all_profiles_for_admin()
     jobs = supabase_service.fetch_mafia42_jobs()
-    job_map = {j.get("code"): j for j in jobs}
+    job_map = {str(j.get("code")): j for j in jobs}
     job_name_map = {j.get("name"): j for j in jobs}
+    logger.info(f"Loaded {len(jobs)} jobs, job_map keys: {list(job_map.keys())[:5]}")
     
     results = []
     for profile in profiles:
@@ -765,15 +766,19 @@ async def admin_all_roles(user: SessionUser = Depends(get_current_user)):
             
             if user_vector:
                 matches = pinecone_service.query_by_vector(vector=user_vector, top_k=1, namespace="mafia42_jobs")
+                logger.info(f"Role assignment for {name}: vector={bool(user_vector)}, matches={len(matches) if matches else 0}")
                 if matches:
                     best = matches[0]
-                    job_code = best.get("id", "")
+                    job_code = str(best.get("id", ""))
+                    logger.info(f"Best match for {name}: job_code={job_code}, score={best.get('score')}")
                     job_data = job_map.get(job_code)
                     if job_data:
                         role_info["role"] = job_data.get("name")
                         role_info["team"] = _convert_team_name(job_data.get("team", "citizen"))
                         role_info["code"] = str(job_data.get("code", ""))
                         role_info["similarity"] = round(best.get("score", 0) * 100, 1)
+                    else:
+                        logger.warning(f"Job not found in job_map for code: {job_code}, available keys: {list(job_map.keys())[:5]}")
         
         results.append(role_info)
     
