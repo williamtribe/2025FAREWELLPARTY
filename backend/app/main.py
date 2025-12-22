@@ -793,6 +793,12 @@ class PersonalMessagePayload(BaseModel):
     content: str
 
 
+class UserLetterPayload(BaseModel):
+    recipient_kakao_id: str
+    title: str
+    content: str
+
+
 @api_router.get("/personal-page/{kakao_id}")
 async def get_personal_page(kakao_id: str, user: SessionUser = Depends(get_current_user)):
     """Get personal page - only accessible by the matching kakao_id user."""
@@ -802,14 +808,64 @@ async def get_personal_page(kakao_id: str, user: SessionUser = Depends(get_curre
     
     message = supabase_service.fetch_personal_message(kakao_id)
     profile = supabase_service.fetch_profile(kakao_id)
+    sent_letters = supabase_service.fetch_sent_letters(kakao_id)
+    received_letters = supabase_service.fetch_received_letters(kakao_id)
+    
+    all_profiles = supabase_service.fetch_all_profiles_for_admin()
+    profile_map = {str(p.get("kakao_id")): p for p in all_profiles}
+    
+    sent_with_names = []
+    for letter in sent_letters:
+        recipient = profile_map.get(str(letter.get("recipient_kakao_id")), {})
+        sent_with_names.append({
+            **letter,
+            "recipient_name": recipient.get("name", "알 수 없음"),
+            "recipient_image": recipient.get("profile_image")
+        })
+    
+    received_with_names = []
+    for letter in received_letters:
+        sender = profile_map.get(str(letter.get("sender_kakao_id")), {})
+        received_with_names.append({
+            **letter,
+            "sender_name": sender.get("name", "알 수 없음"),
+            "sender_image": sender.get("profile_image")
+        })
     
     return {
         "has_message": message is not None,
         "title": message.get("title") if message else None,
         "content": message.get("content") if message else None,
         "profile_name": profile.get("name") if profile else None,
-        "profile_image": profile.get("profile_image") if profile else None
+        "profile_image": profile.get("profile_image") if profile else None,
+        "sent_letters": sent_with_names,
+        "received_letters": received_with_names
     }
+
+
+@api_router.post("/letters")
+async def send_letter(payload: UserLetterPayload, user: SessionUser = Depends(get_current_user)):
+    """Send a letter to another user."""
+    if not payload.title.strip() or not payload.content.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="title_and_content_required")
+    
+    if user.kakao_id == payload.recipient_kakao_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="cannot_send_to_self")
+    
+    result = supabase_service.send_user_letter(
+        sender_kakao_id=user.kakao_id,
+        recipient_kakao_id=payload.recipient_kakao_id,
+        title=payload.title,
+        content=payload.content
+    )
+    
+    if result.get("error"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=result.get("error"))
+    
+    return {"message": "sent", "data": result.get("data")}
 
 
 @api_router.get("/admin/personal-messages")

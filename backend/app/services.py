@@ -489,6 +489,44 @@ class SupabaseService:
             logger.error(f"Error fetching all personal messages: {e}")
             return []
 
+    def send_user_letter(self, sender_kakao_id: str, recipient_kakao_id: str, title: str, content: str) -> Dict[str, Any]:
+        """Send a letter from one user to another."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            result = self.client.table("user_letters").insert({
+                "sender_kakao_id": sender_kakao_id,
+                "recipient_kakao_id": recipient_kakao_id,
+                "title": title,
+                "content": content
+            }).execute()
+            return {"data": result.data}
+        except Exception as e:
+            logger.error(f"Error sending letter from {sender_kakao_id} to {recipient_kakao_id}: {e}")
+            return {"error": str(e)}
+
+    def fetch_sent_letters(self, sender_kakao_id: str) -> list[Dict[str, Any]]:
+        """Fetch all letters sent by a user."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("user_letters").select("*").eq("sender_kakao_id", sender_kakao_id).order("created_at", desc=True).execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Error fetching sent letters for {sender_kakao_id}: {e}")
+            return []
+
+    def fetch_received_letters(self, recipient_kakao_id: str) -> list[Dict[str, Any]]:
+        """Fetch all letters received by a user."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("user_letters").select("*").eq("recipient_kakao_id", recipient_kakao_id).order("created_at", desc=True).execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Error fetching received letters for {recipient_kakao_id}: {e}")
+            return []
+
 
 class EmbeddingService:
 
