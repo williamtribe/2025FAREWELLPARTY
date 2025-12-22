@@ -6,7 +6,20 @@ Korean farewell party website with:
 - **Backend**: FastAPI (Python) on port 8000
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
-## Recent Changes (December 19, 2025)
+## Recent Changes (December 22, 2025)
+- **Personal Page Feature (/personal/{kakao_id})**:
+  - Each user has their own personal page accessible only by themselves
+  - Developers/admins can write personalized farewell messages with title + content
+  - Beautiful styled message display with profile image and name
+  - Access control: only the matching kakao_id user can view their page
+  - Admin panel: "💌 개인 메시지 관리" button to manage all user messages
+  - API endpoints:
+    - GET /api/personal-page/{kakao_id} - View personal page (owner only)
+    - GET /api/admin/personal-messages - List all users and messages (admin only)
+    - POST /api/admin/personal-messages - Create/update message (admin only)
+  - Database: personal_messages table (kakao_id, title, content)
+
+## Previous Changes (December 19, 2025)
 - **Admin All Roles Viewer**:
   - View all member Mafia42 role assignments at once
   - Shows fixed roles (admin-assigned) and calculated roles (AI similarity)
