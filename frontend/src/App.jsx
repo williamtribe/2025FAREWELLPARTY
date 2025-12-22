@@ -15,6 +15,8 @@ import OthersProfilePage from "./pages/OthersProfilePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import LandingPage from "./pages/LandingPage";
 import MafBTIPage from "./pages/MafBTIPage";
+import PersonalPage from "./pages/PersonalPage";
+import "./pages/PersonalPage.css";
 
 const API_BASE = "/api";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
@@ -103,6 +105,11 @@ function App() {
   const [allRolesData, setAllRolesData] = useState(null);
   const [allRolesLoading, setAllRolesLoading] = useState(false);
   const [showAllRolesModal, setShowAllRolesModal] = useState(false);
+  const [personalMessages, setPersonalMessages] = useState([]);
+  const [personalMsgLoading, setPersonalMsgLoading] = useState(false);
+  const [personalMsgStatus, setPersonalMsgStatus] = useState("");
+  const [showPersonalMsgModal, setShowPersonalMsgModal] = useState(false);
+  const [editingPersonalMsg, setEditingPersonalMsg] = useState(null);
   const [interestCategories, setInterestCategories] = useState(
     DEFAULT_INTEREST_CATEGORIES,
   );
@@ -721,6 +728,58 @@ function App() {
     }
   };
 
+  const fetchPersonalMessages = async () => {
+    if (!session?.is_admin) return;
+    setPersonalMsgLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/personal-messages`, {
+        headers: authHeaders,
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "메시지 조회 실패");
+      setPersonalMessages(data.users || []);
+      setShowPersonalMsgModal(true);
+    } catch (err) {
+      alert(`오류: ${err.message}`);
+    } finally {
+      setPersonalMsgLoading(false);
+    }
+  };
+
+  const savePersonalMessage = async (kakaoId, title, content) => {
+    if (!session?.is_admin) return;
+    setPersonalMsgLoading(true);
+    setPersonalMsgStatus("저장 중...");
+    try {
+      const res = await fetch(`${API_BASE}/admin/personal-messages`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          kakao_id: kakaoId,
+          title: title,
+          content: content,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "저장 실패");
+      setPersonalMsgStatus("저장 완료!");
+      setEditingPersonalMsg(null);
+      setPersonalMessages((prev) =>
+        prev.map((p) =>
+          p.kakao_id === kakaoId
+            ? { ...p, has_message: true, title, content }
+            : p
+        )
+      );
+      setTimeout(() => setPersonalMsgStatus(""), 2000);
+    } catch (err) {
+      setPersonalMsgStatus(`오류: ${err.message}`);
+    } finally {
+      setPersonalMsgLoading(false);
+    }
+  };
+
   const runClustering = async () => {
     if (!session?.is_admin) return;
     setClusterLoading(true);
@@ -1144,6 +1203,13 @@ function App() {
             >
               {allRolesLoading ? "불러오는 중..." : "🎭 전체 직업 보기"}
             </button>
+            <button
+              className="admin-btn"
+              onClick={fetchPersonalMessages}
+              disabled={personalMsgLoading}
+            >
+              {personalMsgLoading ? "불러오는 중..." : "💌 개인 메시지 관리"}
+            </button>
             <div className="cluster-controls">
               <label>
                 그룹 수:
@@ -1475,6 +1541,117 @@ function App() {
           </div>
         </div>
       )}
+
+      {showPersonalMsgModal && (
+        <div
+          className="order-modal-overlay"
+          onClick={() => {
+            setShowPersonalMsgModal(false);
+            setEditingPersonalMsg(null);
+          }}
+        >
+          <div className="cluster-modal personal-msg-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h2>💌 개인 메시지 관리</h2>
+              <button
+                className="close-btn"
+                onClick={() => {
+                  setShowPersonalMsgModal(false);
+                  setEditingPersonalMsg(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <p className="order-hint">
+              각 사용자에게 보낼 개인 메시지를 작성하세요. 작성된 메시지는 /personal/{'{'}kakao_id{'}'} 에서 본인만 볼 수 있어요.
+            </p>
+            {personalMsgStatus && <p className="admin-status">{personalMsgStatus}</p>}
+            
+            {editingPersonalMsg ? (
+              <div className="personal-msg-editor">
+                <div className="editor-header">
+                  <span>To. {editingPersonalMsg.name}</span>
+                  <button
+                    className="cancel-btn"
+                    onClick={() => setEditingPersonalMsg(null)}
+                  >
+                    취소
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="제목"
+                  value={editingPersonalMsg.title || ""}
+                  onChange={(e) =>
+                    setEditingPersonalMsg((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  className="personal-msg-title-input"
+                />
+                <textarea
+                  placeholder="본문 내용을 작성하세요..."
+                  value={editingPersonalMsg.content || ""}
+                  onChange={(e) =>
+                    setEditingPersonalMsg((prev) => ({
+                      ...prev,
+                      content: e.target.value,
+                    }))
+                  }
+                  className="personal-msg-content-input"
+                  rows={8}
+                />
+                <button
+                  className="save-btn"
+                  onClick={() =>
+                    savePersonalMessage(
+                      editingPersonalMsg.kakao_id,
+                      editingPersonalMsg.title,
+                      editingPersonalMsg.content
+                    )
+                  }
+                  disabled={personalMsgLoading}
+                >
+                  {personalMsgLoading ? "저장 중..." : "💾 저장"}
+                </button>
+              </div>
+            ) : (
+              <div className="personal-msg-list">
+                {personalMessages.map((user) => (
+                  <div
+                    key={user.kakao_id}
+                    className={`personal-msg-item ${user.has_message ? "has-message" : ""}`}
+                    onClick={() => setEditingPersonalMsg(user)}
+                  >
+                    {user.profile_image && (
+                      <img
+                        src={user.profile_image}
+                        alt=""
+                        className="personal-msg-img"
+                      />
+                    )}
+                    <div className="personal-msg-info">
+                      <div className="personal-msg-name">{user.name || "익명"}</div>
+                      {user.has_message ? (
+                        <div className="personal-msg-preview">
+                          {user.title}
+                        </div>
+                      ) : (
+                        <div className="personal-msg-empty">메시지 없음</div>
+                      )}
+                    </div>
+                    <div className="personal-msg-status">
+                      {user.has_message ? "✅" : "📝"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -1543,6 +1720,10 @@ function App() {
             onComplete={handleOnboardingComplete}
           />
         }
+      />
+      <Route
+        path="/personal/:kakaoId"
+        element={<PersonalPage session={session} />}
       />
       <Route
         path="/"

@@ -787,6 +787,81 @@ async def admin_all_roles(user: SessionUser = Depends(get_current_user)):
     return {"roles": results, "total": len(results)}
 
 
+class PersonalMessagePayload(BaseModel):
+    kakao_id: str
+    title: str
+    content: str
+
+
+@api_router.get("/personal-page/{kakao_id}")
+async def get_personal_page(kakao_id: str, user: SessionUser = Depends(get_current_user)):
+    """Get personal page - only accessible by the matching kakao_id user."""
+    if user.kakao_id != kakao_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="access_denied")
+    
+    message = supabase_service.fetch_personal_message(kakao_id)
+    profile = supabase_service.fetch_profile(kakao_id)
+    
+    return {
+        "has_message": message is not None,
+        "title": message.get("title") if message else None,
+        "content": message.get("content") if message else None,
+        "profile_name": profile.get("name") if profile else None,
+        "profile_image": profile.get("profile_image") if profile else None
+    }
+
+
+@api_router.get("/admin/personal-messages")
+async def get_all_personal_messages(user: SessionUser = Depends(get_current_user)):
+    """Get all personal messages - admin only."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    
+    messages = supabase_service.fetch_all_personal_messages()
+    profiles = supabase_service.fetch_all_profiles_for_admin()
+    
+    profile_map = {str(p.get("kakao_id")): p for p in profiles}
+    message_map = {str(m.get("kakao_id")): m for m in messages}
+    
+    result = []
+    for profile in profiles:
+        kakao_id = str(profile.get("kakao_id"))
+        msg = message_map.get(kakao_id)
+        result.append({
+            "kakao_id": kakao_id,
+            "name": profile.get("name"),
+            "profile_image": profile.get("profile_image"),
+            "has_message": msg is not None,
+            "title": msg.get("title") if msg else None,
+            "content": msg.get("content") if msg else None
+        })
+    
+    return {"users": result}
+
+
+@api_router.post("/admin/personal-messages")
+async def upsert_personal_message(payload: PersonalMessagePayload,
+                                   user: SessionUser = Depends(get_current_user)):
+    """Create or update personal message - admin only."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    
+    result = supabase_service.upsert_personal_message(
+        kakao_id=payload.kakao_id,
+        title=payload.title,
+        content=payload.content
+    )
+    
+    if result.get("error"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=result.get("error"))
+    
+    return {"message": "saved", "data": result.get("data")}
+
+
 @api_router.get("/kakao/friends")
 async def kakao_friends(access_token: str,
                         user: SessionUser = Depends(get_current_user)):
