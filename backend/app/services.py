@@ -448,6 +448,47 @@ class SupabaseService:
             logger.error(f"Error fetching job by code {code}: {e}")
             return None
 
+    def fetch_personal_message(self, kakao_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch personal message for a specific kakao_id."""
+        if not self.client:
+            return None
+        try:
+            result = self.client.table("personal_messages").select("*").eq(
+                "kakao_id", kakao_id).limit(1).execute()
+            if not result.data:
+                return None
+            return result.data[0]
+        except Exception as e:
+            logger.error(f"Error fetching personal message for {kakao_id}: {e}")
+            return None
+
+    def upsert_personal_message(self, kakao_id: str, title: str, content: str) -> Dict[str, Any]:
+        """Create or update personal message for a user."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            result = self.client.table("personal_messages").upsert({
+                "kakao_id": kakao_id,
+                "title": title,
+                "content": content,
+                "updated_at": "now()"
+            }, on_conflict="kakao_id").execute()
+            return {"data": result.data}
+        except Exception as e:
+            logger.error(f"Error upserting personal message for {kakao_id}: {e}")
+            return {"error": str(e)}
+
+    def fetch_all_personal_messages(self) -> list[Dict[str, Any]]:
+        """Fetch all personal messages for admin view."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("personal_messages").select("*").order("updated_at", desc=True).execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Error fetching all personal messages: {e}")
+            return []
+
 
 class EmbeddingService:
 
