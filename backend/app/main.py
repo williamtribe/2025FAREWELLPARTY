@@ -816,9 +816,10 @@ async def get_personal_page(kakao_id: str, user: SessionUser = Depends(get_curre
     
     sent_with_names = []
     for letter in sent_letters:
-        recipient = profile_map.get(str(letter.get("recipient_kakao_id")), {})
+        recipient = profile_map.get(str(letter.get("kakao_id")), {})
         sent_with_names.append({
             **letter,
+            "recipient_kakao_id": letter.get("kakao_id"),
             "recipient_name": recipient.get("name", "알 수 없음"),
             "recipient_image": recipient.get("profile_image")
         })

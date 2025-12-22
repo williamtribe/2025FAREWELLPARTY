@@ -490,13 +490,13 @@ class SupabaseService:
             return []
 
     def send_user_letter(self, sender_kakao_id: str, recipient_kakao_id: str, title: str, content: str) -> Dict[str, Any]:
-        """Send a letter from one user to another."""
+        """Send a letter from one user to another using personal_messages table."""
         if not self.client:
             return {"skipped": True, "reason": "supabase_not_configured"}
         try:
-            result = self.client.table("user_letters").insert({
+            result = self.client.table("personal_messages").insert({
+                "kakao_id": recipient_kakao_id,
                 "sender_kakao_id": sender_kakao_id,
-                "recipient_kakao_id": recipient_kakao_id,
                 "title": title,
                 "content": content
             }).execute()
@@ -510,18 +510,18 @@ class SupabaseService:
         if not self.client:
             return []
         try:
-            result = self.client.table("user_letters").select("*").eq("sender_kakao_id", sender_kakao_id).order("created_at", desc=True).execute()
+            result = self.client.table("personal_messages").select("*").eq("sender_kakao_id", sender_kakao_id).order("created_at", desc=True).execute()
             return result.data or []
         except Exception as e:
             logger.error(f"Error fetching sent letters for {sender_kakao_id}: {e}")
             return []
 
     def fetch_received_letters(self, recipient_kakao_id: str) -> list[Dict[str, Any]]:
-        """Fetch all letters received by a user."""
+        """Fetch all letters received by a user (excluding admin messages without sender)."""
         if not self.client:
             return []
         try:
-            result = self.client.table("user_letters").select("*").eq("recipient_kakao_id", recipient_kakao_id).order("created_at", desc=True).execute()
+            result = self.client.table("personal_messages").select("*").eq("kakao_id", recipient_kakao_id).not_.is_("sender_kakao_id", "null").order("created_at", desc=True).execute()
             return result.data or []
         except Exception as e:
             logger.error(f"Error fetching received letters for {recipient_kakao_id}: {e}")
