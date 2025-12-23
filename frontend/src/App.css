@@ -1234,6 +1234,17 @@ input:disabled,
   box-shadow: 0 14px 36px rgba(101, 31, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+.floating-cta.mailbox {
+  bottom: 180px;
+  right: 18px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #ffd700, #ffb700) !important;
+  color: #1a1a2e;
+  border: none;
+  box-shadow: 0 14px 36px rgba(255, 183, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
 .floating-cta.mafbti {
   left: 18px;
   right: auto;

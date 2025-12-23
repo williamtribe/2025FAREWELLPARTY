@@ -865,6 +865,9 @@ function App() {
           <Link className="floating-cta my-intro" to="/">
             {profile.intro ? "전체 멤버" : "전체 멤버"}
           </Link>
+          <Link className="floating-cta mailbox" to={`/personal/${session?.kakao_id}`}>
+            💌 내 편지함
+          </Link>
         </>
       ) : (
         <button className="floating-cta login-btn" onClick={handleKakaoLogin}>
