@@ -10,21 +10,16 @@ export default function PersonalPage({ session }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
-  const [expandedCards, setExpandedCards] = useState(new Set());
+  const [expandedCards, setExpandedCards] = useState({});
 
   const isLoggedIn = Boolean(session?.session_token);
   const isOwner = session?.kakao_id === kakaoId;
 
   const toggleCard = (cardId) => {
-    setExpandedCards((prev) => {
-      const next = new Set(prev);
-      if (next.has(cardId)) {
-        next.delete(cardId);
-      } else {
-        next.add(cardId);
-      }
-      return next;
-    });
+    setExpandedCards((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
   };
 
   useEffect(() => {
@@ -142,7 +137,7 @@ export default function PersonalPage({ session }) {
           <div className="section-title">📬 받은 편지 ({data.received_letters.length})</div>
           {data.received_letters.map((letter, idx) => {
             const cardId = `received-${idx}`;
-            const isExpanded = expandedCards.has(cardId);
+            const isExpanded = expandedCards[cardId];
             return (
               <div
                 key={idx}
@@ -178,7 +173,7 @@ export default function PersonalPage({ session }) {
           <div className="section-title">📤 보낸 편지 ({data.sent_letters.length})</div>
           {data.sent_letters.map((letter, idx) => {
             const cardId = `sent-${idx}`;
-            const isExpanded = expandedCards.has(cardId);
+            const isExpanded = expandedCards[cardId];
             return (
               <div
                 key={idx}
