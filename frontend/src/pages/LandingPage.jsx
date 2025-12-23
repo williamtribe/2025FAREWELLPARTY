@@ -239,7 +239,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
 
       <div className="landing-header">
         <p className="eyebrow">2025 송년회</p>
-        <h1>누가 오나요?</h1>
+        <h1>참석자</h1>
         <div className="member-count">
           {loading ? (
             <span className="count-loading">...</span>
