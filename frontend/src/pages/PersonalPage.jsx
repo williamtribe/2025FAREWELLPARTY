@@ -92,45 +92,12 @@ export default function PersonalPage({ session }) {
 
   const hasSentLetters = data?.sent_letters?.length > 0;
   const hasReceivedLetters = data?.received_letters?.length > 0;
-  const hasDevMessage = data?.has_message;
 
   return (
     <div className="personal-page">
       <div className="personal-page-header">
         <h1>💌 {data?.profile_name || "나"}의 편지함</h1>
       </div>
-
-      {hasDevMessage && (
-        <div className="message-container dev-message">
-          <div className="section-title">개발자로부터의 메시지</div>
-          <div className="message-header">
-            {data.profile_image && (
-              <img
-                src={data.profile_image}
-                alt={data.profile_name}
-                className="profile-image"
-              />
-            )}
-            <div className="recipient-info">
-              <span className="to-text">To.</span>
-              <h2 className="recipient-name">{data.profile_name}</h2>
-            </div>
-          </div>
-
-          <div className="message-content">
-            <h1 className="message-title">{data.title}</h1>
-            <div className="message-body">
-              {data.content.split("\n").map((line, idx) => (
-                <p key={idx}>{line || <br />}</p>
-              ))}
-            </div>
-          </div>
-
-          <div className="message-footer">
-            <p className="from-text">From. 개발자</p>
-          </div>
-        </div>
-      )}
 
       {hasReceivedLetters && (
         <div className="letters-section">
@@ -204,7 +171,7 @@ export default function PersonalPage({ session }) {
         </div>
       )}
 
-      {!hasDevMessage && !hasSentLetters && !hasReceivedLetters && (
+      {!hasSentLetters && !hasReceivedLetters && (
         <div className="no-message-container">
           <div className="envelope-icon">💌</div>
           <h2>{data?.profile_name || "회원"}님의 편지함</h2>
