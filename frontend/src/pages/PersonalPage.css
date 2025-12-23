@@ -49,6 +49,27 @@
   border-left: 4px solid #ffd700;
 }
 
+.letter-card.expandable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.letter-card.expandable:hover {
+  background: #f0f1f2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.letter-card.expandable .letter-title {
+  margin-bottom: 0;
+}
+
+.letter-card.expandable.open .letter-title {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #ddd;
+}
+
 .letter-card:last-child {
   margin-bottom: 0;
 }
@@ -66,6 +87,12 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.expand-icon {
+  font-size: 0.8rem;
+  color: #888;
+  transition: transform 0.2s ease;
 }
 
 .letter-avatar {

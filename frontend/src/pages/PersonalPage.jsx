@@ -10,9 +10,22 @@ export default function PersonalPage({ session }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
+  const [expandedCards, setExpandedCards] = useState(new Set());
 
   const isLoggedIn = Boolean(session?.session_token);
   const isOwner = session?.kakao_id === kakaoId;
+
+  const toggleCard = (cardId) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(cardId)) {
+        next.delete(cardId);
+      } else {
+        next.add(cardId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -127,50 +140,72 @@ export default function PersonalPage({ session }) {
       {hasReceivedLetters && (
         <div className="letters-section">
           <div className="section-title">📬 받은 편지 ({data.received_letters.length})</div>
-          {data.received_letters.map((letter, idx) => (
-            <div key={idx} className="letter-card received">
-              <div className="letter-header">
-                {letter.sender_image && (
-                  <img src={letter.sender_image} alt={letter.sender_name} className="letter-avatar" />
-                )}
-                <div className="letter-meta">
-                  <span className="letter-from">From. {letter.sender_name}</span>
-                  <span className="letter-date">{new Date(letter.created_at).toLocaleDateString("ko-KR")}</span>
+          {data.received_letters.map((letter, idx) => {
+            const cardId = `received-${idx}`;
+            const isExpanded = expandedCards.has(cardId);
+            return (
+              <div
+                key={idx}
+                className={`letter-card received expandable ${isExpanded ? "open" : ""}`}
+                onClick={() => toggleCard(cardId)}
+              >
+                <div className="letter-header">
+                  {letter.sender_image && (
+                    <img src={letter.sender_image} alt={letter.sender_name} className="letter-avatar" />
+                  )}
+                  <div className="letter-meta">
+                    <span className="letter-from">From. {letter.sender_name}</span>
+                    <span className="letter-date">{new Date(letter.created_at).toLocaleDateString("ko-KR")}</span>
+                  </div>
+                  <span className="expand-icon">{isExpanded ? "▲" : "▼"}</span>
                 </div>
+                <h3 className="letter-title">{letter.title}</h3>
+                {isExpanded && (
+                  <div className="letter-content">
+                    {letter.content.split("\n").map((line, i) => (
+                      <p key={i}>{line || <br />}</p>
+                    ))}
+                  </div>
+                )}
               </div>
-              <h3 className="letter-title">{letter.title}</h3>
-              <div className="letter-content">
-                {letter.content.split("\n").map((line, i) => (
-                  <p key={i}>{line || <br />}</p>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {hasSentLetters && (
         <div className="letters-section">
           <div className="section-title">📤 보낸 편지 ({data.sent_letters.length})</div>
-          {data.sent_letters.map((letter, idx) => (
-            <div key={idx} className="letter-card sent">
-              <div className="letter-header">
-                {letter.recipient_image && (
-                  <img src={letter.recipient_image} alt={letter.recipient_name} className="letter-avatar" />
-                )}
-                <div className="letter-meta">
-                  <span className="letter-to">To. {letter.recipient_name}</span>
-                  <span className="letter-date">{new Date(letter.created_at).toLocaleDateString("ko-KR")}</span>
+          {data.sent_letters.map((letter, idx) => {
+            const cardId = `sent-${idx}`;
+            const isExpanded = expandedCards.has(cardId);
+            return (
+              <div
+                key={idx}
+                className={`letter-card sent expandable ${isExpanded ? "open" : ""}`}
+                onClick={() => toggleCard(cardId)}
+              >
+                <div className="letter-header">
+                  {letter.recipient_image && (
+                    <img src={letter.recipient_image} alt={letter.recipient_name} className="letter-avatar" />
+                  )}
+                  <div className="letter-meta">
+                    <span className="letter-to">To. {letter.recipient_name}</span>
+                    <span className="letter-date">{new Date(letter.created_at).toLocaleDateString("ko-KR")}</span>
+                  </div>
+                  <span className="expand-icon">{isExpanded ? "▲" : "▼"}</span>
                 </div>
+                <h3 className="letter-title">{letter.title}</h3>
+                {isExpanded && (
+                  <div className="letter-content">
+                    {letter.content.split("\n").map((line, i) => (
+                      <p key={i}>{line || <br />}</p>
+                    ))}
+                  </div>
+                )}
               </div>
-              <h3 className="letter-title">{letter.title}</h3>
-              <div className="letter-content">
-                {letter.content.split("\n").map((line, i) => (
-                  <p key={i}>{line || <br />}</p>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
