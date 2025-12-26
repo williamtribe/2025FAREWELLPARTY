@@ -527,6 +527,56 @@ class SupabaseService:
             logger.error(f"Error fetching received letters for {recipient_kakao_id}: {e}")
             return []
 
+    def create_claimable_letter(self, title: str, content: str, claim_code: str) -> Dict[str, Any]:
+        """Create a new claimable letter with a claim code (no recipient yet)."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            result = self.client.table("personal_messages").insert({
+                "kakao_id": None,
+                "title": title,
+                "content": content,
+                "claim_code": claim_code,
+                "claim_status": "unclaimed"
+            }).execute()
+            return {"data": result.data}
+        except Exception as e:
+            logger.error(f"Error creating claimable letter: {e}")
+            return {"error": str(e)}
+
+    def fetch_unclaimed_letters(self) -> list[Dict[str, Any]]:
+        """Fetch all unclaimed letters."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("personal_messages").select("id, title, created_at, claim_code").eq("claim_status", "unclaimed").order("created_at", desc=True).execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Error fetching unclaimed letters: {e}")
+            return []
+
+    def claim_letter_by_code(self, claim_code: str, kakao_id: str) -> Dict[str, Any]:
+        """Claim a letter using its claim code."""
+        if not self.client:
+            return {"error": "supabase_not_configured"}
+        try:
+            check = self.client.table("personal_messages").select("*").eq("claim_code", claim_code).limit(1).execute()
+            if not check.data:
+                return {"error": "invalid_code"}
+            letter = check.data[0]
+            if letter.get("claim_status") == "claimed":
+                return {"error": "already_claimed"}
+            result = self.client.table("personal_messages").update({
+                "kakao_id": kakao_id,
+                "claim_status": "claimed",
+                "claimed_at": "now()",
+                "claimed_by_kakao_id": kakao_id
+            }).eq("claim_code", claim_code).execute()
+            return {"data": result.data, "letter": letter}
+        except Exception as e:
+            logger.error(f"Error claiming letter with code {claim_code}: {e}")
+            return {"error": str(e)}
+
 
 class EmbeddingService:
 

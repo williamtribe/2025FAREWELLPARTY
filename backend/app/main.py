@@ -799,6 +799,15 @@ class UserLetterPayload(BaseModel):
     content: str
 
 
+class ClaimableLetterPayload(BaseModel):
+    title: str
+    content: str
+
+
+class ClaimCodePayload(BaseModel):
+    claim_code: str
+
+
 @api_router.get("/personal-page/{kakao_id}")
 async def get_personal_page(kakao_id: str, user: SessionUser = Depends(get_current_user)):
     """Get personal page - only accessible by the matching kakao_id user."""
@@ -917,6 +926,63 @@ async def upsert_personal_message(payload: PersonalMessagePayload,
                             detail=result.get("error"))
     
     return {"message": "saved", "data": result.get("data")}
+
+
+@api_router.post("/admin/claimable-letters")
+async def create_claimable_letter(payload: ClaimableLetterPayload,
+                                   user: SessionUser = Depends(get_current_user)):
+    """Create a claimable letter with auto-generated code - admin only."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    
+    import secrets
+    claim_code = secrets.token_urlsafe(6).upper()[:8]
+    
+    result = supabase_service.create_claimable_letter(
+        title=payload.title,
+        content=payload.content,
+        claim_code=claim_code
+    )
+    
+    if result.get("error"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=result.get("error"))
+    
+    return {"message": "created", "claim_code": claim_code, "data": result.get("data")}
+
+
+@api_router.get("/admin/claimable-letters")
+async def get_claimable_letters(user: SessionUser = Depends(get_current_user)):
+    """Get all unclaimed letters - admin only."""
+    if not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="admin_only")
+    
+    letters = supabase_service.fetch_unclaimed_letters()
+    return {"letters": letters}
+
+
+@api_router.post("/claim-letter")
+async def claim_letter(payload: ClaimCodePayload,
+                       user: SessionUser = Depends(get_current_user)):
+    """Claim a letter using its claim code."""
+    result = supabase_service.claim_letter_by_code(
+        claim_code=payload.claim_code.upper().strip(),
+        kakao_id=user.kakao_id
+    )
+    
+    if result.get("error") == "invalid_code":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="invalid_code")
+    if result.get("error") == "already_claimed":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="already_claimed")
+    if result.get("error"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=result.get("error"))
+    
+    return {"message": "claimed", "letter": result.get("letter")}
 
 
 @api_router.get("/kakao/friends")
