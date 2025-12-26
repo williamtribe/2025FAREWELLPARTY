@@ -11,6 +11,9 @@ export default function PersonalPage({ session }) {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
+  const [claimCode, setClaimCode] = useState("");
+  const [claimStatus, setClaimStatus] = useState("");
+  const [claimLoading, setClaimLoading] = useState(false);
 
   const isLoggedIn = Boolean(session?.session_token);
   const isOwner = session?.kakao_id === kakaoId;
@@ -20,6 +23,44 @@ export default function PersonalPage({ session }) {
       ...prev,
       [cardId]: !prev[cardId],
     }));
+  };
+
+  const claimLetter = async () => {
+    if (!claimCode.trim()) {
+      setClaimStatus("코드를 입력해주세요");
+      return;
+    }
+    setClaimLoading(true);
+    setClaimStatus("");
+    try {
+      const res = await fetch(`${API_BASE}/claim-letter`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.session_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ claim_code: claimCode }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        if (result.detail === "invalid_code") {
+          setClaimStatus("유효하지 않은 코드입니다");
+        } else if (result.detail === "already_claimed") {
+          setClaimStatus("이미 사용된 코드입니다");
+        } else {
+          setClaimStatus("오류가 발생했습니다");
+        }
+        return;
+      }
+      setClaimStatus("편지를 받았어요! 🎉");
+      setClaimCode("");
+      // Refresh the page data
+      window.location.reload();
+    } catch (err) {
+      setClaimStatus("오류가 발생했습니다");
+    } finally {
+      setClaimLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -97,6 +138,28 @@ export default function PersonalPage({ session }) {
     <div className="personal-page">
       <div className="personal-page-header">
         <h1>💌 {data?.profile_name || "나"}의 편지함</h1>
+      </div>
+
+      <div className="claim-section">
+        <div className="section-title">🔑 편지 코드 입력</div>
+        <div className="claim-input-row">
+          <input
+            type="text"
+            className="claim-input"
+            placeholder="코드를 입력하세요"
+            value={claimCode}
+            onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && claimLetter()}
+          />
+          <button
+            className="claim-btn"
+            onClick={claimLetter}
+            disabled={claimLoading}
+          >
+            {claimLoading ? "..." : "받기"}
+          </button>
+        </div>
+        {claimStatus && <p className="claim-status">{claimStatus}</p>}
       </div>
 
       {hasReceivedLetters && (

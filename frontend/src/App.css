@@ -3084,3 +3084,52 @@ button.secondary:disabled {
   border-radius: 6px;
   cursor: pointer;
 }
+
+.claim-code-result {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.claim-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.claim-code-label {
+  font-size: 0.9rem;
+  color: #1a1a2e;
+}
+
+.claim-code-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Space Grotesk', monospace;
+  letter-spacing: 0.1em;
+  color: #1a1a2e;
+}
+
+.claim-code-box .copy-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.claim-code-box .copy-btn:hover {
+  background: #fff;
+}
+
+.claim-code-hint {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}

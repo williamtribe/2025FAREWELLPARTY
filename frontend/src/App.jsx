@@ -110,6 +110,11 @@ function App() {
   const [personalMsgStatus, setPersonalMsgStatus] = useState("");
   const [showPersonalMsgModal, setShowPersonalMsgModal] = useState(false);
   const [editingPersonalMsg, setEditingPersonalMsg] = useState(null);
+  const [showClaimableLetterModal, setShowClaimableLetterModal] = useState(false);
+  const [claimableLetterTitle, setClaimableLetterTitle] = useState("");
+  const [claimableLetterContent, setClaimableLetterContent] = useState("");
+  const [claimableLetterCode, setClaimableLetterCode] = useState("");
+  const [claimableLetterStatus, setClaimableLetterStatus] = useState("");
   const [interestCategories, setInterestCategories] = useState(
     DEFAULT_INTEREST_CATEGORIES,
   );
@@ -780,6 +785,31 @@ function App() {
     }
   };
 
+  const createClaimableLetter = async () => {
+    if (!session?.is_admin) return;
+    if (!claimableLetterTitle.trim() || !claimableLetterContent.trim()) {
+      setClaimableLetterStatus("제목과 내용을 입력해주세요");
+      return;
+    }
+    setClaimableLetterStatus("생성 중...");
+    try {
+      const res = await fetch(`${API_BASE}/admin/claimable-letters`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          title: claimableLetterTitle,
+          content: claimableLetterContent,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "생성 실패");
+      setClaimableLetterCode(data.claim_code);
+      setClaimableLetterStatus("생성 완료! 코드를 복사하세요.");
+    } catch (err) {
+      setClaimableLetterStatus(`오류: ${err.message}`);
+    }
+  };
+
   const runClustering = async () => {
     if (!session?.is_admin) return;
     setClusterLoading(true);
@@ -1212,6 +1242,12 @@ function App() {
               disabled={personalMsgLoading}
             >
               {personalMsgLoading ? "불러오는 중..." : "💌 개인 메시지 관리"}
+            </button>
+            <button
+              className="admin-btn"
+              onClick={() => setShowClaimableLetterModal(true)}
+            >
+              📝 코드로 편지 만들기
             </button>
             <div className="cluster-controls">
               <label>
@@ -1652,6 +1688,95 @@ function App() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showClaimableLetterModal && (
+        <div
+          className="order-modal-overlay"
+          onClick={() => {
+            setShowClaimableLetterModal(false);
+            setClaimableLetterTitle("");
+            setClaimableLetterContent("");
+            setClaimableLetterCode("");
+            setClaimableLetterStatus("");
+          }}
+        >
+          <div className="cluster-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h2>📝 코드로 편지 만들기</h2>
+              <button
+                className="close-btn"
+                onClick={() => {
+                  setShowClaimableLetterModal(false);
+                  setClaimableLetterTitle("");
+                  setClaimableLetterContent("");
+                  setClaimableLetterCode("");
+                  setClaimableLetterStatus("");
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <p className="order-hint">
+              편지를 작성하면 고유 코드가 생성돼요. 받는 사람에게 코드를 전달하면 그 사람이 자신의 편지함에서 편지를 받을 수 있어요.
+            </p>
+            
+            {claimableLetterCode ? (
+              <div className="claim-code-result">
+                <div className="claim-code-box">
+                  <span className="claim-code-label">생성된 코드:</span>
+                  <span className="claim-code-value">{claimableLetterCode}</span>
+                  <button
+                    className="copy-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(claimableLetterCode);
+                      setClaimableLetterStatus("코드가 복사되었습니다!");
+                    }}
+                  >
+                    📋 복사
+                  </button>
+                </div>
+                <p className="claim-code-hint">이 코드를 받는 사람에게 알려주세요!</p>
+                <button
+                  className="save-btn"
+                  onClick={() => {
+                    setClaimableLetterCode("");
+                    setClaimableLetterTitle("");
+                    setClaimableLetterContent("");
+                    setClaimableLetterStatus("");
+                  }}
+                >
+                  새 편지 작성
+                </button>
+              </div>
+            ) : (
+              <div className="personal-msg-editor">
+                <input
+                  type="text"
+                  placeholder="제목"
+                  value={claimableLetterTitle}
+                  onChange={(e) => setClaimableLetterTitle(e.target.value)}
+                  className="personal-msg-title-input"
+                />
+                <textarea
+                  placeholder="본문 내용을 작성하세요..."
+                  value={claimableLetterContent}
+                  onChange={(e) => setClaimableLetterContent(e.target.value)}
+                  className="personal-msg-content-input"
+                  rows={8}
+                />
+                <button
+                  className="save-btn"
+                  onClick={createClaimableLetter}
+                >
+                  ✨ 편지 생성하기
+                </button>
+              </div>
+            )}
+            
+            {claimableLetterStatus && <p className="admin-status">{claimableLetterStatus}</p>}
           </div>
         </div>
       )}
