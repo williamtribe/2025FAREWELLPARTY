@@ -533,7 +533,7 @@ class SupabaseService:
             return {"skipped": True, "reason": "supabase_not_configured"}
         try:
             result = self.client.table("personal_messages").insert({
-                "kakao_id": None,
+                "kakao_id": "__UNCLAIMED__",
                 "title": title,
                 "content": content,
                 "claim_code": claim_code,
