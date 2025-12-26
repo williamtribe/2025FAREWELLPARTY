@@ -804,6 +804,13 @@ class ClaimableLetterPayload(BaseModel):
     content: str
 
 
+class PublicLetterPayload(BaseModel):
+    title: str
+    content: str
+    sender_name: str
+    recipient_name: str
+
+
 class ClaimCodePayload(BaseModel):
     claim_code: str
 
@@ -983,6 +990,41 @@ async def claim_letter(payload: ClaimCodePayload,
                             detail=result.get("error"))
     
     return {"message": "claimed", "letter": result.get("letter")}
+
+
+@api_router.post("/public-letters")
+async def create_public_letter(payload: PublicLetterPayload):
+    """Create a public letter with sender/recipient names. Returns claim codes for both."""
+    import secrets
+    sender_code = secrets.token_urlsafe(6).upper()[:8]
+    recipient_code = secrets.token_urlsafe(6).upper()[:8]
+    
+    result = supabase_service.create_public_letter(
+        title=payload.title,
+        content=payload.content,
+        sender_name=payload.sender_name,
+        recipient_name=payload.recipient_name,
+        sender_code=sender_code,
+        recipient_code=recipient_code
+    )
+    
+    if result.get("error"):
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=result.get("error"))
+    
+    return {
+        "message": "created",
+        "sender_code": sender_code,
+        "recipient_code": recipient_code,
+        "data": result.get("data")
+    }
+
+
+@api_router.get("/public-letters")
+async def get_all_public_letters():
+    """Get all public letters for display."""
+    letters = supabase_service.fetch_public_letters()
+    return {"letters": letters}
 
 
 @api_router.get("/kakao/friends")

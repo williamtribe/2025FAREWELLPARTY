@@ -16,6 +16,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import LandingPage from "./pages/LandingPage";
 import MafBTIPage from "./pages/MafBTIPage";
 import PersonalPage from "./pages/PersonalPage";
+import WriteLetterPage from "./pages/WriteLetterPage";
 import "./pages/PersonalPage.css";
 
 const API_BASE = "/api";
@@ -1852,6 +1853,10 @@ function App() {
       <Route
         path="/personal/:kakaoId"
         element={<PersonalPage session={session} />}
+      />
+      <Route
+        path="/write-letter"
+        element={<WriteLetterPage session={session} />}
       />
       <Route
         path="/"

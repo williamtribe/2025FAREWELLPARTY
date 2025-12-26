@@ -562,6 +562,24 @@ class SupabaseService:
         try:
             check = self.client.table("personal_messages").select("*").eq("claim_code", claim_code).limit(1).execute()
             if not check.data:
+                check = self.client.table("public_letters").select("*").eq("sender_code", claim_code).limit(1).execute()
+                if check.data:
+                    letter = check.data[0]
+                    if letter.get("sender_kakao_id"):
+                        return {"error": "already_claimed"}
+                    result = self.client.table("public_letters").update({
+                        "sender_kakao_id": kakao_id
+                    }).eq("sender_code", claim_code).execute()
+                    return {"data": result.data, "letter": letter, "role": "sender"}
+                check = self.client.table("public_letters").select("*").eq("recipient_code", claim_code).limit(1).execute()
+                if check.data:
+                    letter = check.data[0]
+                    if letter.get("recipient_kakao_id"):
+                        return {"error": "already_claimed"}
+                    result = self.client.table("public_letters").update({
+                        "recipient_kakao_id": kakao_id
+                    }).eq("recipient_code", claim_code).execute()
+                    return {"data": result.data, "letter": letter, "role": "recipient"}
                 return {"error": "invalid_code"}
             letter = check.data[0]
             if letter.get("claim_status") == "claimed":
@@ -576,6 +594,36 @@ class SupabaseService:
         except Exception as e:
             logger.error(f"Error claiming letter with code {claim_code}: {e}")
             return {"error": str(e)}
+
+    def create_public_letter(self, title: str, content: str, sender_name: str, 
+                              recipient_name: str, sender_code: str, recipient_code: str) -> Dict[str, Any]:
+        """Create a public letter with sender/recipient names and claim codes."""
+        if not self.client:
+            return {"skipped": True, "reason": "supabase_not_configured"}
+        try:
+            result = self.client.table("public_letters").insert({
+                "title": title,
+                "content": content,
+                "sender_name": sender_name,
+                "recipient_name": recipient_name,
+                "sender_code": sender_code,
+                "recipient_code": recipient_code
+            }).execute()
+            return {"data": result.data}
+        except Exception as e:
+            logger.error(f"Error creating public letter: {e}")
+            return {"error": str(e)}
+
+    def fetch_public_letters(self) -> list[Dict[str, Any]]:
+        """Fetch all public letters."""
+        if not self.client:
+            return []
+        try:
+            result = self.client.table("public_letters").select("*").order("created_at", desc=True).execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Error fetching public letters: {e}")
+            return []
 
 
 class EmbeddingService:
