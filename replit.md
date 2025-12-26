@@ -7,6 +7,17 @@ Korean farewell party website with:
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
 ## Recent Changes (December 26, 2025)
+- **Public Letter Writing Page (/write-letter)**:
+  - New page for anyone to write letters with sender/recipient names
+  - Form fields: title, content, sender name (화자), recipient name (청자)
+  - Creates two claim codes: one for sender, one for recipient
+  - Each person can claim their role by entering their code on personal page
+  - Prevents overwriting: once a role is claimed, code can't be reused
+  - API endpoints:
+    - POST /api/public-letters - Create letter with sender/recipient codes
+    - GET /api/public-letters - List all public letters
+  - Database: public_letters table (sender_name, recipient_name, sender_code, recipient_code, sender_kakao_id, recipient_kakao_id)
+
 - **Claimable Letter System**:
   - Admin creates letters with auto-generated 8-character claim codes
   - Users claim letters by entering the code on their personal page (/personal/{kakao_id})
