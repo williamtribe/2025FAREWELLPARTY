@@ -6,7 +6,22 @@ Korean farewell party website with:
 - **Backend**: FastAPI (Python) on port 8000
 - **Features**: Kakao OAuth login, profile cards, OpenAI embeddings, Pinecone vector sync, Supabase storage
 
-## Recent Changes (December 22, 2025)
+## Recent Changes (December 26, 2025)
+- **Claimable Letter System**:
+  - Admin creates letters with auto-generated 8-character claim codes
+  - Users claim letters by entering the code on their personal page (/personal/{kakao_id})
+  - Once claimed, letters appear in the user's "받은 편지" inbox
+  - Admin UI: "✉️ 편지 코드 생성" button opens modal for title/content input
+  - Generated code displayed with copy button for easy sharing
+  - User UI: "🔑 편지 코드 입력" section on PersonalPage
+  - Validation: invalid codes, already claimed codes, proper error messages
+  - API endpoints:
+    - POST /api/admin/claimable-letters - Create letter with code (admin only)
+    - GET /api/admin/claimable-letters - List all claimable letters (admin only)
+    - POST /api/claim-letter - User claims letter with code (authenticated)
+  - Database columns: claim_code, claim_status (unclaimed/claimed), claimed_at, claimed_by_kakao_id
+
+## Previous Changes (December 22, 2025)
 - **Personal Page Feature (/personal/{kakao_id})**:
   - Each user has their own personal page accessible only by themselves
   - Developers/admins can write personalized farewell messages with title + content
