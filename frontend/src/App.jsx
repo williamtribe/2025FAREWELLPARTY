@@ -937,7 +937,7 @@ function App() {
             {profile.intro ? "전체 멤버" : "전체 멤버"}
           </Link>
           <Link className="floating-cta conv-list-btn" to="/conversations">
-            � 내 대화
+            내 대화
           </Link>
           <button className="floating-cta conv-btn" onClick={createConversation} disabled={loading}>
             ➕ 대화 추가
@@ -1903,7 +1903,7 @@ function App() {
       />
       <Route
         path="/conversation/:id"
-        element={<ConversationPage session={session} />}
+        element={<ConversationPage session={session} onLogin={handleKakaoLogin} authLoading={loading} />}
       />
       <Route
         path="/conversations"
@@ -1917,6 +1917,7 @@ function App() {
             onLogin={handleKakaoLogin}
             onShare={shareToKakao}
             onCreateConversation={createConversation}
+            authLoading={loading}
           />
         }
       />

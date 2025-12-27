@@ -20,7 +20,7 @@ function renderWithDevComment(text) {
   );
 }
 
-export default function LandingPage({ session, onLogin, onShare, onCreateConversation }) {
+export default function LandingPage({ session, onLogin, onShare, onCreateConversation, authLoading }) {
   const [profileCount, setProfileCount] = useState(0);
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -235,8 +235,8 @@ export default function LandingPage({ session, onLogin, onShare, onCreateConvers
           </button>
         </>
       ) : (
-        <button className="floating-cta login-btn" onClick={onLogin}>
-          카톡 로그인 먼저!
+        <button className="floating-cta login-btn" onClick={onLogin} disabled={authLoading}>
+          {authLoading ? "로그인 중..." : "카톡 로그인 먼저!"}
         </button>
       )}
       <Link className="floating-cta info" to="/info">

@@ -4,7 +4,7 @@ import './ConversationPage.css';
 
 const API_BASE = "/api";
 
-function ConversationPage({ session }) {
+function ConversationPage({ session, onLogin, authLoading }) {
     const { id } = useParams();
     const navigate = useNavigate();
     const [conversation, setConversation] = useState(null);
@@ -27,7 +27,7 @@ function ConversationPage({ session }) {
         const joinRole = params.get('join');
         if (joinRole && session) {
             handleJoin(joinRole);
-            // URL 파라미터 제거 (선택 사항)
+            // URL 파라미터 제거
             navigate(`/conversation/${id}`, { replace: true });
         }
     }, [id, session]);
@@ -54,9 +54,8 @@ function ConversationPage({ session }) {
         if (!session) {
             // Store pending join in sessionStorage and trigger login
             sessionStorage.setItem('pending-conv-join', JSON.stringify({ id, role }));
-            const loginBtn = document.querySelector('.login-btn');
-            if (loginBtn) {
-                loginBtn.click();
+            if (onLogin) {
+                onLogin();
             } else {
                 alert("로그인이 필요합니다.");
             }
@@ -117,10 +116,14 @@ function ConversationPage({ session }) {
         <div className="conversation-page">
             <header className="conv-header">
                 <button className="back-btn" onClick={() => navigate(-1)}>← 뒤로</button>
-                <h1>{isEditing ? "대화 편집" : conversation.title}</h1>
-                {!session && (
-                    <button className="login-btn ghost small" onClick={() => window.location.href = `${API_BASE}/auth/kakao/login`}>
-                        로그인
+                <div className="header-center">
+                    <h1>{isEditing ? "대화 편집" : conversation.title}</h1>
+                </div>
+                {session ? (
+                    <div className="header-right-placeholder"></div>
+                ) : (
+                    <button className="login-btn-top" onClick={onLogin} disabled={authLoading}>
+                        {authLoading ? "로그인 중..." : "카톡 로그인"}
                     </button>
                 )}
             </header>
@@ -134,7 +137,9 @@ function ConversationPage({ session }) {
                                 <span key={m.kakao_id} className="member-tag speaker">{m.name}</span>
                             ))}
                             {!isSpeaker && (
-                                <button className="join-btn speaker" onClick={() => handleJoin('speaker')}>화자로 참여하기</button>
+                                <button className="join-btn speaker" onClick={() => handleJoin('speaker')} disabled={authLoading}>
+                                    {authLoading ? "로그인 중..." : "화자로 참여하기"}
+                                </button>
                             )}
                         </div>
                     </div>
@@ -146,7 +151,9 @@ function ConversationPage({ session }) {
                                 <span key={m.kakao_id} className="member-tag listener">{m.name}</span>
                             ))}
                             {!conversation.listeners.includes(session?.kakao_id) && (
-                                <button className="join-btn listener" onClick={() => handleJoin('listener')}>청중으로 참여하기</button>
+                                <button className="join-btn listener" onClick={() => handleJoin('listener')} disabled={authLoading}>
+                                    {authLoading ? "로그인 중..." : "청중으로 참여하기"}
+                                </button>
                             )}
                         </div>
                     </div>
