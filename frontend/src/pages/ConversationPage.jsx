@@ -21,7 +21,16 @@ function ConversationPage({ session }) {
 
     useEffect(() => {
         fetchConversation();
-    }, [id]);
+
+        // Handle auto-join from URL query params
+        const params = new URLSearchParams(window.location.search);
+        const joinRole = params.get('join');
+        if (joinRole && session) {
+            handleJoin(joinRole);
+            // URL 파라미터 제거 (선택 사항)
+            navigate(`/conversation/${id}`, { replace: true });
+        }
+    }, [id, session]);
 
     const fetchConversation = async () => {
         setLoading(true);
@@ -43,7 +52,14 @@ function ConversationPage({ session }) {
 
     const handleJoin = async (role) => {
         if (!session) {
-            alert("로그인이 필요합니다.");
+            // Store pending join in sessionStorage and trigger login
+            sessionStorage.setItem('pending-conv-join', JSON.stringify({ id, role }));
+            const loginBtn = document.querySelector('.login-btn');
+            if (loginBtn) {
+                loginBtn.click();
+            } else {
+                alert("로그인이 필요합니다.");
+            }
             return;
         }
         setStatus(role === 'speaker' ? "화자로 참여 중..." : "청중으로 참여 중...");
@@ -102,6 +118,11 @@ function ConversationPage({ session }) {
             <header className="conv-header">
                 <button className="back-btn" onClick={() => navigate(-1)}>← 뒤로</button>
                 <h1>{isEditing ? "대화 편집" : conversation.title}</h1>
+                {!session && (
+                    <button className="login-btn ghost small" onClick={() => window.location.href = `${API_BASE}/auth/kakao/login`}>
+                        로그인
+                    </button>
+                )}
             </header>
 
             <main className="conv-content">

@@ -275,6 +275,16 @@ function App() {
         } catch (err) {
           console.warn("Profile check failed:", err);
         }
+
+        // Check for pending conversation join
+        const pendingJoin = sessionStorage.getItem('pending-conv-join');
+        if (pendingJoin) {
+          const { id, role } = JSON.parse(pendingJoin);
+          sessionStorage.removeItem('pending-conv-join');
+          navigate(`/conversation/${id}?join=${role}`, { replace: true });
+          return;
+        }
+
         navigate("/", { replace: true });
       } else if (event.data?.type === "kakao-login-error") {
         console.error("Login error from popup:", event.data.error);
