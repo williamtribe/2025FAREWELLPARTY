@@ -799,6 +799,89 @@ class UserLetterPayload(BaseModel):
     content: str
 
 
+# --- Conversations Feature ---
+class ConversationUpdatePayload(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+
+
+class JoinConversationPayload(BaseModel):
+    role: Literal["speaker", "listener"]
+
+
+@api_router.post("/conversations")
+async def create_conversation(user: SessionUser = Depends(get_current_user)):
+    """Create a new conversation."""
+    result = supabase_service.create_conversation(user.kakao_id)
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+
+@api_router.get("/conversations/{conv_id}")
+async def get_conversation(conv_id: str):
+    """Get conversation details."""
+    conv = supabase_service.fetch_conversation(conv_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="not_found")
+
+    # Fetch names for speakers and listeners
+    speakers_data = []
+    for sid in conv.get("speakers", []):
+        p = supabase_service.fetch_profile(sid)
+        speakers_data.append({"kakao_id": sid, "name": p.get("name") if p else "알 수 없음"})
+
+    listeners_data = []
+    for lid in conv.get("listeners", []):
+        p = supabase_service.fetch_profile(lid)
+        listeners_data.append({"kakao_id": lid, "name": p.get("name") if p else "알 수 없음"})
+
+    conv["speakers_data"] = speakers_data
+    conv["listeners_data"] = listeners_data
+    return {"conversation": conv}
+
+
+@api_router.put("/conversations/{conv_id}")
+async def update_conversation(
+    conv_id: str,
+    payload: ConversationUpdatePayload,
+    user: SessionUser = Depends(get_current_user)
+):
+    """Update conversation title or content."""
+    # Optional: check if user is in speakers or is creator
+    conv = supabase_service.fetch_conversation(conv_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="not_found")
+
+    is_speaker = user.kakao_id in conv.get("speakers", [])
+    is_creator = user.kakao_id == conv.get("creator_id")
+
+    if not (is_speaker or is_creator):
+        raise HTTPException(status_code=403, detail="only_speakers_can_edit")
+
+    updates = payload.model_dump(exclude_unset=True)
+    if not updates:
+        return {"message": "no_updates"}
+
+    result = supabase_service.update_conversation(conv_id, updates)
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+
+@api_router.post("/conversations/{conv_id}/join")
+async def join_conversation(
+    conv_id: str,
+    payload: JoinConversationPayload,
+    user: SessionUser = Depends(get_current_user)
+):
+    """Join conversation as speaker or listener."""
+    result = supabase_service.join_conversation(conv_id, user.kakao_id, payload.role)
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+
 class ClaimableLetterPayload(BaseModel):
     title: str
     content: str

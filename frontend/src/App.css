@@ -1245,6 +1245,15 @@ input:disabled,
   font-weight: 600;
 }
 
+.floating-cta.conv-btn {
+  bottom: 230px;
+  right: 18px;
+  background: linear-gradient(135deg, #4caf50, #2e7d32) !important;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 14px 36px rgba(46, 125, 50, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 .floating-cta.mafbti {
   left: 18px;
   right: auto;
@@ -2887,7 +2896,7 @@ button.secondary:disabled {
   border: 1px solid #eee;
   border-radius: 10px;
   padding: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .role-card-img {

@@ -17,7 +17,9 @@ import LandingPage from "./pages/LandingPage";
 import MafBTIPage from "./pages/MafBTIPage";
 import PersonalPage from "./pages/PersonalPage";
 import WriteLetterPage from "./pages/WriteLetterPage";
+import ConversationPage from "./pages/ConversationPage";
 import "./pages/PersonalPage.css";
+import "./pages/ConversationPage.css";
 
 const API_BASE = "/api";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
@@ -126,9 +128,9 @@ function App() {
   const authHeaders = useMemo(() => {
     return session?.session_token
       ? {
-          Authorization: `Bearer ${session.session_token}`,
-          "Content-Type": "application/json",
-        }
+        Authorization: `Bearer ${session.session_token}`,
+        "Content-Type": "application/json",
+      }
       : { "Content-Type": "application/json" };
   }, [session]);
 
@@ -275,6 +277,7 @@ function App() {
       } else if (event.data?.type === "kakao-login-error") {
         console.error("Login error from popup:", event.data.error);
         setStatus(`로그인 오류: ${event.data.error}`);
+        setLoading(false);
       }
     };
     window.addEventListener("message", handleMessage);
@@ -282,7 +285,9 @@ function App() {
   }, [navigate]);
 
   const handleKakaoLogin = async () => {
+    if (loading) return;
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
+    setLoading(true);
     setStatus("카카오 로그인 페이지로 이동합니다...");
     try {
       console.log("Fetching login URL from:", `${API_BASE}/auth/kakao/login`);
@@ -308,12 +313,15 @@ function App() {
     } catch (err) {
       console.error("Kakao login error:", err);
       setStatus(`로그인 오류: ${err.message}`);
+      setLoading(false);
     }
   };
 
   const handleSimpleRegister = async () => {
+    if (loading) return;
     sessionStorage.setItem("simple-register", "1");
     sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
+    setLoading(true);
     setStatus("간편등록: 카카오 로그인 페이지로 이동합니다...");
     try {
       const res = await fetch(`${API_BASE}/auth/kakao/login`);
@@ -338,6 +346,7 @@ function App() {
       console.error("Simple register error:", err);
       sessionStorage.removeItem("simple-register");
       setStatus(`등록 오류: ${err.message}`);
+      setLoading(false);
     }
   };
 
@@ -811,6 +820,25 @@ function App() {
     }
   };
 
+  const createConversation = async () => {
+    if (!session?.session_token) return;
+    setLoading(true);
+    setStatus("새 대화를 만드는 중...");
+    try {
+      const res = await fetch(`${API_BASE}/conversations`, {
+        method: "POST",
+        headers: authHeaders,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "생성 실패");
+      navigate(`/conversation/${data.data.id}`);
+    } catch (err) {
+      setStatus(`오류: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const runClustering = async () => {
     if (!session?.is_admin) return;
     setClusterLoading(true);
@@ -899,6 +927,9 @@ function App() {
           <Link className="floating-cta mailbox" to={`/personal/${session?.kakao_id}`}>
             💌 내 편지함
           </Link>
+          <button className="floating-cta conv-btn" onClick={createConversation} disabled={loading}>
+            ➕ 대화 추가
+          </button>
         </>
       ) : (
         <button className="floating-cta login-btn" onClick={handleKakaoLogin}>
@@ -1607,7 +1638,7 @@ function App() {
               각 사용자에게 보낼 개인 메시지를 작성하세요. 작성된 메시지는 /personal/{'{'}kakao_id{'}'} 에서 본인만 볼 수 있어요.
             </p>
             {personalMsgStatus && <p className="admin-status">{personalMsgStatus}</p>}
-            
+
             {editingPersonalMsg ? (
               <div className="personal-msg-editor">
                 <div className="editor-header">
@@ -1723,7 +1754,7 @@ function App() {
             <p className="order-hint">
               편지를 작성하면 고유 코드가 생성돼요. 받는 사람에게 코드를 전달하면 그 사람이 자신의 편지함에서 편지를 받을 수 있어요.
             </p>
-            
+
             {claimableLetterCode ? (
               <div className="claim-code-result">
                 <div className="claim-code-box">
@@ -1776,7 +1807,7 @@ function App() {
                 </button>
               </div>
             )}
-            
+
             {claimableLetterStatus && <p className="admin-status">{claimableLetterStatus}</p>}
           </div>
         </div>
@@ -1859,12 +1890,17 @@ function App() {
         element={<WriteLetterPage session={session} />}
       />
       <Route
+        path="/conversation/:id"
+        element={<ConversationPage session={session} />}
+      />
+      <Route
         path="/"
         element={
           <LandingPage
             session={session}
             onLogin={handleKakaoLogin}
             onShare={shareToKakao}
+            onCreateConversation={createConversation}
           />
         }
       />

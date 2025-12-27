@@ -20,7 +20,7 @@ function renderWithDevComment(text) {
   );
 }
 
-export default function LandingPage({ session, onLogin, onShare }) {
+export default function LandingPage({ session, onLogin, onShare, onCreateConversation }) {
   const [profileCount, setProfileCount] = useState(0);
   const [publicProfiles, setPublicProfiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -227,6 +227,9 @@ export default function LandingPage({ session, onLogin, onShare }) {
           <Link className="floating-cta my-intro" to="/my-profile">
             내 프로필
           </Link>
+          <button className="floating-cta conv-btn" onClick={onCreateConversation}>
+            ➕ 대화 추가
+          </button>
         </>
       ) : (
         <button className="floating-cta login-btn" onClick={onLogin}>
@@ -433,7 +436,7 @@ export default function LandingPage({ session, onLogin, onShare }) {
               {isLoggedIn &&
                 currentProfile?.kakao_id &&
                 String(currentProfile.kakao_id) !==
-                  String(session?.kakao_id) && (
+                String(session?.kakao_id) && (
                   <button
                     className={`pick-btn ${myPicks.has(currentProfile.kakao_id) ? "picked" : ""}`}
                     onClick={(e) => {

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import httpx
 import numpy as np
@@ -66,6 +66,9 @@ class KakaoClient:
         if resp.is_client_error or resp.is_server_error:
             logger.error("Kakao token error %s: %s", resp.status_code,
                          resp.text)
+            # Log headers to see if RateLimit headers are present
+            logger.error("Kakao headers: %s", resp.headers)
+            
         resp.raise_for_status()
         return resp.json()
 
@@ -624,6 +627,77 @@ class SupabaseService:
         except Exception as e:
             logger.error(f"Error fetching public letters: {e}")
             return []
+
+    # --- Conversations Feature ---
+    def create_conversation(self, creator_id: str) -> Dict[str, Any]:
+        """Create a new conversation record."""
+        if not self.client:
+            return {"error": "supabase_not_configured"}
+        try:
+            result = self.client.table("conversations").insert({
+                "creator_id": creator_id,
+                "speakers": [],
+                "listeners": [],
+                "title": "새로운 대화",
+                "content": ""
+            }).execute()
+            if not result.data:
+                return {"error": "creation_failed"}
+            return {"data": result.data[0]}
+        except Exception as e:
+            logger.error(f"Error creating conversation: {e}")
+            return {"error": str(e)}
+
+    def fetch_conversation(self, conv_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch a single conversation by ID."""
+        if not self.client:
+            return None
+        try:
+            result = self.client.table("conversations").select("*").eq("id", conv_id).limit(1).execute()
+            if not result.data:
+                return None
+            return result.data[0]
+        except Exception as e:
+            logger.error(f"Error fetching conversation {conv_id}: {e}")
+            return None
+
+    def update_conversation(self, conv_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+        """Update conversation fields (title, content)."""
+        if not self.client:
+            return {"error": "supabase_not_configured"}
+        try:
+            result = self.client.table("conversations").update(updates).eq("id", conv_id).execute()
+            return {"data": result.data}
+        except Exception as e:
+            logger.error(f"Error updating conversation {conv_id}: {e}")
+            return {"error": str(e)}
+
+    def join_conversation(self, conv_id: str, kakao_id: str, role: Literal["speaker", "listener"]) -> Dict[str, Any]:
+        """Add a user as a speaker or listener to a conversation."""
+        if not self.client:
+            return {"error": "supabase_not_configured"}
+        try:
+            # 1. Fetch current roles
+            conv = self.fetch_conversation(conv_id)
+            if not conv:
+                return {"error": "not_found"}
+
+            column = "speakers" if role == "speaker" else "listeners"
+            current_list = conv.get(column, [])
+            if not isinstance(current_list, list):
+                current_list = []
+
+            # 2. Add if not present (using set-like logic with kakao_id)
+            # Assuming list of kakao_ids for now.
+            if kakao_id not in current_list:
+                current_list.append(kakao_id)
+                result = self.client.table("conversations").update({column: current_list}).eq("id", conv_id).execute()
+                return {"data": result.data, "updated": True}
+            
+            return {"data": conv, "updated": False}
+        except Exception as e:
+            logger.error(f"Error joining conversation {conv_id} as {role}: {e}")
+            return {"error": str(e)}
 
 
 class EmbeddingService:
