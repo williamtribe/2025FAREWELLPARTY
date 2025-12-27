@@ -163,8 +163,7 @@ async def kakao_callback(code: str, state: Optional[str] = None):
             supabase_service.update_profile_image(kakao_id, profile_image_url)
     else:
         # Create new profile for first-time users
-        new_profile = {
-            "kakao_id": kakao_id,
+        new_profile_data = {
             "name": nickname,
             "tagline": "",
             "intro": "",
@@ -174,7 +173,12 @@ async def kakao_callback(code: str, state: Optional[str] = None):
             "visibility": "public",
             "profile_image": profile_image_url,
         }
-        supabase_service.upsert_profile(new_profile)
+        record = assemble_profile_record(kakao_id, new_profile_data)
+        upsert_res = supabase_service.upsert_profile(record)
+        if "error" in upsert_res:
+            logger.error("Failed to create initial profile for %s: %s", kakao_id, upsert_res["error"])
+        else:
+            logger.info("Successfully created initial profile for %s", kakao_id)
 
     payload = {
         "kakao_id": kakao_id,
