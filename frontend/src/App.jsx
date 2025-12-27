@@ -18,8 +18,10 @@ import MafBTIPage from "./pages/MafBTIPage";
 import PersonalPage from "./pages/PersonalPage";
 import WriteLetterPage from "./pages/WriteLetterPage";
 import ConversationPage from "./pages/ConversationPage";
+import ConversationListPage from "./pages/ConversationListPage";
 import "./pages/PersonalPage.css";
 import "./pages/ConversationPage.css";
+import "./pages/ConversationListPage.css";
 
 const API_BASE = "/api";
 const CALLBACK_PROCESSED_KEY = "kakao-callback-processed";
@@ -924,8 +926,8 @@ function App() {
           <Link className="floating-cta my-intro" to="/">
             {profile.intro ? "전체 멤버" : "전체 멤버"}
           </Link>
-          <Link className="floating-cta mailbox" to={`/personal/${session?.kakao_id}`}>
-            💌 내 편지함
+          <Link className="floating-cta conv-list-btn" to="/conversations">
+            � 내 대화
           </Link>
           <button className="floating-cta conv-btn" onClick={createConversation} disabled={loading}>
             ➕ 대화 추가
@@ -1892,6 +1894,10 @@ function App() {
       <Route
         path="/conversation/:id"
         element={<ConversationPage session={session} />}
+      />
+      <Route
+        path="/conversations"
+        element={<ConversationListPage session={session} />}
       />
       <Route
         path="/"

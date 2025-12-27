@@ -1,0 +1,141 @@
+.conv-list-page {
+    padding: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #f9fbf9;
+}
+
+.conv-list-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.conv-list-header h1 {
+    font-size: 1.8rem;
+    color: #1a3c26;
+    margin: 0.5rem 0;
+}
+
+.conv-list-header .subtitle {
+    color: #5a7a60;
+    font-size: 0.95rem;
+}
+
+.conv-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.conv-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem;
+    border: 1px solid rgba(31, 122, 77, 0.1);
+    box-shadow: 0 4px 12px rgba(20, 55, 32, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.conv-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(20, 55, 32, 0.1);
+    border-color: rgba(31, 122, 77, 0.3);
+}
+
+.conv-card-info {
+    flex: 1;
+}
+
+.conv-card-title {
+    font-size: 1.1rem;
+    margin: 0 0 0.25rem;
+    color: #1c2f1f;
+    font-weight: 700;
+}
+
+.conv-card-date {
+    font-size: 0.85rem;
+    color: #8a9a8c;
+}
+
+.conv-card-members {
+    margin-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-end;
+}
+
+.member-tags {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.speaker-tag,
+.listener-tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.speaker-tag {
+    background: rgba(31, 122, 77, 0.1);
+    color: #1f7a4d;
+}
+
+.listener-tag {
+    background: rgba(102, 126, 234, 0.1);
+    color: #4c51bf;
+}
+
+.arrow-icon {
+    margin-left: 1rem;
+    color: #1f7a4d;
+    font-weight: 800;
+    opacity: 0.5;
+}
+
+.conv-card:hover .arrow-icon {
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+.empty-conv {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: white;
+    border-radius: 20px;
+    border: 1px dashed #ccc;
+}
+
+.empty-conv p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.error-message {
+    background: #fff5f5;
+    color: #c53030;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: center;
+    border: 1px solid #feb2b2;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #1f7a4d;
+    font-weight: 600;
+}

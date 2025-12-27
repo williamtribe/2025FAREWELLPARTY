@@ -818,6 +818,15 @@ async def create_conversation(user: SessionUser = Depends(get_current_user)):
     return result
 
 
+@api_router.get("/conversations")
+async def list_conversations(user: SessionUser = Depends(get_current_user)):
+    """List conversations for the current user."""
+    result = supabase_service.list_conversations(user.kakao_id)
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    return result
+
+
 @api_router.get("/conversations/{conv_id}")
 async def get_conversation(conv_id: str):
     """Get conversation details."""

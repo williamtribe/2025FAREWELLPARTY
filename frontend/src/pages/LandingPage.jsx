@@ -227,6 +227,9 @@ export default function LandingPage({ session, onLogin, onShare, onCreateConvers
           <Link className="floating-cta my-intro" to="/my-profile">
             내 프로필
           </Link>
+          <Link className="floating-cta conv-list-btn" to="/conversations">
+            💬 내 대화
+          </Link>
           <button className="floating-cta conv-btn" onClick={onCreateConversation}>
             ➕ 대화 추가
           </button>

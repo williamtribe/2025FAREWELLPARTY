@@ -699,6 +699,23 @@ class SupabaseService:
             logger.error(f"Error joining conversation {conv_id} as {role}: {e}")
             return {"error": str(e)}
 
+    def list_conversations(self, kakao_id: str) -> Dict[str, Any]:
+        """List all conversations where user is creator, speaker, or listener."""
+        if not self.client:
+            return {"error": "supabase_not_configured"}
+        try:
+            # Query conversations where kakao_id is creator_id OR present in speakers OR present in listeners
+            # Supabase Python client filter syntax for JSONB search can be tricky.
+            # We'll use the 'contains' or filter with or clauses.
+            result = self.client.table("conversations").select("*").or_(
+                f"creator_id.eq.{kakao_id},speakers.cs.[\"{kakao_id}\"],listeners.cs.[\"{kakao_id}\"]"
+            ).order("date", desc=True).execute()
+            
+            return {"data": result.data}
+        except Exception as e:
+            logger.error(f"Error listing conversations for {kakao_id}: {e}")
+            return {"error": str(e)}
+
 
 class EmbeddingService:
 
